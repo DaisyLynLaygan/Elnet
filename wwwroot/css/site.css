@@ -1,0 +1,153 @@
+/* Custom Brown Theme */
+:root {
+    --brown: #8B4513; /* Primary brown */
+    --light-brown: #A0522D; /* Lighter brown */
+    --dark-brown: #654321; /* Darker brown */
+    --beige: #F5F5DC; /* Beige background */
+    --primary: var(--brown); /* Primary color */
+}
+
+/* Body and Background */
+.landing-page {
+    background-color: var(--beige);
+    color: var(--dark-brown);
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+/* Navbar */
+.navbar-brand.text-brown {
+    color: var(--brown) !important;
+}
+
+.nav-link {
+    color: var(--brown) !important;
+}
+
+    .nav-link:hover {
+        color: var(--light-brown) !important;
+    }
+
+.btn-outline-brown {
+    border-color: var(--brown);
+    color: var(--brown);
+}
+
+    .btn-outline-brown:hover {
+        background-color: var(--brown);
+        color: white;
+    }
+
+.btn-brown {
+    background-color: var(--brown);
+    color: white;
+}
+
+    .btn-brown:hover {
+        background-color: var(--light-brown);
+    }
+
+/* Footer */
+.bg-brown {
+    background-color: var(--brown);
+}
+
+.bg-light-brown {
+    background-color: var(--light-brown);
+}
+
+.btn-light-brown {
+    background-color: var(--light-brown);
+    color: white;
+}
+
+    .btn-light-brown:hover {
+        background-color: var(--dark-brown);
+    }
+
+/* Feature Icons */
+.feature-icon {
+    width: 60px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+}
+
+/* Hover Effect for Cards */
+.hover-card {
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+    .hover-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+    }
+
+/* Feature List */
+.feature-list {
+    list-style: none;
+    padding-left: 0;
+}
+
+    .feature-list li {
+        margin-bottom: 10px;
+        font-size: 1.1rem;
+    }
+
+    .feature-list i {
+        margin-right: 10px;
+    }
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .navbar-nav {
+        margin-top: 10px;
+    }
+
+    .footer .row {
+        text-align: center;
+    }
+
+    .footer .col-lg-4, .footer .col-6 {
+        margin-bottom: 20px;
+    }
+
+    .landing-hero {
+        padding: 50px 0;
+    }
+
+        .landing-hero h1 {
+            font-size: 2.5rem;
+        }
+
+        .landing-hero p {
+            font-size: 1.2rem;
+        }
+
+    .feature-icon {
+        width: 50px;
+        height: 50px;
+        font-size: 20px;
+    }
+
+    .feature-list li {
+        font-size: 1rem;
+    }
+}
+
+/* Responsive adjustments for smaller screens */
+@media (max-width: 768px) {
+    .img-margin-top {
+        margin-top: 3rem;
+    }
+}
+
+/* Sticky Navbar */
+.sticky-navbar {
+    position: sticky;
+    top: 0;
+    z-index: 1020; /* Ensure it stays above other content */
+}
