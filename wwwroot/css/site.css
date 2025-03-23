@@ -34,19 +34,11 @@
     color: var(--brown);
 }
 
-    .btn-outline-brown:hover {
-        background-color: var(--brown);
-        color: white;
-    }
 
 .btn-brown {
     background-color: var(--brown);
     color: white;
 }
-
-    .btn-brown:hover {
-        background-color: var(--light-brown);
-    }
 
 /* Footer */
 .bg-brown {
@@ -62,9 +54,6 @@
     color: white;
 }
 
-    .btn-light-brown:hover {
-        background-color: var(--dark-brown);
-    }
 
 /* Feature Icons */
 .feature-icon {
