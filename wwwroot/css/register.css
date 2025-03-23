@@ -1,0 +1,278 @@
+:root {
+    --brown: #6B4423; /* Rich, deep brown */
+    --light-brown: #8B5D3D; /* Warm, lighter brown */
+    --dark-brown: #4A2E1A; /* Darker, richer brown */
+    --beige: #F5F0E6; /* Soft, creamy beige */
+    --cream: #FFF8F0; /* Warm, off-white cream */
+    --light-gray: #F8F5F0; /* Light gray with a warm tone */
+    --primary: var(--brown); /* Primary color */
+    --secondary: var(--light-brown); /* Secondary color */
+    --accent: #D4A373; /* Accent color (golden brown) */
+    --text-dark: #3E3E3E; /* Dark text for better readability */
+    --text-light: #F5F5F5; /* Light text for dark backgrounds */
+}
+
+.register-wrapper {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: linear-gradient(to bottom right, var(--cream), var(--light-gray));
+    overflow-y: auto;
+    padding: 20px 0;
+    z-index: 1000;
+}
+
+.min-vh-100 {
+    min-height: 100vh;
+}
+
+.card {
+    border-radius: 20px;
+    overflow: visible; /* Ensure the logo is not clipped */
+    background-color: var(--cream);
+    border-bottom: 5px solid var(--accent);
+    box-shadow: 0 10px 30px rgba(107, 68, 35, 0.15);
+    margin-bottom: 30px;
+    position: relative; /* Ensure the logo container is positioned correctly */
+}
+
+.card-header {
+    background: linear-gradient(135deg, var(--brown) 0%, var(--dark-brown) 100%);
+    padding: 6rem 1rem 1.5rem; /* Increased top padding to accommodate logo */
+    border-bottom: none;
+    position: relative;
+    border-radius: 20px 20px 0 0; /* Rounded only on the top */
+    text-align: center; /* Center the heading text */
+}
+
+
+.logo-container {
+    position: absolute;
+    top: -50px; /* Adjust this value if the logo is cut off */
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
+    overflow: visible; /* Ensure the logo is not clipped */
+}
+
+.logo {
+    background-color: var(--cream);
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 5px 20px rgba(74, 46, 26, 0.4);
+    border: 5px solid var(--cream);
+    transition: all 0.3s ease;
+    overflow: visible; /* Ensure the logo is not clipped */
+    margin-top: 5rem;
+}
+
+.logo img {
+    width: 200px;
+    max-height: 80%;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+}
+
+
+
+.card-body {
+    background-color: var(--cream);
+    border-radius: 0 0 15px 15px;
+    padding: 2rem;
+}
+
+.form-control {
+    border: 2px solid rgba(107, 68, 35, 0.1);
+    background-color: var(--beige);
+    color: var(--text-dark);
+    padding: 0.75rem;
+    transition: all 0.3s;
+    border-radius: 10px;
+}
+
+.form-control:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 0.25rem rgba(212, 163, 115, 0.25);
+    background-color: var(--cream);
+}
+
+.form-floating > .form-control:focus ~ label,
+.form-floating > .form-control:not(:placeholder-shown) ~ label {
+    color: var(--primary);
+    opacity: 0.9;
+    font-weight: 500;
+}
+
+.form-floating > label {
+    padding: 0.75rem 0.75rem;
+    color: var(--secondary);
+}
+
+.btn-primary {
+    background: linear-gradient(to right, var(--light-brown), var(--brown));
+    border: none;
+    transition: all 0.3s ease;
+    padding: 0.85rem 1.5rem;
+    color: var(--text-light);
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(107, 68, 35, 0.2);
+}
+
+.btn-primary:hover {
+    background: linear-gradient(to right, var(--brown), var(--dark-brown));
+    box-shadow: 0 8px 20px rgba(107, 68, 35, 0.3);
+    transform: translateY(-2px);
+}
+
+.btn-primary:active {
+    box-shadow: 0 2px 10px rgba(107, 68, 35, 0.2);
+    transform: translateY(1px);
+}
+
+.text-accent {
+    color: var(--accent);
+    font-weight: 600;
+    text-decoration: none;
+    position: relative;
+    transition: all 0.3s ease;
+}
+
+.text-accent:hover {
+    color: var(--brown);
+}
+
+.text-accent:after {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 2px;
+    bottom: -2px;
+    left: 0;
+    background-color: var(--accent);
+    transform: scaleX(0);
+    transition: transform 0.3s;
+}
+
+.text-accent:hover:after {
+    transform: scaleX(1);
+}
+
+.card-footer {
+    background-color: var(--beige);
+    border-top: 1px solid rgba(107, 68, 35, 0.1);
+    color: var(--secondary);
+}
+
+.card-header h2 {
+    margin-top: 2rem; /* Reduced top margin to align with logo */
+}
+/* Responsive adjustments */
+@media (max-width: 992px) {
+    .card {
+        margin: 0 15px 30px;
+    }
+}
+
+@media (max-width: 768px) {
+    .card-body {
+        padding: 1.5rem;
+    }
+    
+    .logo {
+        width: 90px;
+        height: 90px;
+    }
+    
+    .logo-container {
+        top: -45px;
+    }
+    
+    .register-wrapper {
+        padding: 10px 0;
+    }
+    
+    h2 {
+        font-size: 1.4rem;
+    }
+    
+    .form-floating > label {
+        font-size: 0.9rem;
+    }
+    
+    .text-danger {
+        font-size: 0.8rem;
+    }
+    
+    .sign-in-text {
+        font-size: 0.9rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .card-header {
+        padding: 2rem 1rem 1rem;
+    }
+    
+    .logo {
+        width: 80px;
+        height: 80px;
+    }
+    
+    .logo-container {
+        top: -40px;
+    }
+    
+    h2 {
+        font-size: 1.25rem;
+    }
+    
+    .card-body {
+        padding: 1.25rem;
+    }
+    
+    .btn-lg {
+        font-size: 0.95rem;
+        padding: 0.75rem 1.25rem;
+    }
+    
+    .form-floating > label {
+        font-size: 0.85rem;
+    }
+    
+    .card-footer {
+        font-size: 0.8rem;
+        padding: 0.75rem;
+    }
+    
+    .sign-in-text {
+        font-size: 0.85rem;
+    }
+}
+
+/* Extra small devices */
+@media (max-width: 400px) {
+    h2 {
+        font-size: 1.1rem;
+    }
+    
+    .form-control {
+        font-size: 0.9rem;
+    }
+    
+    .form-floating > label {
+        font-size: 0.8rem;
+    }
+    
+    .btn-lg {
+        font-size: 0.9rem;
+        padding: 0.6rem 1rem;
+    }
+}

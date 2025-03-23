@@ -4,80 +4,179 @@
 
 <style>
     :root {
-        --brown: #8B4513; /* Dark Brown */
-        --light-brown: #A0522D; /* Light Brown */
-        --dark-brown: #654321; /* Darker Brown */
-        --beige: #F5F5DC; /* Beige */
-        --primary: var(--brown); /* Set primary color to brown */
-        --secondary: var(--light-brown); /* Set secondary color to light brown */
+        --brown: #6B4423; /* Rich, deep brown */
+        --light-brown: #8B5D3D; /* Warm, lighter brown */
+        --dark-brown: #4A2E1A; /* Darker, richer brown */
+        --beige: #F5F0E6; /* Soft, creamy beige */
+        --cream: #FFF8F0; /* Warm, off-white cream */
+        --light-gray: #F8F5F0; /* Light gray with a warm tone */
+        --primary: var(--brown); /* Primary color */
+        --secondary: var(--light-brown); /* Secondary color */
+        --accent: #D4A373; /* Accent color (golden brown) */
+        --text-dark: #3E3E3E; /* Dark text for better readability */
+        --text-light: #F5F5F5; /* Light text for dark backgrounds */
     }
 
-    /* Additional custom styles for brown theme */
+    body {
+        font-family: 'Poppins', sans-serif;
+        color: var(--text-dark);
+        background-color: var(--cream);
+    }
+
+    /* Button styling */
     .btn-primary {
         background-color: var(--primary);
         border-color: var(--primary);
+        padding: 0.8rem 1.5rem;
+        border-radius: 30px;
+        font-weight: 600;
+        box-shadow: 0 4px 10px rgba(139, 69, 19, 0.3);
+        transition: all 0.3s ease;
+        color: var(--text-light);
+    }
+
+    .btn-primary:hover, .btn-primary:focus {
+        background-color: var(--dark-brown);
+        border-color: var(--dark-brown);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 15px rgba(139, 69, 19, 0.4);
     }
 
     .btn-outline-primary {
         color: var(--primary);
         border-color: var(--primary);
+        padding: 0.8rem 1.5rem;
+        border-radius: 30px;
+        font-weight: 600;
+        transition: all 0.3s ease;
     }
 
-        .btn-outline-primary:hover {
-            background-color: var(--primary);
-            color: white;
-        }
+    .btn-outline-primary:hover, .btn-outline-primary:focus {
+        background-color: var(--primary);
+        color: var(--text-light);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 15px rgba(139, 69, 19, 0.4);
+    }
 
+    /* Text styling */
     .text-primary {
         color: var(--primary) !important;
     }
 
-    .bg-primary {
-        background-color: var(--primary) !important;
+    .section-title {
+        position: relative;
+        margin-bottom: 3rem;
+        display: inline-block;
     }
 
-    .feature-icon.bg-primary {
-        background-color: var(--primary) !important;
+    .section-title:after {
+        content: '';
+        position: absolute;
+        left: 50%;
+        bottom: -15px;
+        transform: translateX(-50%);
+        width: 80px;
+        height: 4px;
+        background-color: var(--primary);
+        border-radius: 2px;
     }
 
-    /* Center icons in feature boxes */
+    /* Hero section */
+    .landing-hero {
+        padding: 100px 0;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .landing-hero .content-container {
+        position: relative;
+        z-index: 1;
+    }
+
+    .hero-title {
+        font-size: 3.5rem;
+        font-weight: 800;
+        color: var(--primary);
+        margin-bottom: 1.5rem;
+        line-height: 1.2;
+    }
+
+    .hero-text {
+        font-size: 1.25rem;
+        margin-bottom: 2rem;
+        color: var(--text-dark);
+    }
+
+    /* Feature cards */
+    .feature-section {
+        padding: 100px 0;
+        position: relative;
+    }
+
+    .feature-card {
+        border: none;
+        border-radius: 16px;
+        padding: 2rem;
+        height: 100%;
+        transition: all 0.3s ease;
+        position: relative;
+        z-index: 1;
+        background-color: rgba(255, 255, 255, 0.9); /* Slightly transparent white */
+        backdrop-filter: blur(10px); /* Glassmorphism effect */
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .feature-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 15px 30px rgba(139, 69, 19, 0.2);
+    }
+
     .feature-icon {
-        width: 60px;
-        height: 60px;
+        width: 80px;
+        height: 80px;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 24px;
-        margin: 0 auto; /* Center the icon */
+        font-size: 32px;
+        margin: 0 auto 1.5rem;
+        border-radius: 50%;
+        background-color: var(--primary);
+        color: var(--text-light);
+        box-shadow: 0 10px 20px rgba(139, 69, 19, 0.3);
     }
 
-    /* Hover effect for cards */
-    .hover-card {
-        transition: transform 0.3s, box-shadow 0.3s;
+    .feature-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+        color: var(--primary);
     }
 
-        .hover-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
-        }
+    .feature-text {
+        color: var(--text-dark);
+        font-size: 1rem;
+        line-height: 1.6;
+    }
 
     /* Image enhancements */
     .image-container {
         position: relative;
         overflow: hidden;
-        border-radius: 16px; /* Rounded corners */
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2); /* Subtle shadow */
+        border-radius: 20px;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
+        transition: all 0.5s ease;
     }
 
-        .image-container img {
-            width: 100%;
-            height: auto;
-            transition: transform 0.5s ease; /* Smooth hover effect */
-        }
+    .image-container:hover {
+        transform: scale(1.02);
+        box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+    }
 
-        .image-container:hover img {
-            transform: scale(1.05); /* Slight zoom on hover */
-        }
+    .image-container img {
+        width: 100%;
+        height: auto;
+        transition: transform 0.5s ease;
+    }
 
     .image-overlay {
         position: absolute;
@@ -85,125 +184,322 @@
         left: 0;
         right: 0;
         bottom: 0;
-        background: linear-gradient(135deg, rgba(139, 69, 19, 0.1) 0%, rgba(101, 67, 33, 0.05) 100%); /* Subtle gradient overlay */
-        border-radius: 16px; /* Match container's rounded corners */
+        background: linear-gradient(135deg, rgba(139, 69, 19, 0.1) 0%, rgba(101, 67, 33, 0.05) 100%);
+        border-radius: 20px;
     }
 
-    /* Testimonials Section */
+    /* Access Section */
+    .access-section {
+        padding: 100px 0;
+    }
+
+    .feature-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .feature-list li {
+        margin-bottom: 1rem;
+        padding-left: 2rem;
+        position: relative;
+        font-size: 1.1rem;
+    }
+
+    .feature-list li i {
+        position: absolute;
+        left: 0;
+        top: 0.25rem;
+        color: var(--primary);
+        font-size: 1.2rem;
+    }
+
+    /* Testimonials */
+    .testimonial-section {
+        padding: 100px 0;
+        position: relative;
+    }
+
     .testimonial-card {
-        background-color: white;
-        border-radius: 12px;
-        padding: 2rem;
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        background-color: rgba(255, 255, 255, 0.9); /* Slightly transparent white */
+        backdrop-filter: blur(10px); /* Glassmorphism effect */
+        border-radius: 16px;
+        padding: 2.5rem;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
         text-align: center;
+        height: 100%;
+        position: relative;
+        transition: all 0.3s ease;
     }
 
-        .testimonial-card img {
-            width: 80px;
-            height: 80px;
-            border-radius: 50%;
-            margin-bottom: 1rem;
-        }
+    .testimonial-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+    }
 
-        .testimonial-card h5 {
-            font-size: 1.25rem;
-            font-weight: bold;
-            color: var(--primary);
-        }
+    .testimonial-card:before {
+        content: '\201C';
+        font-family: Georgia, serif;
+        position: absolute;
+        top: 20px;
+        left: 20px;
+        color: var(--primary);
+        opacity: 0.2;
+        font-size: 6rem;
+        line-height: 1;
+    }
 
-        .testimonial-card p {
-            font-size: 0.95rem;
-            color: #666;
-        }
+    .testimonial-card img {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        margin: 0 auto 1.5rem;
+        border: 5px solid rgba(139, 69, 19, 0.1);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .testimonial-card h5 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--primary);
+        margin-bottom: 0.5rem;
+    }
+
+    .testimonial-card p {
+        font-size: 1.1rem;
+        color: var(--text-dark);
+        font-style: italic;
+        line-height: 1.6;
+    }
 
     /* Pricing Section */
-    .pricing-card {
-        background-color: white;
-        border-radius: 12px;
-        padding: 2rem;
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-        text-align: center;
-        transition: transform 0.3s, box-shadow 0.3s;
+    .pricing-section {
+        padding: 100px 0;
     }
 
-        .pricing-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
-        }
+    .pricing-card {
+        background-color: rgba(255, 255, 255, 0.9); /* Slightly transparent white */
+        backdrop-filter: blur(10px); /* Glassmorphism effect */
+        border-radius: 16px;
+        padding: 3rem 2rem;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        text-align: center;
+        height: 100%;
+        border: 2px solid transparent;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
 
-        .pricing-card h3 {
-            font-size: 1.5rem;
-            font-weight: bold;
-            color: var(--primary);
-        }
+    .pricing-card:hover {
+        transform: translateY(-15px);
+        border-color: var(--primary);
+        box-shadow: 0 20px 40px rgba(139, 69, 19, 0.2);
+    }
 
-        .pricing-card .price {
-            font-size: 2.5rem;
-            font-weight: bold;
-            color: var(--primary);
-            margin: 1rem 0;
-        }
+    .pricing-card h3 {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--primary);
+        margin-bottom: 1rem;
+    }
 
-        .pricing-card ul {
-            list-style: none;
-            padding: 0;
-            margin: 1rem 0;
-        }
+    .pricing-card .price {
+        font-size: 3.5rem;
+        font-weight: 800;
+        color: var(--primary);
+        margin: 1.5rem 0;
+        position: relative;
+        display: inline-block;
+    }
 
-            .pricing-card ul li {
-                margin: 0.5rem 0;
-                color: #666;
-            }
+    .pricing-card .price:before {
+        content: '$';
+        position: absolute;
+        top: 0.5rem;
+        left: -1rem;
+        font-size: 1.5rem;
+    }
+
+    .pricing-card .price:after {
+        content: '/mo';
+        position: absolute;
+        bottom: 0.5rem;
+        right: -3rem;
+        font-size: 1.2rem;
+        color: #888;
+    }
+
+    .pricing-card ul {
+        list-style: none;
+        padding: 0;
+        margin: 2rem 0;
+    }
+
+    .pricing-card ul li {
+        margin: 1rem 0;
+        color: var(--text-dark);
+        font-size: 1.1rem;
+        position: relative;
+        padding-left: 1.5rem;
+    }
+
+    .pricing-card ul li:before {
+        content: '\2713';
+        position: absolute;
+        left: 0;
+        color: var(--primary);
+        font-weight: bold;
+    }
+
+    .pricing-card .btn {
+        width: 80%;
+        margin: 1rem auto 0;
+        padding: 0.8rem 0;
+    }
+
+    /* How it works */
+    .how-it-works {
+        padding: 100px 0;
+        position: relative;
+    }
+
+    .step-card {
+        background-color: rgba(255, 255, 255, 0.9); /* Slightly transparent white */
+        backdrop-filter: blur(10px); /* Glassmorphism effect */
+        border: none;
+        border-radius: 16px;
+        padding: 2.5rem;
+        height: 100%;
+        transition: all 0.3s ease;
+        position: relative;
+        z-index: 1;
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
+    }
+
+    .step-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 15px 30px rgba(139, 69, 19, 0.2);
+    }
+
+    .step-icon {
+        width: 90px;
+        height: 90px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 36px;
+        margin: 0 auto 1.5rem;
+        border-radius: 50%;
+        background-color: var(--primary);
+        color: var(--text-light);
+        box-shadow: 0 10px 20px rgba(139, 69, 19, 0.3);
+        position: relative;
+    }
+
+    .step-icon:before {
+        content: attr(data-step);
+        position: absolute;
+        top: -10px;
+        right: -10px;
+        background-color: var(--dark-brown);
+        color: var(--text-light);
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        font-size: 16px;
+    }
+
+    .step-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+        color: var(--primary);
+    }
+
+    .step-text {
+        color: var(--text-dark);
+        font-size: 1.1rem;
+        line-height: 1.6;
+    }
 
     /* Footer */
     .footer {
         background-color: var(--dark-brown);
-        color: white;
-        padding: 2rem 0;
+        color: var(--text-light);
+        padding: 4rem 0 2rem;
     }
 
-        .footer a {
-            color: var(--beige);
-            text-decoration: none;
-        }
+    .footer a {
+        color: var(--beige);
+        text-decoration: none;
+        transition: color 0.3s ease;
+    }
 
-            .footer a:hover {
-                text-decoration: underline;
-            }
+    .footer a:hover {
+        color: var(--text-light);
+        text-decoration: none;
+    }
 
     /* Responsive adjustments */
+    @@media (max-width: 992px) {
+        .hero-title {
+            font-size: 2.8rem;
+        }
+
+        .section-title {
+            font-size: 2.2rem;
+        }
+
+        .feature-section, .testimonial-section, .pricing-section, .access-section, .how-it-works {
+            padding: 70px 0;
+        }
+    }
+
     @@media (max-width: 768px) {
+        .hero-title {
+            font-size: 2.3rem;
+        }
+
+        .hero-text {
+            font-size: 1.1rem;
+        }
+
         .image-container {
-            margin-top: 2rem; /* Add margin on small screens */
+            margin-top: 3rem;
         }
 
-        .display-3 {
-            font-size: 2.5rem; /* Smaller font size for mobile */
+        .section-title {
+            font-size: 2rem;
         }
 
-        .lead {
-            font-size: 1.1rem; /* Smaller font size for mobile */
+        .testimonial-card, .pricing-card, .feature-card, .step-card {
+            margin-bottom: 2rem;
         }
 
-        .testimonial-card, .pricing-card {
-            margin-bottom: 1.5rem; /* Add spacing between cards on mobile */
+        .feature-section, .testimonial-section, .pricing-section, .access-section, .how-it-works {
+            padding: 50px 0;
         }
     }
 </style>
 
 <!-- Landing Hero Section -->
-<div class="landing-hero min-vh-100 d-flex flex-column">
-    <div class="container flex-grow-1 d-flex align-items-center">
+<div class="landing-hero">
+    <div class="container content-container">
         <div class="row align-items-center">
-            <div class="col-lg-6" data-aos="fade-right" data-aos-duration="500">
-                <h1 class="display-3 fw-bold text-primary mb-4">Manage Your Home Smarter</h1>
-                <p class="lead fs-4 mb-5">Your complete solution for tracking expenses, scheduling maintenance, and organizing household tasks in one beautiful dashboard.</p>
+            <div class="col-lg-6" data-aos="fade-up" data-aos-duration="800">
+                <h1 class="hero-title">Manage Your Home <span class="d-block">Smarter</span></h1>
+                <p class="hero-text">Your complete solution for tracking expenses, scheduling maintenance, and organizing household tasks in one beautiful dashboard.</p>
                 <div class="d-flex gap-3">
-                    <a asp-controller="Home" asp-area="" asp-action="Login" class="btn btn-primary btn-lg px-4 py-2">Sign In</a>
-                    <a asp-controller="Users" asp-area="" asp-action="Create" class="btn btn-outline-primary btn-lg px-4 py-2">Get Started</a>
+                    <a asp-controller="Home" asp-area="" asp-action="Login" class="btn btn-primary">Sign In</a>
+                    <a asp-controller="Home" asp-action="Create" class="btn btn-outline-primary">Get Started</a>
                 </div>
             </div>
-            <div class="col-lg-6" data-aos="fade-left" data-aos-duration="500">
+            <div class="col-lg-6" data-aos="fade-up" data-aos-delay="200" data-aos-duration="800">
                 <div class="image-container">
                     <img src="/images/dashboard.png" alt="Home Dashboard" class="img-fluid">
                     <div class="image-overlay"></div>
@@ -214,47 +510,41 @@
 </div>
 
 <!-- Features Section -->
-<div class="bg-light py-5">
+<div class="feature-section">
     <div class="container">
-        <div class="text-center mb-5" data-aos="fade-up" data-aos-duration="500">
-            <h2 class="display-5 fw-bold text-primary">Everything You Need</h2>
-            <p class="lead">Our app simplifies home management with powerful features</p>
+        <div class="text-center mb-5" data-aos="fade-up" data-aos-duration="800">
+            <h2 class="section-title display-4 fw-bold text-primary">Everything You Need</h2>
+            <p class="lead fs-4 mt-4">Our app simplifies home management with powerful features</p>
         </div>
 
         <div class="row g-4">
-            <div class="col-md-4" data-aos="fade-up" data-aos-delay="50" data-aos-duration="500">
-                <div class="card border-0 h-100 shadow-sm hover-card">
-                    <div class="card-body p-4 text-center">
-                        <div class="feature-icon bg-primary text-white rounded-circle mb-3">
-                            <i class="bi bi-cash-coin"></i>
-                        </div>
-                        <h3 class="card-title h4">Expense Tracker</h3>
-                        <p class="card-text">Monitor your household expenses, create budgets, and generate detailed reports to optimize your spending.</p>
+            <div class="col-md-4" data-aos="fade-up" data-aos-delay="100" data-aos-duration="800">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="bi bi-cash-coin"></i>
                     </div>
+                    <h3 class="feature-title">Expense Tracker</h3>
+                    <p class="feature-text">Monitor your household expenses, create budgets, and generate detailed reports to optimize your spending.</p>
                 </div>
             </div>
 
-            <div class="col-md-4" data-aos="fade-up" data-aos-delay="100" data-aos-duration="500">
-                <div class="card border-0 h-100 shadow-sm hover-card">
-                    <div class="card-body p-4 text-center">
-                        <div class="feature-icon bg-primary text-white rounded-circle mb-3">
-                            <i class="bi bi-tools"></i>
-                        </div>
-                        <h3 class="card-title h4">Maintenance Logs</h3>
-                        <p class="card-text">Keep detailed records of home maintenance, set reminders for regular upkeep, and extend the lifespan of your assets.</p>
+            <div class="col-md-4" data-aos="fade-up" data-aos-delay="200" data-aos-duration="800">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="bi bi-tools"></i>
                     </div>
+                    <h3 class="feature-title">Maintenance Logs</h3>
+                    <p class="feature-text">Keep detailed records of home maintenance, set reminders for regular upkeep, and extend the lifespan of your assets.</p>
                 </div>
             </div>
 
-            <div class="col-md-4" data-aos="fade-up" data-aos-delay="150" data-aos-duration="500">
-                <div class="card border-0 h-100 shadow-sm hover-card">
-                    <div class="card-body p-4 text-center">
-                        <div class="feature-icon bg-primary text-white rounded-circle mb-3">
-                            <i class="bi bi-calendar-check"></i>
-                        </div>
-                        <h3 class="card-title h4">Task Scheduler</h3>
-                        <p class="card-text">Organize household tasks, assign responsibilities to family members, and never miss important deadlines.</p>
+            <div class="col-md-4" data-aos="fade-up" data-aos-delay="300" data-aos-duration="800">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="bi bi-calendar-check"></i>
                     </div>
+                    <h3 class="feature-title">Task Scheduler</h3>
+                    <p class="feature-text">Organize household tasks, assign responsibilities to family members, and never miss important deadlines.</p>
                 </div>
             </div>
         </div>
@@ -262,19 +552,19 @@
 </div>
 
 <!-- Mobile Access Section -->
-<div class="py-5">
+<div class="access-section">
     <div class="container">
         <div class="row align-items-center">
-            <div class="col-lg-6 mb-4 mb-lg-0" data-aos="fade-right" data-aos-duration="500">
+            <div class="col-lg-6 mb-4 mb-lg-0" data-aos="fade-up" data-aos-duration="800">
                 <img src="~/images/mobile-app.png" alt="Mobile App" class="img-fluid rounded-4 shadow">
             </div>
-            <div class="col-lg-6" data-aos="fade-left" data-aos-duration="500">
-                <h2 class="display-5 fw-bold text-primary mb-4">Access Anywhere</h2>
-                <p class="lead mb-4">Take control of your home management whether you're at home or on the go with our responsive web app.</p>
+            <div class="col-lg-6" data-aos="fade-up" data-aos-delay="200" data-aos-duration="800">
+                <h2 class="section-title display-4 fw-bold text-primary">Access Anywhere</h2>
+                <p class="lead fs-4 mb-4 mt-4">Take control of your home management whether you're at home or on the go with our responsive web app.</p>
                 <ul class="feature-list">
-                    <li><i class="bi bi-check-circle-fill text-primary"></i> Real-time synchronization across all devices</li>
-                    <li><i class="bi bi-check-circle-fill text-primary"></i> Secure cloud backup of all your important data</li>
-                    <li><i class="bi bi-check-circle-fill text-primary"></i> Intuitive interface designed for desktop and mobile</li>
+                    <li><i class="bi bi-check-circle-fill"></i> Real-time synchronization across all devices</li>
+                    <li><i class="bi bi-check-circle-fill"></i> Secure cloud backup of all your important data</li>
+                    <li><i class="bi bi-check-circle-fill"></i> Intuitive interface designed for desktop and mobile</li>
                 </ul>
             </div>
         </div>
@@ -282,29 +572,29 @@
 </div>
 
 <!-- Testimonials Section -->
-<div class="bg-light py-5">
+<div class="testimonial-section">
     <div class="container">
-        <div class="text-center mb-5" data-aos="fade-up" data-aos-duration="500">
-            <h2 class="display-5 fw-bold text-primary">What Our Users Say</h2>
-            <p class="lead">Hear from homeowners who have transformed their lives with HomeSmart</p>
+        <div class="text-center mb-5" data-aos="fade-up" data-aos-duration="800">
+            <h2 class="section-title display-4 fw-bold text-primary">What Our Users Say</h2>
+            <p class="lead fs-4 mt-4">Hear from homeowners who have transformed their lives with HomeSmart</p>
         </div>
         <div class="row g-4">
-            <div class="col-md-4" data-aos="fade-up" data-aos-delay="50" data-aos-duration="500">
-                <div class="testimonial-card hover-card">
+            <div class="col-md-4" data-aos="fade-up" data-aos-delay="100" data-aos-duration="800">
+                <div class="testimonial-card">
                     <img src="~/images/user1.jpg" alt="User 1" class="img-fluid">
                     <h5>John Doe</h5>
                     <p>"HomeSmart has made managing my home so much easier. I love the expense tracker and maintenance logs!"</p>
                 </div>
             </div>
-            <div class="col-md-4" data-aos="fade-up" data-aos-delay="100" data-aos-duration="500">
-                <div class="testimonial-card hover-card">
+            <div class="col-md-4" data-aos="fade-up" data-aos-delay="200" data-aos-duration="800">
+                <div class="testimonial-card">
                     <img src="~/images/user2.jpg" alt="User 2" class="img-fluid">
                     <h5>Jane Smith</h5>
                     <p>"The task scheduler is a game-changer. My family is more organized than ever!"</p>
                 </div>
             </div>
-            <div class="col-md-4" data-aos="fade-up" data-aos-delay="150" data-aos-duration="500">
-                <div class="testimonial-card hover-card">
+            <div class="col-md-4" data-aos="fade-up" data-aos-delay="300" data-aos-duration="800">
+                <div class="testimonial-card">
                     <img src="~/images/user3.jpg" alt="User 3" class="img-fluid">
                     <h5>Mike Johnson</h5>
                     <p>"I can access everything from my phone. It's so convenient and user-friendly."</p>
@@ -315,17 +605,17 @@
 </div>
 
 <!-- Pricing Section -->
-<div class="py-5">
+<div class="pricing-section">
     <div class="container">
-        <div class="text-center mb-5" data-aos="fade-up" data-aos-duration="500">
-            <h2 class="display-5 fw-bold text-primary">Simple Pricing</h2>
-            <p class="lead">Choose a plan that fits your needs</p>
+        <div class="text-center mb-5" data-aos="fade-up" data-aos-duration="800">
+            <h2 class="section-title display-4 fw-bold text-primary">Simple Pricing</h2>
+            <p class="lead fs-4 mt-4">Choose a plan that fits your needs</p>
         </div>
         <div class="row g-4">
-            <div class="col-md-4" data-aos="fade-up" data-aos-delay="50" data-aos-duration="500">
-                <div class="pricing-card hover-card">
+            <div class="col-md-4" data-aos="fade-up" data-aos-delay="100" data-aos-duration="800">
+                <div class="pricing-card">
                     <h3>Basic</h3>
-                    <div class="price">$9.99/mo</div>
+                    <div class="price">9.99</div>
                     <ul>
                         <li>Expense Tracker</li>
                         <li>Maintenance Logs</li>
@@ -334,10 +624,10 @@
                     <a href="/Account/Register" class="btn btn-primary">Get Started</a>
                 </div>
             </div>
-            <div class="col-md-4" data-aos="fade-up" data-aos-delay="100" data-aos-duration="500">
-                <div class="pricing-card hover-card">
+            <div class="col-md-4" data-aos="fade-up" data-aos-delay="200" data-aos-duration="800">
+                <div class="pricing-card">
                     <h3>Pro</h3>
-                    <div class="price">$19.99/mo</div>
+                    <div class="price">19.99</div>
                     <ul>
                         <li>Everything in Basic</li>
                         <li>Advanced Reports</li>
@@ -346,10 +636,10 @@
                     <a href="/Account/Register" class="btn btn-primary">Get Started</a>
                 </div>
             </div>
-            <div class="col-md-4" data-aos="fade-up" data-aos-delay="150" data-aos-duration="500">
-                <div class="pricing-card hover-card">
+            <div class="col-md-4" data-aos="fade-up" data-aos-delay="300" data-aos-duration="800">
+                <div class="pricing-card">
                     <h3>Premium</h3>
-                    <div class="price">$29.99/mo</div>
+                    <div class="price">29.99</div>
                     <ul>
                         <li>Everything in Pro</li>
                         <li>Family Accounts</li>
@@ -362,47 +652,71 @@
     </div>
 </div>
 
-<!-- New Section: How It Works -->
-<div class="bg-light py-5">
+<!-- How It Works Section -->
+<div class="how-it-works">
     <div class="container">
-        <div class="text-center mb-5" data-aos="fade-up" data-aos-duration="500">
-            <h2 class="display-5 fw-bold text-primary">How It Works</h2>
-            <p class="lead">A simple 3-step process to get started</p>
+        <div class="text-center mb-5" data-aos="fade-up" data-aos-duration="800">
+            <h2 class="section-title display-4 fw-bold text-primary">How It Works</h2>
+            <p class="lead fs-4 mt-4">A simple 3-step process to get started</p>
         </div>
         <div class="row g-4">
-            <div class="col-md-4" data-aos="fade-up" data-aos-delay="50" data-aos-duration="500">
-                <div class="card border-0 h-100 shadow-sm hover-card">
-                    <div class="card-body p-4 text-center">
-                        <div class="feature-icon bg-primary text-white rounded-circle mb-3">
-                            <i class="bi bi-person-plus"></i>
-                        </div>
-                        <h3 class="card-title h4">Sign Up</h3>
-                        <p class="card-text">Create your account in seconds and start managing your home smarter.</p>
+            <div class="col-md-4" data-aos="fade-up" data-aos-delay="100" data-aos-duration="800">
+                <div class="step-card">
+                    <div class="step-icon" data-step="1">
+                        <i class="bi bi-person-plus"></i>
                     </div>
+                    <h3 class="step-title">Sign Up</h3>
+                    <p class="step-text">Create your account in seconds and start managing your home smarter.</p>
                 </div>
             </div>
-            <div class="col-md-4" data-aos="fade-up" data-aos-delay="100" data-aos-duration="500">
-                <div class="card border-0 h-100 shadow-sm hover-card">
-                    <div class="card-body p-4 text-center">
-                        <div class="feature-icon bg-primary text-white rounded-circle mb-3">
-                            <i class="bi bi-gear"></i>
-                        </div>
-                        <h3 class="card-title h4">Set Up</h3>
-                        <p class="card-text">Customize your dashboard and add your household details.</p>
+            <div class="col-md-4" data-aos="fade-up" data-aos-delay="200" data-aos-duration="800">
+                <div class="step-card">
+                    <div class="step-icon" data-step="2">
+                        <i class="bi bi-gear"></i>
                     </div>
+                    <h3 class="step-title">Set Up</h3>
+                    <p class="step-text">Customize your dashboard and add your household details.</p>
                 </div>
             </div>
-            <div class="col-md-4" data-aos="fade-up" data-aos-delay="150" data-aos-duration="500">
-                <div class="card border-0 h-100 shadow-sm hover-card">
-                    <div class="card-body p-4 text-center">
-                        <div class="feature-icon bg-primary text-white rounded-circle mb-3">
-                            <i class="bi bi-graph-up"></i>
-                        </div>
-                        <h3 class="card-title h4">Manage</h3>
-                        <p class="card-text">Track expenses, schedule tasks, and maintain your home effortlessly.</p>
+            <div class="col-md-4" data-aos="fade-up" data-aos-delay="300" data-aos-duration="800">
+                <div class="step-card">
+                    <div class="step-icon" data-step="3">
+                        <i class="bi bi-graph-up"></i>
                     </div>
+                    <h3 class="step-title">Manage</h3>
+                    <p class="step-text">Track expenses, schedule tasks, and maintain your home effortlessly.</p>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+<!-- Add this before closing body tag -->
+<script>
+    // Add animation on scroll if you have AOS library included
+    document.addEventListener('DOMContentLoaded', function() {
+        // Add smooth scrolling to the page
+        const scrollLinks = document.querySelectorAll('a[href^="#"]');
+        for (const scrollLink of scrollLinks) {
+            scrollLink.addEventListener('click', function(e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                                            behavior: 'smooth',
+                    block: 'start'
+                });
+            });
+        }
+
+        // Initialize AOS (Animate On Scroll) library
+        if (typeof AOS !== 'undefined') {
+            AOS.init({
+                duration: 800, // Animation duration
+                easing: 'ease-in-out', // Easing type
+                once: true, // Whether animation should happen only once
+                mirror: false // Whether elements should animate out while scrolling past them
+            });
+        }
+    });
+</script>

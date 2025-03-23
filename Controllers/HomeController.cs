@@ -6,11 +6,17 @@ using HomeOwner.Data;
 
 namespace HomeOwner.Controllers;
 
-public class HomeController(ILogger<HomeController> logger, HomeOwnerContext dbcontext) : Controller
+public class HomeController : Controller
 {
-    private readonly ILogger<HomeController> logger;
-    private readonly HomeOwnerContext _context = dbcontext;
- 
+    private readonly ILogger<HomeController> _logger;
+    private readonly HomeOwnerContext _context;
+
+    public HomeController(ILogger<HomeController> logger, HomeOwnerContext dbcontext)
+    {
+        _logger = logger;
+        _context = dbcontext;
+    }
+
     public IActionResult Index()
     {
         return View();
@@ -20,10 +26,12 @@ public class HomeController(ILogger<HomeController> logger, HomeOwnerContext dbc
     {
         return View();
     }
+
     public IActionResult Login()
     {
         return View();
     }
+
     public async Task<IActionResult> LoginTask(string? Username, string Password)
     {
         if (Username?.CompareTo("admin") == 0 && Password.CompareTo("admin") == 0)
@@ -36,7 +44,6 @@ public class HomeController(ILogger<HomeController> logger, HomeOwnerContext dbc
             if (user == null)
             {
                 TempData["invalidLogin"] = "Incorrect username and password.";
-
                 return RedirectToAction("Index", "Home");
             }
             else
@@ -45,8 +52,41 @@ public class HomeController(ILogger<HomeController> logger, HomeOwnerContext dbc
                 HttpContext.Session.SetInt32("id", (int)user.user_id);
                 return RedirectToAction("Dashboard", "Homeowner");
             }
-
         }
+    }
+
+    [HttpGet]
+    public IActionResult Create()
+    {
+        return View();
+    }
+
+    [HttpPost]
+    public IActionResult Create(Register model)
+    {
+        if (ModelState.IsValid)
+        {
+            // Map Register model to User model
+            var user = new User
+            {
+                username = model.username,
+                user_password = model.user_password,
+                email = model.email,
+                address = model.address,
+                contact_no = model.contact_no
+            };
+
+            // Save the user to the database
+            _context.User.Add(user);
+            _context.SaveChanges();
+
+
+            // Redirect to the Login page
+            return RedirectToAction("Login");
+        }
+
+        // If the model is invalid, return to the registration form
+        return View(model);
     }
 
     [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]

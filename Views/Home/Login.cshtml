@@ -3,18 +3,42 @@
     ViewData["Title"] = "Login";
 }
 
-<h2>Login</h2>
+<link rel="stylesheet" href="~/css/login.css" />
 
-<form asp-action="LoginTask" asp-controller="Home" method="post">
-    <div class="form-group">
-        <label for="Username" class="control-label">Username</label>
-        <input type="text" name="Username" id="Username" class="form-control" />
+<div class="login-container">
+    <div class="logo">
+        <!-- Insert your logo here as an image -->
+        <img src="~/images/logo.png" alt="Logo" />
     </div>
-    <div class="form-group">
-        <label for="Password" class="control-label">Password</label>
-        <input type="password" name="Password" id="Password" class="form-control" />
+    <h1>Welcome Back</h1>
+
+    <!-- The form will submit to the LoginTask action in the Home controller -->
+    <form asp-action="LoginTask" asp-controller="Home" method="post">
+        <div class="form-group">
+            <label for="Username" class="control-label">Username</label>
+            <div class="input-icon">
+                <!-- Icon for username -->
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#8B5D3D">
+                    <path d="M12,4A4,4 0 0,1 16,8A4,4 0 0,1 12,12A4,4 0 0,1 8,8A4,4 0 0,1 12,4M12,14C16.42,14 20,15.79 20,18V20H4V18C4,15.79 7.58,14 12,14Z" />
+                </svg>
+                <input type="text" name="Username" id="Username" class="form-control" placeholder="Enter your username" required />
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="Password" class="control-label">Password</label>
+            <div class="input-icon">
+                <!-- Icon for password -->
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#8B5D3D">
+                    <path d="M12,17A2,2 0 0,0 14,15C14,13.89 13.1,13 12,13A2,2 0 0,0 10,15A2,2 0 0,0 12,17M18,8A2,2 0 0,1 20,10V20A2,2 0 0,1 18,22H6A2,2 0 0,1 4,20V10C4,8.89 4.9,8 6,8H7V6A5,5 0 0,1 12,1A5,5 0 0,1 17,6V8H18M12,3A3,3 0 0,0 9,6V8H15V6A3,3 0 0,0 12,3Z" />
+                </svg>
+                <input type="password" name="Password" id="Password" class="form-control" placeholder="Enter your password" required />
+            </div>
+        </div>
+        <div class="form-group">
+            <button type="submit" class="btn btn-primary">Login</button>
+        </div>
+    </form>
+    <div class="register-link">
+        Don't have an account? <a asp-action="Create" asp-controller="Home">Sign up here</a>
     </div>
-    <div class="form-group">
-        <button type="submit" class="btn btn-primary">Login</button>
-    </div>
-</form>
+</div>
