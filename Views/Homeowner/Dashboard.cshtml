@@ -1,7 +1,377 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
-@{
+﻿@{
+    Layout = "~/Views/Shared/Dashboard_Layout.cshtml";
 }
 
-<h1>This is dashboard</h1>
+<link rel="stylesheet" href="~/css/dashboardhomeowners.css" />
+
+        <nav class="navbar">
+            <div class="logo">
+                <img src="~/images/logo.png" alt="Logo" />
+                Home<span>Sphere</span>
+            </div>
+            
+            <div class="search-container">
+                <span>🔍</span>
+                <input type="text" placeholder="Search properties...">
+            </div>
+            
+            <div class="user-profile">
+                <span>John Smith</span>
+                <img src="/api/placeholder/36/36" alt="User profile" />
+            </div>
+        </nav>
+        
+    <div class="container">
+        <div class="property-header">
+            <h1 class="property-title">HomeSphere</h1>
+            <div class="rating">
+                <span>4.5</span>
+                <div class="stars">★★★★☆</div>
+                <span>(167 Reviews)</span>
+            </div>
+        </div>
+        
+        <div class="featured-property">
+            <img src="~/images/property.png" alt="Logo"  class="property-image"/>
+            <div class="property-details">
+                <div class="badge">Super Offer</div>
+                
+                <h2 class="property-name">HomeSphere</h2>
+                
+                <div class="property-meta">
+                    <div class="meta-item">
+                        <span>📏</span>
+                        <span>4,598 Sq Ft | North Kolam</span>
+                    </div>
+                    <div class="meta-item">
+                        <span>🏠</span>
+                        <span>2.5 Km from Business Area</span>
+                    </div>
+                    <div class="meta-item">
+                        <span>⏰</span>
+                        <span>Open from 9:30 AM - 11:30 PM</span>
+                    </div>
+                </div>
+                
+                <div class="source-offer">
+                    <button class="book-visit">Book a visit</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="calendar-section">
+            <div class="calendar">
+                <div class="calendar-header">
+                    <h3 class="calendar-title">Choose date</h3>
+                    <div>
+                        <span>January 2025</span>
+                    </div>
+                </div>
+                
+                <div class="calendar-grid">
+                    <div class="weekday">S</div>
+                    <div class="weekday">M</div>
+                    <div class="weekday">T</div>
+                    <div class="weekday">W</div>
+                    <div class="weekday">T</div>
+                    <div class="weekday">F</div>
+                    <div class="weekday">S</div>
+                    
+                    <div class="day">31</div>
+                    <div class="day">1</div>
+                    <div class="day">2</div>
+                    <div class="day">3</div>
+                    <div class="day">4</div>
+                    <div class="day">5</div>
+                    <div class="day">6</div>
+                    
+                    <div class="day">7</div>
+                    <div class="day">8</div>
+                    <div class="day">9</div>
+                    <div class="day">10</div>
+                    <div class="day">11</div>
+                    <div class="day">12</div>
+                    <div class="day">13</div>
+                    
+                    <div class="day">14</div>
+                    <div class="day">15</div>
+                    <div class="day active">16</div>
+                    <div class="day">17</div>
+                    <div class="day">18</div>
+                    <div class="day">19</div>
+                    <div class="day">20</div>
+                    
+                    <div class="day">21</div>
+                    <div class="day">22</div>
+                    <div class="day">23</div>
+                    <div class="day">24</div>
+                    <div class="day">25</div>
+                    <div class="day">26</div>
+                    <div class="day">27</div>
+                    
+                    <div class="day">28</div>
+                    <div class="day">29</div>
+                    <div class="day">30</div>
+                    <div class="day">31</div>
+                    <div class="day">1</div>
+                    <div class="day">2</div>
+                    <div class="day">3</div>
+                </div>
+            </div>
+            
+            <div class="time-slots">
+                <h3 class="slot-title">Event time slot</h3>
+                
+                <div class="slot-tabs">
+                    <div class="slot-tab active">Morning</div>
+                    <div class="slot-tab">Afternoon</div>
+                    <div class="slot-tab">Evening</div>
+                </div>
+                
+                <div class="time-buttons">
+                    <div class="time-button">09:00</div>
+                    <div class="time-button selected">10:00</div>
+                    <div class="time-button">11:00</div>
+                    <div class="time-button">12:00</div>
+                </div>
+                
+                <h3 class="slot-title" style="margin-top: 1.5rem;">Events</h3>
+                
+                <div class="event-list">
+                    <div class="event-item" style="display: flex; margin-bottom: 1rem; align-items: center;">
+                        <img src="/api/placeholder/48/36" alt="Event" style="margin-right: 0.5rem; border-radius: 4px;" />
+                        <div>
+                            <div style="font-weight: 500;">Garden Vegedata Safari</div>
+                            <div style="font-size: 0.8rem; color: var(--secondary);">Jan 16 • Morning with garden guide</div>
+                        </div>
+                    </div>
+                    
+                    <div class="event-item" style="display: flex; margin-bottom: 1rem; align-items: center;">
+                        <img src="/api/placeholder/48/36" alt="Event" style="margin-right: 0.5rem; border-radius: 4px;" />
+                        <div>
+                            <div style="font-weight: 500;">Garden Vegedata Safari</div>
+                            <div style="font-size: 0.8rem; color: var(--secondary);">Jan 16 • Evening with garden guide</div>
+                        </div>
+                    </div>
+                    
+                    <div class="event-item" style="display: flex; margin-bottom: 1rem; align-items: center;">
+                        <img src="/api/placeholder/48/36" alt="Event" style="margin-right: 0.5rem; border-radius: 4px;" />
+                        <div>
+                            <div style="font-weight: 500;">Garden Vegedata Safari</div>
+                            <div style="font-size: 0.8rem; color: var(--secondary);">Jan 16 • Afternoon with garden guide</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="listing-section">
+            <div class="section-header">
+                <h2 class="section-title">Rental Properties</h2>
+                <div class="section-tabs">
+                    <span style="margin-right: 1rem; color: var(--primary); font-weight: 500;">Rent</span>
+                    <span style="color: var(--secondary);">All</span>
+                </div>
+            </div>
+            
+            <div class="properties-grid">
+                <div class="property-card">
+                    <img src="~/images/rental1.png" alt="Property" class="card-image" />
+                    <div class="card-content">
+                        <div class="card-title">Vintage</div>
+                        <div class="card-meta">Bedroom: 3 | 326.5 SQM | 4HK</div>
+                        <div class="card-price">$30</div>
+                        <div class="card-rating">
+                            <div class="stars">★★★★☆</div>
+                            <button class="favorite-button">♡</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="property-card">
+                    <img src="~/images/rental2.png" alt="Property" class="card-image" />
+                    <div class="card-content">
+                        <div class="card-title">Vintage</div>
+                        <div class="card-meta">Bedroom: 3 | 326.5 SQM | 4HK</div>
+                        <div class="card-price">$30</div>
+                        <div class="card-rating">
+                            <div class="stars">★★★★☆</div>
+                            <button class="favorite-button">♡</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="property-card">
+                    <img src="~/images/rental3.png" alt="Property" class="card-image" />
+                    <div class="card-content">
+                        <div class="card-title">Vintage</div>
+                        <div class="card-meta">Bedroom: 3 | 326.5 SQM | 4HK</div>
+                        <div class="card-price">$30</div>
+                        <div class="card-rating">
+                            <div class="stars">★★★★☆</div>
+                            <button class="favorite-button active">❤️</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="property-card">
+                    <img src="~/images/rental4.png" alt="Property" class="card-image" />
+                    <div class="card-content">
+                        <div class="card-title">Vintage</div>
+                        <div class="card-meta">Bedroom: 3 | 326.5 SQM | 4HK</div>
+                        <div class="card-price">$30</div>
+                        <div class="card-rating">
+                            <div class="stars">★★★★☆</div>
+                            <button class="favorite-button">♡</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="reviews-section">
+            <div class="section-header">
+                <h2 class="section-title">Reviews and Ratings</h2>
+            </div>
+            
+            <div class="review-metrics">
+                <div class="metric-overall">
+                    <div class="metric-score">4.5</div>
+                    <div class="metric-stars">★★★★☆</div>
+                </div>
+                
+                <div class="metric-bar">
+                    <div class="metric-label">Overall</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 90%;"></div>
+                    </div>
+                    <div class="metric-value">4.5</div>
+                </div>
+                
+                <div class="metric-bar">
+                    <div class="metric-label">Amenity</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 92%; background-color: #4CAF50;"></div>
+                    </div>
+                    <div class="metric-value">4.6</div>
+                </div>
+                
+                <div class="metric-bar">
+                    <div class="metric-label">Location</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 96%; background-color: #4CAF50;"></div>
+                    </div>
+                    <div class="metric-value">4.8</div>
+                </div>
+                
+                <div class="metric-bar">
+                    <div class="metric-label">Service</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 88%; background-color: #4CAF50;"></div>
+                    </div>
+                    <div class="metric-value">4.4</div>
+                </div>
+                
+                <div style="margin-top: 1rem; font-size: 0.9rem; color: var(--secondary);">
+                    Based on 167 reviews total
+                </div>
+            </div>
+            
+            <div class="reviews-list">
+                <div class="review-card">
+                    <div class="reviewer">
+                        <img src="/api/placeholder/48/48" alt="Reviewer" class="reviewer-avatar" />
+                        <div class="reviewer-info">
+                            <div class="reviewer-name">Pradeep Kumar Singh</div>
+                            <div class="reviewer-date">2 days ago</div>
+                        </div>
+                        <div class="reviewer-rating">★★★★★</div>
+                    </div>
+                    <div class="review-text">
+                        I very much enjoyed my stay here. The staff was very courteous and helpful. They went out of their way to make me feel comfortable. The facilities were top-notch.
+                    </div>
+                    <div class="review-photos">
+                        <img src="/api/placeholder/80/80" alt="Review photo" class="review-photo" />
+                                                <img src="/api/placeholder/80/80" alt="Review photo" class="review-photo" />
+                        <img src="/api/placeholder/80/80" alt="Review photo" class="review-photo" />
+                        <img src="/api/placeholder/80/80" alt="Review photo" class="review-photo" />
+                    </div>
+                </div>
+
+                <div class="review-card">
+                    <div class="reviewer">
+                        <img src="/api/placeholder/48/48" alt="Reviewer" class="reviewer-avatar" />
+                        <div class="reviewer-info">
+                            <div class="reviewer-name">Anjali Sharma</div>
+                            <div class="reviewer-date">1 week ago</div>
+                        </div>
+                        <div class="reviewer-rating">★★★★☆</div>
+                    </div>
+                    <div class="review-text">
+                        The location is perfect, and the amenities are excellent. However, the service could be a bit faster. Overall, a great experience!
+                    </div>
+                    <div class="review-photos">
+                        <img src="/api/placeholder/80/80" alt="Review photo" class="review-photo" />
+                        <img src="/api/placeholder/80/80" alt="Review photo" class="review-photo" />
+                    </div>
+                </div>
+
+                <div class="review-card">
+                    <div class="reviewer">
+                        <img src="/api/placeholder/48/48" alt="Reviewer" class="reviewer-avatar" />
+                        <div class="reviewer-info">
+                            <div class="reviewer-name">Rahul Mehta</div>
+                            <div class="reviewer-date">2 weeks ago</div>
+                        </div>
+                        <div class="reviewer-rating">★★★★★</div>
+                    </div>
+                    <div class="review-text">
+                        Amazing place! The staff is very friendly, and the facilities are well-maintained. Highly recommend this place for a relaxing stay.
+                    </div>
+                    <div class="review-photos">
+                        <img src="/api/placeholder/80/80" alt="Review photo" class="review-photo" />
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-grid">
+            <div>
+                <h3 class="footer-heading">About HomeSphere</h3>
+                <p>HomeSphere is your ultimate solution for managing your home efficiently. From tracking expenses to scheduling maintenance, we’ve got you covered.</p>
+            </div>
+
+            <div>
+                <h3 class="footer-heading">Quick Links</h3>
+                <ul class="footer-links">
+                    <li><a href="#">Home</a></li>
+                    <li><a href="#">Services</a></li>
+                    <li><a href="#">About Us</a></li>
+                    <li><a href="#">Contact</a></li>
+                    <li><a href="#">Privacy Policy</a></li>
+                </ul>
+            </div>
+
+            <div>
+                <h3 class="footer-heading">Newsletter</h3>
+                <p>Subscribe to our newsletter to get the latest updates and offers.</p>
+                <form class="newsletter-form">
+                    <input type="email" class="newsletter-input" placeholder="Enter your email" required />
+                    <button type="submit" class="newsletter-button">Subscribe</button>
+                </form>
+            </div>
+
+            <div>
+                <h3 class="footer-heading">Follow Us</h3>
+                <div class="social-icons">
+                    <a href="#" class="social-icon">📘</a>
+                    <a href="#" class="social-icon">🐦</a>
+                    <a href="#" class="social-icon">📸</a>
+                    <a href="#" class="social-icon">🔗</a>
+                </div>
+            </div>
+        </div>
+    </footer>

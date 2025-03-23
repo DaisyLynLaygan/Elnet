@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - HomeOwner</title>
+</head>
+<body>
+
+        <div>
+        <main>
+            @RenderBody()
+        </main>
+    </div>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="https://unpkg.com/swiper/swiper-bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+
+    <script>
+    function toggleMenu() {
+        const navLinks = document.querySelector('.nav-links');
+        navLinks.classList.toggle('active');
+    }
+    document.addEventListener('DOMContentLoaded', function () {
+        const days = document.querySelectorAll('.day');
+        const today = new Date();
+        const currentDay = today.getDate();
+
+        // Highlight today's date
+        days.forEach(day => {
+            if (parseInt(day.textContent) === currentDay) {
+                day.classList.add('today');
+            }
+        });
+
+        // Add click event to select a date
+        days.forEach(day => {
+            day.addEventListener('click', () => {
+                // Remove selected class from all days
+                days.forEach(d => d.classList.remove('selected'));
+
+                // Add selected class to the clicked day
+                day.classList.add('selected');
+            });
+        });
+    });
+</script>
+</body>
+</html>
