@@ -1,491 +1,10 @@
 ﻿@{
     ViewData["Title"] = "Home Page";
+    Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<style>
-    :root {
-        --brown: #6B4423; /* Rich, deep brown */
-        --light-brown: #8B5D3D; /* Warm, lighter brown */
-        --dark-brown: #4A2E1A; /* Darker, richer brown */
-        --beige: #F5F0E6; /* Soft, creamy beige */
-        --cream: #FFF8F0; /* Warm, off-white cream */
-        --light-gray: #F8F5F0; /* Light gray with a warm tone */
-        --primary: var(--brown); /* Primary color */
-        --secondary: var(--light-brown); /* Secondary color */
-        --accent: #D4A373; /* Accent color (golden brown) */
-        --text-dark: #3E3E3E; /* Dark text for better readability */
-        --text-light: #F5F5F5; /* Light text for dark backgrounds */
-    }
 
-    body {
-        font-family: 'Poppins', sans-serif;
-        color: var(--text-dark);
-        background-color: var(--cream);
-    }
-
-    /* Button styling */
-    .btn-primary {
-        background-color: var(--primary);
-        border-color: var(--primary);
-        padding: 0.8rem 1.5rem;
-        border-radius: 30px;
-        font-weight: 600;
-        box-shadow: 0 4px 10px rgba(139, 69, 19, 0.3);
-        transition: all 0.3s ease;
-        color: var(--text-light);
-    }
-
-    .btn-primary:hover, .btn-primary:focus {
-        background-color: var(--dark-brown);
-        border-color: var(--dark-brown);
-        transform: translateY(-2px);
-        box-shadow: 0 6px 15px rgba(139, 69, 19, 0.4);
-    }
-
-    .btn-outline-primary {
-        color: var(--primary);
-        border-color: var(--primary);
-        padding: 0.8rem 1.5rem;
-        border-radius: 30px;
-        font-weight: 600;
-        transition: all 0.3s ease;
-    }
-
-    .btn-outline-primary:hover, .btn-outline-primary:focus {
-        background-color: var(--primary);
-        color: var(--text-light);
-        transform: translateY(-2px);
-        box-shadow: 0 6px 15px rgba(139, 69, 19, 0.4);
-    }
-
-    /* Text styling */
-    .text-primary {
-        color: var(--primary) !important;
-    }
-
-    .section-title {
-        position: relative;
-        margin-bottom: 3rem;
-        display: inline-block;
-    }
-
-    .section-title:after {
-        content: '';
-        position: absolute;
-        left: 50%;
-        bottom: -15px;
-        transform: translateX(-50%);
-        width: 80px;
-        height: 4px;
-        background-color: var(--primary);
-        border-radius: 2px;
-    }
-
-    /* Hero section */
-    .landing-hero {
-        padding: 100px 0;
-        position: relative;
-        overflow: hidden;
-    }
-
-    .landing-hero .content-container {
-        position: relative;
-        z-index: 1;
-    }
-
-    .hero-title {
-        font-size: 3.5rem;
-        font-weight: 800;
-        color: var(--primary);
-        margin-bottom: 1.5rem;
-        line-height: 1.2;
-    }
-
-    .hero-text {
-        font-size: 1.25rem;
-        margin-bottom: 2rem;
-        color: var(--text-dark);
-    }
-
-    /* Feature cards */
-    .feature-section {
-        padding: 100px 0;
-        position: relative;
-    }
-
-    .feature-card {
-        border: none;
-        border-radius: 16px;
-        padding: 2rem;
-        height: 100%;
-        transition: all 0.3s ease;
-        position: relative;
-        z-index: 1;
-        background-color: rgba(255, 255, 255, 0.9); /* Slightly transparent white */
-        backdrop-filter: blur(10px); /* Glassmorphism effect */
-        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
-    }
-
-    .feature-card:hover {
-        transform: translateY(-10px);
-        box-shadow: 0 15px 30px rgba(139, 69, 19, 0.2);
-    }
-
-    .feature-icon {
-        width: 80px;
-        height: 80px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 32px;
-        margin: 0 auto 1.5rem;
-        border-radius: 50%;
-        background-color: var(--primary);
-        color: var(--text-light);
-        box-shadow: 0 10px 20px rgba(139, 69, 19, 0.3);
-    }
-
-    .feature-title {
-        font-size: 1.5rem;
-        font-weight: 700;
-        margin-bottom: 1rem;
-        color: var(--primary);
-    }
-
-    .feature-text {
-        color: var(--text-dark);
-        font-size: 1rem;
-        line-height: 1.6;
-    }
-
-    /* Image enhancements */
-    .image-container {
-        position: relative;
-        overflow: hidden;
-        border-radius: 20px;
-        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
-        transition: all 0.5s ease;
-    }
-
-    .image-container:hover {
-        transform: scale(1.02);
-        box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
-    }
-
-    .image-container img {
-        width: 100%;
-        height: auto;
-        transition: transform 0.5s ease;
-    }
-
-    .image-overlay {
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: linear-gradient(135deg, rgba(139, 69, 19, 0.1) 0%, rgba(101, 67, 33, 0.05) 100%);
-        border-radius: 20px;
-    }
-
-    /* Access Section */
-    .access-section {
-        padding: 100px 0;
-    }
-
-    .feature-list {
-        list-style: none;
-        padding: 0;
-        margin: 0;
-    }
-
-    .feature-list li {
-        margin-bottom: 1rem;
-        padding-left: 2rem;
-        position: relative;
-        font-size: 1.1rem;
-    }
-
-    .feature-list li i {
-        position: absolute;
-        left: 0;
-        top: 0.25rem;
-        color: var(--primary);
-        font-size: 1.2rem;
-    }
-
-    /* Testimonials */
-    .testimonial-section {
-        padding: 100px 0;
-        position: relative;
-    }
-
-    .testimonial-card {
-        background-color: rgba(255, 255, 255, 0.9); /* Slightly transparent white */
-        backdrop-filter: blur(10px); /* Glassmorphism effect */
-        border-radius: 16px;
-        padding: 2.5rem;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-        text-align: center;
-        height: 100%;
-        position: relative;
-        transition: all 0.3s ease;
-    }
-
-    .testimonial-card:hover {
-        transform: translateY(-10px);
-        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
-    }
-
-    .testimonial-card:before {
-        content: '\201C';
-        font-family: Georgia, serif;
-        position: absolute;
-        top: 20px;
-        left: 20px;
-        color: var(--primary);
-        opacity: 0.2;
-        font-size: 6rem;
-        line-height: 1;
-    }
-
-    .testimonial-card img {
-        width: 100px;
-        height: 100px;
-        border-radius: 50%;
-        margin: 0 auto 1.5rem;
-        border: 5px solid rgba(139, 69, 19, 0.1);
-        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-    }
-
-    .testimonial-card h5 {
-        font-size: 1.5rem;
-        font-weight: 700;
-        color: var(--primary);
-        margin-bottom: 0.5rem;
-    }
-
-    .testimonial-card p {
-        font-size: 1.1rem;
-        color: var(--text-dark);
-        font-style: italic;
-        line-height: 1.6;
-    }
-
-    /* Pricing Section */
-    .pricing-section {
-        padding: 100px 0;
-    }
-
-    .pricing-card {
-        background-color: rgba(255, 255, 255, 0.9); /* Slightly transparent white */
-        backdrop-filter: blur(10px); /* Glassmorphism effect */
-        border-radius: 16px;
-        padding: 3rem 2rem;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-        text-align: center;
-        height: 100%;
-        border: 2px solid transparent;
-        transition: all 0.3s ease;
-        position: relative;
-        overflow: hidden;
-    }
-
-    .pricing-card:hover {
-        transform: translateY(-15px);
-        border-color: var(--primary);
-        box-shadow: 0 20px 40px rgba(139, 69, 19, 0.2);
-    }
-
-    .pricing-card h3 {
-        font-size: 2rem;
-        font-weight: 700;
-        color: var(--primary);
-        margin-bottom: 1rem;
-    }
-
-    .pricing-card .price {
-        font-size: 3.5rem;
-        font-weight: 800;
-        color: var(--primary);
-        margin: 1.5rem 0;
-        position: relative;
-        display: inline-block;
-    }
-
-    .pricing-card .price:before {
-        content: '$';
-        position: absolute;
-        top: 0.5rem;
-        left: -1rem;
-        font-size: 1.5rem;
-    }
-
-    .pricing-card .price:after {
-        content: '/mo';
-        position: absolute;
-        bottom: 0.5rem;
-        right: -3rem;
-        font-size: 1.2rem;
-        color: #888;
-    }
-
-    .pricing-card ul {
-        list-style: none;
-        padding: 0;
-        margin: 2rem 0;
-    }
-
-    .pricing-card ul li {
-        margin: 1rem 0;
-        color: var(--text-dark);
-        font-size: 1.1rem;
-        position: relative;
-        padding-left: 1.5rem;
-    }
-
-    .pricing-card ul li:before {
-        content: '\2713';
-        position: absolute;
-        left: 0;
-        color: var(--primary);
-        font-weight: bold;
-    }
-
-    .pricing-card .btn {
-        width: 80%;
-        margin: 1rem auto 0;
-        padding: 0.8rem 0;
-    }
-
-    /* How it works */
-    .how-it-works {
-        padding: 100px 0;
-        position: relative;
-    }
-
-    .step-card {
-        background-color: rgba(255, 255, 255, 0.9); /* Slightly transparent white */
-        backdrop-filter: blur(10px); /* Glassmorphism effect */
-        border: none;
-        border-radius: 16px;
-        padding: 2.5rem;
-        height: 100%;
-        transition: all 0.3s ease;
-        position: relative;
-        z-index: 1;
-        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
-    }
-
-    .step-card:hover {
-        transform: translateY(-10px);
-        box-shadow: 0 15px 30px rgba(139, 69, 19, 0.2);
-    }
-
-    .step-icon {
-        width: 90px;
-        height: 90px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 36px;
-        margin: 0 auto 1.5rem;
-        border-radius: 50%;
-        background-color: var(--primary);
-        color: var(--text-light);
-        box-shadow: 0 10px 20px rgba(139, 69, 19, 0.3);
-        position: relative;
-    }
-
-    .step-icon:before {
-        content: attr(data-step);
-        position: absolute;
-        top: -10px;
-        right: -10px;
-        background-color: var(--dark-brown);
-        color: var(--text-light);
-        width: 30px;
-        height: 30px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-weight: bold;
-        font-size: 16px;
-    }
-
-    .step-title {
-        font-size: 1.5rem;
-        font-weight: 700;
-        margin-bottom: 1rem;
-        color: var(--primary);
-    }
-
-    .step-text {
-        color: var(--text-dark);
-        font-size: 1.1rem;
-        line-height: 1.6;
-    }
-
-    /* Footer */
-    .footer {
-        background-color: var(--dark-brown);
-        color: var(--text-light);
-        padding: 4rem 0 2rem;
-    }
-
-    .footer a {
-        color: var(--beige);
-        text-decoration: none;
-        transition: color 0.3s ease;
-    }
-
-    .footer a:hover {
-        color: var(--text-light);
-        text-decoration: none;
-    }
-
-    /* Responsive adjustments */
-    @@media (max-width: 992px) {
-        .hero-title {
-            font-size: 2.8rem;
-        }
-
-        .section-title {
-            font-size: 2.2rem;
-        }
-
-        .feature-section, .testimonial-section, .pricing-section, .access-section, .how-it-works {
-            padding: 70px 0;
-        }
-    }
-
-    @@media (max-width: 768px) {
-        .hero-title {
-            font-size: 2.3rem;
-        }
-
-        .hero-text {
-            font-size: 1.1rem;
-        }
-
-        .image-container {
-            margin-top: 3rem;
-        }
-
-        .section-title {
-            font-size: 2rem;
-        }
-
-        .testimonial-card, .pricing-card, .feature-card, .step-card {
-            margin-bottom: 2rem;
-        }
-
-        .feature-section, .testimonial-section, .pricing-section, .access-section, .how-it-works {
-            padding: 50px 0;
-        }
-    }
-</style>
+<link rel="stylesheet" href="~/css/landing.css" />
 
 <!-- Landing Hero Section -->
 <div class="landing-hero">
@@ -576,30 +95,150 @@
     <div class="container">
         <div class="text-center mb-5" data-aos="fade-up" data-aos-duration="800">
             <h2 class="section-title display-4 fw-bold text-primary">What Our Users Say</h2>
-            <p class="lead fs-4 mt-4">Hear from homeowners who have transformed their lives with HomeSmart</p>
+            <p class="lead fs-4 mt-4">Hear from homeowners who have transformed their lives with HomeSphere</p>
         </div>
-        <div class="row g-4">
-            <div class="col-md-4" data-aos="fade-up" data-aos-delay="100" data-aos-duration="800">
-                <div class="testimonial-card">
-                    <img src="~/images/user1.jpg" alt="User 1" class="img-fluid">
-                    <h5>John Doe</h5>
-                    <p>"HomeSmart has made managing my home so much easier. I love the expense tracker and maintenance logs!"</p>
+        
+        <!-- Swiper Container -->
+        <div class="swiper testimonial-carousel" data-aos="fade-up" data-aos-delay="200" data-aos-duration="800">
+            <div class="swiper-wrapper">
+                <!-- Testimonial Slide 1 -->
+                <div class="swiper-slide">
+                    <div class="testimonial-card">
+                        <div class="rating">
+                            <i class="bi bi-star-fill"></i>
+                            <i class="bi bi-star-fill"></i>
+                            <i class="bi bi-star-fill"></i>
+                            <i class="bi bi-star-fill"></i>
+                            <i class="bi bi-star-fill"></i>
+                        </div>
+                        <img src="~/images/user-default-picture.jpg" alt="John Doe" class="img-fluid testimonial-image">
+                        <h5 class="testimonial-name">John Doe</h5>
+                        <span class="user-status">Homeowner for 5 years</span>
+                        <p class="testimonial-text">"HomeSphere has made managing my home so much easier. I love the expense tracker and maintenance logs! I've saved nearly $200 per month by identifying wasteful spending."</p>
+                    </div>
+                </div>
+
+                <!-- Testimonial Slide 2 -->
+                <div class="swiper-slide">
+                    <div class="testimonial-card">
+                        <div class="rating">
+                            <i class="bi bi-star-fill"></i>
+                            <i class="bi bi-star-fill"></i>
+                            <i class="bi bi-star-fill"></i>
+                            <i class="bi bi-star-fill"></i>
+                            <i class="bi bi-star-fill"></i>
+                        </div>
+                        <img src="~/images/user-default-picture.jpg" alt="Jane Smith" class="img-fluid testimonial-image">
+                        <h5 class="testimonial-name">Jane Smith</h5>
+                        <span class="user-status">Family of four</span>
+                        <p class="testimonial-text">"The task scheduler is a game-changer. My family is more organized than ever! No more arguments about who did what - everyone can see their responsibilities clearly."</p>
+                    </div>
+                </div>
+
+                <!-- Testimonial Slide 3 -->
+                <div class="swiper-slide">
+                    <div class="testimonial-card">
+                        <div class="rating">
+                            <i class="bi bi-star-fill"></i>
+                            <i class="bi bi-star-fill"></i>
+                            <i class="bi bi-star-fill"></i>
+                            <i class="bi bi-star-fill"></i>
+                            <i class="bi bi-star-half"></i>
+                        </div>
+                        <img src="~/images/user-default-picture.jpg" alt="Mike Johnson" class="img-fluid testimonial-image">
+                        <h5 class="testimonial-name">Mike Johnson</h5>
+                        <span class="user-status">New homeowner</span>
+                        <p class="testimonial-text">"I can access everything from my phone. It's so convenient and user-friendly. As a first-time homeowner, the maintenance reminders have been invaluable!"</p>
+                    </div>
+                </div>
+
+                <!-- Testimonial Slide 4 -->
+                <div class="swiper-slide">
+                    <div class="testimonial-card">
+                        <div class="rating">
+                            <i class="bi bi-star-fill"></i>
+                            <i class="bi bi-star-fill"></i>
+                            <i class="bi bi-star-fill"></i>
+                            <i class="bi bi-star-fill"></i>
+                            <i class="bi bi-star-half"></i>
+                        </div>
+                        <img src="~/images/user-default-picture.jpg" alt="Emily Clark" class="img-fluid testimonial-image">
+                        <h5 class="testimonial-name">Emily Clark</h5>
+                        <span class="user-status">Apartment Owner</span>
+                        <p class="testimonial-text">"The budgeting tool has completely changed how I manage my expenses. I now save 15% more each month!"</p>
+                    </div>
+                </div>
+
+                <!-- Testimonial Slide 5 -->
+                <div class="swiper-slide">
+                    <div class="testimonial-card">
+                        <div class="rating">
+                            <i class="bi bi-star-fill"></i>
+                            <i class="bi bi-star-fill"></i>
+                            <i class="bi bi-star-fill"></i>
+                            <i class="bi bi-star-fill"></i>
+                            <i class="bi bi-star"></i>
+                        </div>
+                        <img src="~/images/user-default-picture.jpg" alt="Chris Evans" class="img-fluid testimonial-image">
+                        <h5 class="testimonial-name">Chris Evans</h5>
+                        <span class="user-status">Landlord</span>
+                        <p class="testimonial-text">"Tracking rental payments and maintenance requests has never been easier. Highly recommend!"</p>
+                    </div>
+                </div>
+
+                <!-- Testimonial Slide 6 -->
+                <div class="swiper-slide">
+                    <div class="testimonial-card">
+                        <div class="rating">
+                            <i class="bi bi-star-fill"></i>
+                            <i class="bi bi-star-fill"></i>
+                            <i class="bi bi-star-fill"></i>
+                            <i class="bi bi-star-fill"></i>
+                            <i class="bi bi-star-half"></i>
+                        </div>
+                        <img src="~/images/user-default-picture.jpg" alt="Sophia Brown" class="img-fluid testimonial-image">
+                        <h5 class="testimonial-name">Sophia Brown</h5>
+                        <span class="user-status">Working Professional</span>
+                        <p class="testimonial-text">"Being able to organize my home tasks and finances in one place has been a game changer for me."</p>
+                    </div>
+                </div>
+
+                <!-- Testimonial Slide 7 -->
+                <div class="swiper-slide">
+                    <div class="testimonial-card">
+                        <div class="rating">
+                            <i class="bi bi-star-fill"></i>
+                            <i class="bi bi-star-fill"></i>
+                            <i class="bi bi-star-fill"></i>
+                            <i class="bi bi-star-fill"></i>
+                            <i class="bi bi-star-fill"></i>
+                        </div>
+                        <img src="~/images/user-default-picture.jpg" alt="Daniel Garcia" class="img-fluid testimonial-image">
+                        <h5 class="testimonial-name">Daniel Garcia</h5>
+                        <span class="user-status">Homeowner</span>
+                        <p class="testimonial-text">"This app has helped me track maintenance and avoid costly repairs. Absolutely essential!"</p>
+                    </div>
+                </div>
+
+                <!-- Testimonial Slide 8 -->
+                <div class="swiper-slide">
+                    <div class="testimonial-card">
+                        <div class="rating">
+                            <i class="bi bi-star-fill"></i>
+                            <i class="bi bi-star-fill"></i>
+                            <i class="bi bi-star-fill"></i>
+                            <i class="bi bi-star-half"></i>
+                            <i class="bi bi-star"></i>
+                        </div>
+                        <img src="~/images/user-default-picture.jpg" alt="Olivia White" class="img-fluid testimonial-image">
+                        <h5 class="testimonial-name">Olivia White</h5>
+                        <span class="user-status">College Student</span>
+                        <p class="testimonial-text">"As a student, managing expenses was tough. HomeSphere made budgeting so simple!"</p>
+                    </div>
                 </div>
             </div>
-            <div class="col-md-4" data-aos="fade-up" data-aos-delay="200" data-aos-duration="800">
-                <div class="testimonial-card">
-                    <img src="~/images/user2.jpg" alt="User 2" class="img-fluid">
-                    <h5>Jane Smith</h5>
-                    <p>"The task scheduler is a game-changer. My family is more organized than ever!"</p>
-                </div>
-            </div>
-            <div class="col-md-4" data-aos="fade-up" data-aos-delay="300" data-aos-duration="800">
-                <div class="testimonial-card">
-                    <img src="~/images/user3.jpg" alt="User 3" class="img-fluid">
-                    <h5>Mike Johnson</h5>
-                    <p>"I can access everything from my phone. It's so convenient and user-friendly."</p>
-                </div>
-            </div>
+            <!-- Add Pagination -->
+            <div class="swiper-pagination"></div>
         </div>
     </div>
 </div>
@@ -692,6 +331,8 @@
 </div>
 
 <!-- Add this before closing body tag -->
+<script src="https://unpkg.com/swiper/swiper-bundle.min.js"></script>
+
 <script>
     // Add animation on scroll if you have AOS library included
     document.addEventListener('DOMContentLoaded', function() {
@@ -718,5 +359,27 @@
                 mirror: false // Whether elements should animate out while scrolling past them
             });
         }
+    });
+
+document.addEventListener('DOMContentLoaded', function() {
+        const swiper = new Swiper('.testimonial-carousel', {
+            loop: true, // Infinite loop
+            slidesPerView: 1, // Default for mobile
+            spaceBetween: 20, // Space between slides
+            pagination: {
+                el: '.swiper-pagination',
+                clickable: true, // Allow clicking on pagination to navigate
+            },
+            breakpoints: {
+                // Tablet breakpoint
+                768: {
+                    slidesPerView: 2,
+                },
+                // Desktop breakpoint
+                1024: {
+                    slidesPerView: 3,
+                },
+            },
+        });
     });
 </script>
