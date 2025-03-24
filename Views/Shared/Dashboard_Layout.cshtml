@@ -4,14 +4,139 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - HomeOwner</title>
+    <link rel="stylesheet" href="~/css/dashboardhomeowners.css" />
 </head>
 <body>
+
+    <!-- Navbar -->
+  <nav class="navbar">
+    <!-- Logo -->
+    <a href="#" class="logo">
+        <img src="~/images/logo.png" alt="Company Logo">
+        <span>HomeSphere</span>
+    </a>
+
+    <!-- Navigation Links -->
+    <ul class="nav-menu">
+        <li class="nav-item"><a asp-controller="Homeowner" asp-action="Dashboard" class="nav-link active">Home</a></li>
+        <li class="nav-item">
+            <a href="#" class="nav-link">Services <span>▼</span></a>
+            <div class="dropdown-content">
+                <a href="#" class="dropdown-link">Maintenance</a>
+                <a href="#" class="dropdown-link">Cleaning</a>
+                <a href="#" class="dropdown-link">Landscaping</a>
+                <a href="#" class="dropdown-link">Security</a>
+            </div>
+        </li>
+        <li class="nav-item">
+            <a asp-controller="Homeowner" asp-action="Feedback" class="nav-link">Feedback</a>
+        </li>        
+        <li class="nav-item">
+            <a href="#" class="nav-link">Billing <span>▼</span></a>
+            <div class="dropdown-content">
+                <a href="#" class="dropdown-link">Make Payment</a>
+                <a href="#" class="dropdown-link">View History</a>
+                <a href="#" class="dropdown-link">Setup Autopay</a>
+            </div>
+        </li>
+        <li class="nav-item">
+            <a href="#" class="nav-link">Facilities <span>▼</span></a>
+            <div class="dropdown-content">
+                <a href="#" class="dropdown-link">Reserve Pool</a>
+                <a href="#" class="dropdown-link">Book Event Space</a>
+                <a href="#" class="dropdown-link">Gym Access</a>
+                <a href="#" class="dropdown-link">Tennis Courts</a>
+            </div>
+        </li>
+        <li class="nav-item">
+            <a href="#" class="nav-link">Community <span>▼</span></a>
+            <div class="dropdown-content">
+                <a href="#" class="dropdown-link">Events</a>
+                <a href="#" class="dropdown-link">Forums</a>
+                <a href="#" class="dropdown-link">News</a>
+                <a href="#" class="dropdown-link">Announcements</a>
+            </div>
+        </li>
+    </ul>
+
+    <!-- User Profile with Dropdown -->
+        <div class="user-profile" onclick="toggleProfileDropdown()">
+            <span>John Smith</span>
+            <img src="~/images/user-default-picture.jpg" alt="User profile" />
+            <!-- Dropdown Menu -->
+            <div class="profile-dropdown">
+                <a href="#" class="dropdown-link">Settings</a>
+                <!-- Log Out Form -->
+                <form asp-controller="Home" asp-action="LogOut" method="post" class="dropdown-link-form">
+                    <button type="submit" class="dropdown-link">Log Out</button>
+                </form>
+            </div>
+        </div>
+
+    <!-- Hamburger Menu for Mobile -->
+    <button class="hamburger" onclick="toggleMenu()">
+        <span></span>
+        <span></span>
+        <span></span>
+    </button>
+</nav>
+
 
         <div>
         <main>
             @RenderBody()
         </main>
     </div>
+
+
+    <!-- Footer -->
+<footer class="footer">
+    <div class="footer-container">
+        <div class="footer-column">
+            <h4>About Us</h4>
+            <p>HomeSphere is a premium home design and real estate platform focused on creating beautiful living spaces.</p>
+            <div class="footer-social">
+                <a href="#" class="social-icon">FB</a>
+                <a href="#" class="social-icon">IG</a>
+                <a href="#" class="social-icon">TW</a>
+                <a href="#" class="social-icon">LI</a>
+            </div>
+        </div>
+        
+        <div class="footer-column">
+            <h4>Quick Links</h4>
+            <ul class="footer-links">
+                <li><a href="#">Home</a></li>
+                <li><a href="#">Services</a></li>
+                <li><a href="#">Projects</a></li>
+                <li><a href="#">Blog</a></li>
+                <li><a href="#">About</a></li>
+            </ul>
+        </div>
+        
+        <div class="footer-column">
+            <h4>Contact Info</h4>
+            <ul class="footer-links">
+                <li>Email: info@homesphere.com</li>
+                <li>Phone: (123) 456-7890</li>
+                <li>Address: 123 Design St, Suite 101</li>
+            </ul>
+        </div>
+        
+        <div class="footer-column">
+            <h4>Subscribe to our newsletter</h4>
+            <p>Get the latest updates and offers delivered directly to your inbox.</p>
+            <div class="newsletter-form">
+                <input type="email" placeholder="Your email address">
+                <button type="submit">Subscribe</button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="footer-bottom">
+        <p>© 2025 HomeSphere Inc. All rights reserved.</p>
+    </div>
+</footer>
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="https://unpkg.com/swiper/swiper-bundle.min.js"></script>
@@ -45,6 +170,56 @@
                 day.classList.add('selected');
             });
         });
+    });
+
+
+     // Mobile menu toggle
+    const hamburger = document.querySelector('.hamburger');
+    const navMenu = document.querySelector('.nav-menu');
+    const searchButton = document.querySelector('.search-button');
+    const searchContainer = document.querySelector('.search-container');
+    
+    hamburger.addEventListener('click', () => {
+      navMenu.classList.toggle('active');
+    });
+    
+    searchButton.addEventListener('click', () => {
+      searchContainer.classList.toggle('active');
+    });
+    
+    // Mobile dropdown toggle
+    const navLinks = document.querySelectorAll('.nav-link');
+    
+    navLinks.forEach(link => {
+      if (link.nextElementSibling && link.nextElementSibling.classList.contains('dropdown-content')) {
+        link.addEventListener('click', (e) => {
+          if (window.innerWidth <= 900) {
+            e.preventDefault();
+            link.nextElementSibling.classList.toggle('show');
+          }
+        });
+      }
+    });
+    
+    // Close mobile menu when clicking outside
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('.navbar')) {
+        navMenu.classList.remove('active');
+        searchContainer.classList.remove('active');
+      }
+    });
+
+        function toggleProfileDropdown() {
+        const userProfile = document.querySelector('.user-profile');
+        userProfile.classList.toggle('active');
+    }
+
+    // Close dropdown when clicking outside
+    document.addEventListener('click', function (event) {
+        const userProfile = document.querySelector('.user-profile');
+        if (!userProfile.contains(event.target)) {
+            userProfile.classList.remove('active');
+        }
     });
 </script>
 </body>
