@@ -1,0 +1,249 @@
+@page
+@{
+    Layout = "~/Views/Shared/Dashboard_Nav.cshtml";
+}
+
+<link rel="stylesheet" href="~/css/community.css" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+<div class="community-wrapper">
+    <div class="community-container">
+        <!-- Left Sidebar (20%) -->
+        <div class="community-sidebar">
+            <div class="sidebar-section">
+                <div class="sidebar-item active">
+                    <i class="fas fa-home"></i>
+                    <span>My Home</span>
+                </div>
+                <div class="sidebar-item">
+                    <i class="fas fa-users"></i>
+                    <span>Neighbors</span>
+                </div>
+                <div class="sidebar-item">
+                    <i class="fas fa-comments"></i>
+                    <span>Community Forum</span>
+                    <span class="badge">5</span>
+                </div>
+                <div class="sidebar-item">
+                    <i class="far fa-calendar-alt"></i>
+                    <span>Local Events</span>
+                </div>
+            </div>
+
+            <div class="sidebar-section">
+                <h3 class="sidebar-title">Neighborhood</h3>
+                <div class="sidebar-item">
+                    <i class="fas fa-tree"></i>
+                    <span>Garden Club</span>
+                </div>
+                <div class="sidebar-item">
+                    <i class="fas fa-dog"></i>
+                    <span>Pet Owners</span>
+                </div>
+                <div class="sidebar-item">
+                    <i class="fas fa-child"></i>
+                    <span>Parents Group</span>
+                </div>
+            </div>
+
+            <div class="sidebar-section">
+                <h3 class="sidebar-title">Resources</h3>
+                <div class="sidebar-item">
+                    <i class="fas fa-tools"></i>
+                    <span>Maintenance</span>
+                </div>
+                <div class="sidebar-item">
+                    <i class="fas fa-shield-alt"></i>
+                    <span>Safety</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Middle Content (60%) -->
+        <div class="community-newsfeed">
+            <!-- Neighborhood Highlights -->
+            <div class="highlights-container">
+                <div class="highlight create-highlight">
+                    <div class="highlight-bg">
+                        <i class="fas fa-plus"></i>
+                    </div>
+                    <p>Add Highlight</p>
+                </div>
+                <div class="highlight">
+                    <div class="highlight-bg" style="background-image: url('@GetRandomPropertyImage()')">
+                        <div class="highlight-user">
+                            <img src="~/images/user-default-picture.jpg" alt="User">
+                        </div>
+                    </div>
+                    <p>Yard Sale</p>
+                </div>
+                <div class="highlight">
+                    <div class="highlight-bg" style="background-image: url('@GetRandomPropertyImage()')">
+                        <div class="highlight-user">
+                            <img src="~/images/user-default-picture.jpg" alt="User">
+                        </div>
+                    </div>
+                    <p>BBQ Party</p>
+                </div>
+            </div>
+
+            <!-- Create Post -->
+            <div class="create-post">
+                <div class="create-post-header">
+                    <img src="~/images/user-default-picture.jpg" alt="Profile">
+                    <input type="text" placeholder="Share with neighbors..." class="post-input">
+                </div>
+                <div class="post-actions">
+                    <button class="post-action">
+                        <i class="fas fa-image" style="color: #45bd62;"></i> Photo
+                    </button>
+                    <button class="post-action">
+                        <i class="fas fa-calendar" style="color: #f7b928;"></i> Event
+                    </button>
+                    <button class="post-submit">Post</button>
+                </div>
+            </div>
+
+            <!-- Neighborhood Posts -->
+            <div class="neighborhood-post">
+                <div class="post-header">
+                    <img src="~/images/user-default-picture.jpg" alt="User">
+                    <div class="post-user-info">
+                        <strong>Sarah Johnson</strong>
+                        <div class="post-meta">
+                            <span>Yesterday · Oak Street</span>
+                        </div>
+                    </div>
+                    <button class="post-options">
+                        <i class="fas fa-ellipsis-h"></i>
+                    </button>
+                </div>
+                <div class="post-content">
+                    Does anyone have recommendations for a good plumber? Our kitchen sink is leaking badly.
+                </div>
+                <div class="post-image">
+                    <img src="@GetRandomPropertyImage()" alt="Leaking sink">
+                </div>
+                <div class="post-stats">
+                    <span class="reactions">
+                        <i class="fas fa-thumbs-up"></i> 12
+                    </span>
+                    <span class="comments">
+                        5 comments
+                    </span>
+                </div>
+                <div class="post-interactions">
+                    <button class="interaction-button">
+                        <i class="far fa-thumbs-up"></i> <span>Helpful</span>
+                    </button>
+                    <button class="interaction-button">
+                        <i class="far fa-comment"></i> <span>Comment</span>
+                    </button>
+                    <button class="interaction-button">
+                        <i class="fas fa-share"></i> <span>Share</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="neighborhood-post">
+                <div class="post-header">
+                    <img src="~/images/user-default-picture.jpg" alt="User">
+                    <div class="post-user-info">
+                        <strong>Mike Thompson</strong>
+                        <div class="post-meta">
+                            <span>2 days ago · Maple Ave</span>
+                        </div>
+                    </div>
+                    <button class="post-options">
+                        <i class="fas fa-ellipsis-h"></i>
+                    </button>
+                </div>
+                <div class="post-content">
+                    Neighborhood watch meeting this Thursday at 7pm in the community center. All are welcome!
+                </div>
+                <div class="post-stats">
+                    <span class="reactions">
+                        <i class="fas fa-thumbs-up"></i> 24
+                    </span>
+                    <span class="comments">
+                        8 comments
+                    </span>
+                </div>
+                <div class="post-interactions">
+                    <button class="interaction-button">
+                        <i class="far fa-thumbs-up"></i> <span>Helpful</span>
+                    </button>
+                    <button class="interaction-button">
+                        <i class="far fa-comment"></i> <span>Comment</span>
+                    </button>
+                    <button class="interaction-button">
+                        <i class="fas fa-share"></i> <span>Share</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Sidebar (20%) -->
+        <div class="community-announcements">
+            <div class="announcements-header">
+                <h3><i class="fas fa-bullhorn"></i> Announcements</h3>
+            </div>
+            
+            <div class="announcement-item important">
+                <i class="fas fa-exclamation-circle" style="color: #f02849;"></i>
+                <div class="announcement-content">
+                    <strong>Water Maintenance</strong>
+                    <span>June 15, 8am-4pm</span>
+                </div>
+            </div>
+            
+            <div class="announcement-item">
+                <i class="fas fa-trash" style="color: #45bd62;"></i>
+                <div class="announcement-content">
+                    <strong>Trash Schedule</strong>
+                    <span>No pickup on Monday</span>
+                </div>
+            </div>
+
+            <div class="announcements-header">
+                <h3><i class="fas fa-calendar-alt"></i> Upcoming Events</h3>
+            </div>
+            
+            <div class="event-item">
+                <div class="event-date">
+                    <span class="day">15</span>
+                    <span class="month">JUN</span>
+                </div>
+                <div class="event-details">
+                    <strong>Block Party</strong>
+                    <span>Main Street, 12-5pm</span>
+                </div>
+            </div>
+            
+            <div class="event-item">
+                <div class="event-date">
+                    <span class="day">22</span>
+                    <span class="month">JUN</span>
+                </div>
+                <div class="event-details">
+                    <strong>Yard Sale</strong>
+                    <span>Oak Street, 8am-2pm</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@functions {
+    private string GetRandomPropertyImage()
+    {
+        var random = new Random();
+        var images = new List<string> { 
+            "/images/rental1.png", 
+            "/images/rental2.png",
+            "/images/rental3.png",
+            "/images/rental4.png"
+        };
+        return images[random.Next(images.Count)];
+    }
+}
