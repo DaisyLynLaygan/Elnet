@@ -12,5 +12,14 @@ namespace HomeOwner.Controllers
         {
             return View();
         }
+        public IActionResult Feedback()
+        {
+            return View();
+        }
+        public IActionResult Community()
+        {
+            return View();
+        }
+
     }
 }

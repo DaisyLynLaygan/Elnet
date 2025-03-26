@@ -1,7 +1,146 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
-@{
+﻿@{
+    Layout = "~/Views/Shared/Dashboard_Layout.cshtml";
 }
 
-<h1>This is dashboard</h1>
+
+
+
+<!-- Hero Section -->
+<section class="hero-section" style="background-image: url('/images/rental1.png');">
+    <div class="hero-content">
+        <h1 class="hero-title">HOMES SPHERE</h1>
+        <div class="thumbnail-gallery">
+            <img src="~/images/rental1.png" alt="Property 1" class="thumbnail">
+            <img src="~/images/rental2.png" alt="Property 2" class="thumbnail">
+            <img src="~/images/rental3.png" alt="Property 3" class="thumbnail">
+            <img src="~/images/rental4.png" alt="Property 4" class="thumbnail">
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="features-section">
+    <div class="container">
+        <div class="power-home">
+            <h2>Power Your Home with HomeSphere</h2>
+            <p class="subtitle">SOME SUBTITLE TEXT</p>
+            <a href="#" class="cta-button">Learn More</a>
+        </div>
+        
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="icon">🏠</div>
+                <h3>Get started with HomeSphere</h3>
+                <p>Simple steps to begin your journey with our platform.</p>
+            </div>
+            
+            <div class="feature-card">
+                <div class="icon">📝</div>
+                <h3>Create a personalized account</h3>
+                <p>Customize your experience to match your preferences.</p>
+            </div>
+            
+            <div class="feature-card">
+                <div class="icon">🔍</div>
+                <h3>Browse our portfolio</h3>
+                <p>Explore our diverse selection of properties and designs.</p>
+            </div>
+            
+            <div class="feature-card">
+                <div class="icon">📱</div>
+                <h3>Take our design quiz</h3>
+                <p>Discover your unique style and perfect home match.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Projects Section -->
+<section class="projects-section">
+    <div class="container">
+        <div class="section-header">
+            <h2>Our Successive Projects</h2>
+        </div>
+        
+        <div class="projects-grid">
+            <!-- Project Card 1 -->
+            <div class="project-card">
+                <img src="~/images/rental1.png" alt="Project" class="project-image">
+                <span class="project-badge">NEW</span>
+                <div class="project-content">
+                    <h3>What is HomeSphere?</h3>
+                    <a href="#" class="project-cta">Learn more</a>
+                </div>
+            </div>
+            
+            <!-- Project Card 2 -->
+            <div class="project-card">
+                <img src="~/images/rental2.png" alt="Project" class="project-image">
+                <span class="project-badge">NEW</span>
+                <div class="project-content">
+                    <h3>What is PhotoRealism?</h3>
+                    <a href="#" class="project-cta">Learn more</a>
+                </div>
+            </div>
+            
+            <!-- Project Card 3 -->
+            <div class="project-card">
+                <img src="~/images/rental3.png" alt="Project" class="project-image">
+                <span class="project-badge">NEW</span>
+                <div class="project-content">
+                    <h3>What is TrustBuilders?</h3>
+                    <a href="#" class="project-cta">Learn more</a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Second row of project cards -->
+        <div class="projects-grid">
+            <!-- Project Card 4 -->
+            <div class="project-card">
+                <img src="~/images/rental4.png" alt="Project" class="project-image">
+                <span class="project-badge">NEW</span>
+                <div class="project-content">
+                    <h3>What is HomeSphere?</h3>
+                    <a href="#" class="project-cta">Learn more</a>
+                </div>
+            </div>
+            
+            <!-- Project Card 5 -->
+            <div class="project-card">
+                <img src="~/images/rental1.png" alt="Project" class="project-image">
+                <span class="project-badge">NEW</span>
+                <div class="project-content">
+                    <h3>What is PhotoRealism?</h3>
+                    <a href="#" class="project-cta">Learn more</a>
+                </div>
+            </div>
+            
+            <!-- Project Card 6 -->
+            <div class="project-card">
+                <img src="~/images/rental2.png" alt="Project" class="project-image">
+                <span class="project-badge">NEW</span>
+                <div class="project-content">
+                    <h3>What is TrustBuilders?</h3>
+                    <a href="#" class="project-cta">Learn more</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Newsletter Section -->
+<section class="newsletter-section">
+    <div class="newsletter-container">
+        <div class="newsletter-content">
+            <h3>Straight from our desk, to your inbox.</h3>
+            <p>Subscribe to our newsletter to get the latest updates and offers.</p>
+        </div>
+        <div class="newsletter-form">
+            <input type="text" placeholder="Your Name">
+            <input type="email" placeholder="Your Email">
+            <button type="submit">Subscribe</button>
+        </div>
+    </div>
+</section>
+
