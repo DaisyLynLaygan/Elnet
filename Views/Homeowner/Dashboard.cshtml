@@ -2,9 +2,6 @@
     Layout = "~/Views/Shared/Dashboard_Layout.cshtml";
 }
 
-
-
-
 <!-- Hero Section -->
 <section class="hero-section" style="background-image: url('/images/rental1.png');">
     <div class="hero-content">
@@ -18,39 +15,133 @@
     </div>
 </section>
 
-<!-- Features Section -->
-<section class="features-section">
+
+<!-- Services Section -->
+<section class="services-section">
     <div class="container">
-        <div class="power-home">
-            <h2>Power Your Home with HomeSphere</h2>
-            <p class="subtitle">SOME SUBTITLE TEXT</p>
-            <a href="#" class="cta-button">Learn More</a>
+        <div class="section-header">
+            <h2>Our Premium Services</h2>
+            <p class="section-subtitle">We offer comprehensive solutions for all your real estate needs</p>
         </div>
         
-        <div class="features-grid">
-            <div class="feature-card">
-                <div class="icon">🏠</div>
-                <h3>Get started with HomeSphere</h3>
-                <p>Simple steps to begin your journey with our platform.</p>
+        <div class="services-grid">
+            <div class="service-card">
+                <div class="service-icon">🏡</div>
+                <h3>Property Search</h3>
+                <p>Access our exclusive database of properties with advanced filters to find your dream home quickly and efficiently.</p>
             </div>
             
-            <div class="feature-card">
-                <div class="icon">📝</div>
-                <h3>Create a personalized account</h3>
-                <p>Customize your experience to match your preferences.</p>
+            <div class="service-card">
+                <div class="service-icon">💰</div>
+                <h3>Valuation Services</h3>
+                <p>Get accurate property valuations from our certified experts to make informed buying or selling decisions.</p>
             </div>
             
-            <div class="feature-card">
-                <div class="icon">🔍</div>
-                <h3>Browse our portfolio</h3>
-                <p>Explore our diverse selection of properties and designs.</p>
+            <div class="service-card">
+                <div class="service-icon">📑</div>
+                <h3>Legal Assistance</h3>
+                <p>Our legal team handles all paperwork and contracts, ensuring a smooth and secure transaction process.</p>
             </div>
             
-            <div class="feature-card">
-                <div class="icon">📱</div>
-                <h3>Take our design quiz</h3>
-                <p>Discover your unique style and perfect home match.</p>
+            <div class="service-card">
+                <div class="service-icon">🛠️</div>
+                <h3>Home Maintenance</h3>
+                <p>Comprehensive maintenance services to keep your property in perfect condition all year round.</p>
             </div>
+        </div>
+    </div>
+</section>
+
+<!-- Facilities Section with Swiper (No Navigation Buttons) -->
+<section class="facilities-section">
+    <div class="container">
+        <div class="section-header">
+            <h2>Our Premium Facilities</h2>
+            <p class="section-subtitle">Enjoy world-class amenities designed for your comfort and convenience</p>
+        </div>
+        
+        <!-- Swiper Container -->
+        <div class="swiper facilitiesSwiper">
+            <div class="swiper-wrapper">
+                <!-- Facility 1 - Function Hall -->
+                <div class="swiper-slide">
+                    <div class="facility-card">
+                        <div class="facility-image">
+                            <img src="~/images/function-hall.jpg" alt="Function Hall">
+                        </div>
+                        <div class="facility-content">
+                            <h3>Grand Function Hall</h3>
+                            <p>Elegant event space perfect for weddings, conferences, and celebrations with capacity up to 500 guests.</p>
+                            <div class="facility-features">
+                                <span>🎤 Audio-Visual System</span>
+                                <span>🍽️ Catering Kitchen</span>
+                                <span>🪑 Flexible Seating</span>
+                            </div>
+                            <a href="#" class="facility-button">Book Now</a>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Facility 2 - Sports Court -->
+                <div class="swiper-slide">
+                    <div class="facility-card">
+                        <div class="facility-image">
+                            <img src="~/images/sports-court.jpg" alt="Sports Court">
+                        </div>
+                        <div class="facility-content">
+                            <h3>Multi-Sports Court</h3>
+                            <p>Professional-grade court suitable for basketball, volleyball, badminton, and other indoor sports.</p>
+                            <div class="facility-features">
+                                <span>🏀 NBA-standard flooring</span>
+                                <span>🔦 LED Lighting</span>
+                                <span>👟 Locker Rooms</span>
+                            </div>
+                            <a href="#" class="facility-button">Reserve Court</a>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Facility 3 - Swimming Pool -->
+                <div class="swiper-slide">
+                    <div class="facility-card">
+                        <div class="facility-image">
+                            <img src="~/images/swimming-pool.jpg" alt="Swimming Pool">
+                        </div>
+                        <div class="facility-content">
+                            <h3>Olympic Swimming Pool</h3>
+                            <p>50-meter competition pool with diving boards, lap lanes, and separate children's wading area.</p>
+                            <div class="facility-features">
+                                <span>🏊‍♂️ 8 Lanes</span>
+                                <span>♨️ Heated in Winter</span>
+                                <span>🏊‍♀️ Lifeguards On Duty</span>
+                            </div>
+                            <a href="#" class="facility-button">View Schedule</a>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Facility 4 - Gym -->
+                <div class="swiper-slide">
+                    <div class="facility-card">
+                        <div class="facility-image">
+                            <img src="~/images/gym.jpg" alt="Gym Facility">
+                        </div>
+                        <div class="facility-content">
+                            <h3>State-of-the-Art Gym</h3>
+                            <p>Fully equipped fitness center with cardio machines, free weights, and group exercise studios.</p>
+                            <div class="facility-features">
+                                <span>💪 Personal Trainers</span>
+                                <span>🧘‍♀️ Yoga Classes</span>
+                                <span>🚿 Spa Facilities</span>
+                            </div>
+                            <a href="#" class="facility-button">Join Today</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Pagination only (no navigation buttons) -->
+            <div class="swiper-pagination"></div>
         </div>
     </div>
 </section>
@@ -84,7 +175,7 @@
             </div>
             
             <!-- Project Card 3 -->
-            <div class="project-card">
+            <div class="property-card">
                 <img src="~/images/rental3.png" alt="Project" class="project-image">
                 <span class="project-badge">NEW</span>
                 <div class="project-content">
@@ -144,3 +235,28 @@
     </div>
 </section>
 
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var swiper = new Swiper('.facilitiesSwiper', {
+            slidesPerView: 1,
+            spaceBetween: 20,
+            autoplay: {
+                delay: 3000,
+                disableOnInteraction: false,
+            },
+            pagination: {
+                el: '.swiper-pagination',
+                clickable: true,
+            },
+            breakpoints: {
+                640: {
+                    slidesPerView: 2,
+                },
+                1024: {
+                    slidesPerView: 3,
+                },
+            }
+        });
+    });
+</script>

@@ -453,6 +453,243 @@
     color: var(--secondary);
     font-size: 0.9rem;
 }
+
+/* Services Section */
+.services-section {
+  padding: 4rem 0;
+  background-color: var(--beige);
+}
+
+.section-header {
+  text-align: center;
+  margin-bottom: 3rem;
+}
+
+.section-header h2 {
+  font-size: 2.2rem;
+  color: var(--primary);
+  margin-bottom: 0.5rem;
+}
+
+.section-subtitle {
+  color: var(--secondary);
+  font-size: 1.1rem;
+}
+
+.services-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 2rem;
+}
+
+.service-card {
+  background-color: white;
+  border-radius: 10px;
+  padding: 2rem;
+  box-shadow: var(--shadow);
+  transition: transform 0.3s ease;
+  text-align: center;
+}
+
+.service-card:hover {
+  transform: translateY(-10px);
+}
+
+.service-icon {
+  width: 70px;
+  height: 70px;
+  background-color: rgba(212, 163, 115, 0.1);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1.5rem;
+  color: var(--primary);
+  font-size: 1.8rem;
+}
+
+.service-card h3 {
+  font-size: 1.3rem;
+  margin-bottom: 1rem;
+  color: var(--primary);
+}
+
+.service-card p {
+  color: var(--secondary);
+  line-height: 1.6;
+}
+/* Facilities Section with Swiper (No Navigation Buttons) */
+.facilities-section {
+  padding: 4rem 0;
+  background-color: var(--cream);
+}
+
+.facilitiesSwiper {
+  width: 100%;
+  padding: 2rem 0 4rem; /* Extra padding at bottom for pagination */
+}
+
+.swiper-slide {
+  height: auto;
+  display: flex;
+  justify-content: center;
+}
+
+.facility-card {
+  background-color: white;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: var(--shadow);
+  transition: transform 0.3s ease;
+  width: 95%;
+  margin: 0 auto;
+}
+
+.facility-card:hover {
+  transform: translateY(-5px);
+}
+
+.facility-image {
+  height: 200px;
+  overflow: hidden;
+}
+
+.facility-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s ease;
+}
+
+.facility-card:hover .facility-image img {
+  transform: scale(1.05);
+}
+
+.facility-content {
+  padding: 1.5rem;
+}
+
+.facility-content h3 {
+  font-size: 1.3rem;
+  margin-bottom: 0.75rem;
+  color: var(--primary);
+}
+
+.facility-content p {
+  color: var(--secondary);
+  margin-bottom: 1rem;
+  line-height: 1.5;
+}
+
+.facility-features {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.facility-features span {
+  background-color: var(--light-gray);
+  padding: 0.3rem 0.6rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  color: var(--primary);
+}
+
+.facility-button {
+  display: inline-block;
+  width: 100%;
+  padding: 0.8rem;
+  background-color: var(--primary);
+  color: white;
+  border: none;
+  border-radius: 5px;
+  font-weight: 600;
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.facility-button:hover {
+  background-color: var(--dark-brown);
+}
+
+/* Swiper Pagination */
+.swiper-pagination {
+  position: relative;
+  bottom: 0;
+  margin-top: 1.5rem;
+}
+
+.swiper-pagination-bullet {
+  background-color: var(--light-brown);
+  opacity: 0.5;
+  width: 10px;
+  height: 10px;
+}
+
+.swiper-pagination-bullet-active {
+  background-color: var(--primary);
+  opacity: 1;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .facility-image {
+    height: 250px;
+  }
+}
+
+.book-button {
+  padding: 0.8rem;
+  background-color: white;
+  color: var(--primary);
+  border: none;
+  border-radius: 5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.book-button:hover {
+  background-color: var(--accent);
+  color: white;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+  .services-grid {
+      grid-template-columns: 1fr;
+  }
+  
+  .property-card {
+      width: 280px;
+  }
+  
+  .section-header h2 {
+      font-size: 1.8rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .section-header h2 {
+      font-size: 1.5rem;
+  }
+  
+  .section-subtitle {
+      font-size: 1rem;
+  }
+  
+  .property-card {
+      width: 260px;
+  }
+  
+  .property-info {
+      flex-direction: column;
+      gap: 0.5rem;
+  }
+}
 /* Projects Section */
 .projects-section {
     padding: 2rem 0;
