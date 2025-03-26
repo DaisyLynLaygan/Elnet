@@ -8,6 +8,79 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
 
 </head>
+<style>
+    
+/* Footer */
+.footer {
+    background-color: var(--cream);
+    padding: 3rem 0 1rem;
+    font-size: 0.9rem;
+}
+
+.footer-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1rem;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 2rem;
+}
+
+.footer-column h4 {
+    font-size: 1.1rem;
+    margin-bottom: 1rem;
+    color: var(--primary);
+}
+
+.footer-links {
+    list-style: none;
+}
+
+.footer-links li {
+    margin-bottom: 0.5rem;
+}
+
+.footer-links a {
+    text-decoration: none;
+    color: var(--secondary);
+    transition: color 0.3s ease;
+}
+
+.footer-links a:hover {
+    color: var(--primary);
+}
+
+.footer-social {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.social-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background-color: var(--light-gray);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--secondary);
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.social-icon:hover {
+    background-color: var(--primary);
+    color: white;
+}
+
+.footer-bottom {
+    border-top: 1px solid var(--border-color);
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    text-align: center;
+    color: var(--secondary);
+}
+</style>
 <body>
 
 <nav class="navbar">
@@ -21,9 +94,6 @@
     <ul class="nav-menu">
         <li class="nav-item"><a asp-controller="Homeowner" asp-action="Dashboard" class="nav-link">Home</a></li>
         <li class="nav-item">
-            <a href="#" class="nav-link">Services</a>
-        </li>
-        <li class="nav-item">
             <a asp-controller="Homeowner" asp-action="Feedback" class="nav-link">Feedback</a>
         </li>        
         <li class="nav-item">
@@ -32,15 +102,6 @@
                 <a href="#" class="dropdown-link">Make Payment</a>
                 <a href="#" class="dropdown-link">View History</a>
                 <a href="#" class="dropdown-link">Setup Autopay</a>
-            </div>
-        </li>
-        <li class="nav-item">
-            <a href="#" class="nav-link">Facilities <span>▼</span></a>
-            <div class="dropdown-content">
-                <a href="#" class="dropdown-link">Reserve Pool</a>
-                <a href="#" class="dropdown-link">Book Event Space</a>
-                <a href="#" class="dropdown-link">Gym Access</a>
-                <a href="#" class="dropdown-link">Tennis Courts</a>
             </div>
         </li>
         <li class="nav-item">
