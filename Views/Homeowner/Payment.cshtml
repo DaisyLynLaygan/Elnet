@@ -1,0 +1,406 @@
+@page
+@{
+    Layout = "~/Views/Shared/Dashboard_Layout.cshtml";
+}
+<link rel="stylesheet" href="~/css/payment.css" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+<section class="payment-section">
+    <div class="container">
+        <div class="payment-header">
+            <h1>Make a Payment</h1>
+            <p>Select payment type and complete your transaction</p>
+        </div>
+
+        <div class="payment-tabs">
+            <button class="tab-button active" data-tab="rent">Rent Payment</button>
+            <button class="tab-button" data-tab="maintenance">Maintenance Services</button>
+            <button class="tab-button" data-tab="facilities">Facilities Booking</button>
+        </div>
+
+        <!-- Rent Payment Tab -->
+        <div class="tab-content active" id="rent-tab">
+            <div class="payment-card">
+                <div class="payment-details">
+                    <div class="property-info">
+                        <h3>Luxury Villa in Beverly Hills</h3>
+                        <div class="property-meta">
+                            <div class="meta-item">
+                                <span class="meta-label">Monthly Rent</span>
+                                <span class="meta-value">$8,500.00</span>
+                            </div>
+                            <div class="meta-item">
+                                <span class="meta-label">Due Date</span>
+                                <span class="meta-value">July 1, 2023</span>
+                            </div>
+                            <div class="meta-item">
+                                <span class="meta-label">Payment Status</span>
+                                <span class="meta-value status-paid">Paid</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="payment-options">
+                        <h4>Payment Method</h4>
+                        <div class="payment-methods">
+                            <div class="method-card active">
+                                <i class="fab fa-cc-visa"></i>
+                                <span>Visa •••• 4242</span>
+                            </div>
+                            <div class="method-card">
+                                <i class="fab fa-cc-mastercard"></i>
+                                <span>Mastercard •••• 5555</span>
+                            </div>
+                            <div class="method-card">
+                                <i class="fas fa-plus"></i>
+                                <span>Add New Card</span>
+                            </div>
+                        </div>
+
+                        <div class="payment-amount">
+                            <label for="payment-amount">Payment Amount</label>
+                            <div class="amount-input">
+                                <span>$</span>
+                                <input type="number" id="payment-amount" value="8500.00" min="100" step="0.01">
+                            </div>
+                        </div>
+
+                        <div class="payment-actions">
+                            <button class="pay-now-button">
+                                <i class="fas fa-lock"></i> Pay Now
+                            </button>
+                            <button class="setup-autopay">
+                                <i class="fas fa-calendar-check"></i> Setup Autopay
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Maintenance Services Tab - Will be populated by JavaScript -->
+        <div class="tab-content" id="maintenance-tab">
+            <div class="bookings-container" id="maintenance-bookings">
+                <!-- Bookings will be inserted here by JavaScript -->
+                <div class="no-bookings">
+                    <i class="fas fa-calendar-times"></i>
+                    <p>You have no active maintenance bookings</p>
+                    <a href="/Homeowner/Dashboard" class="book-now-button">Book a Service</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Facilities Booking Tab - Will be populated by JavaScript -->
+        <div class="tab-content" id="facilities-tab">
+            <div class="bookings-container" id="facility-bookings">
+                <!-- Bookings will be inserted here by JavaScript -->
+                <div class="no-bookings">
+                    <i class="fas fa-calendar-times"></i>
+                    <p>You have no facility reservations</p>
+                    <a href="/Homeowner/Dashboard" class="book-now-button">Reserve a Facility</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Payment Modal -->
+<div class="payment-modal" id="paymentModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Confirm Payment</h3>
+            <span class="close-modal">&times;</span>
+        </div>
+        <div class="modal-body">
+            <div class="payment-summary">
+                <div class="summary-item">
+                    <span>Payment For:</span>
+                    <span id="payment-for">Monthly Rent - Luxury Villa</span>
+                </div>
+                <div class="summary-item">
+                    <span>Amount:</span>
+                    <span id="payment-amount-summary">$8,500.00</span>
+                </div>
+                <div class="summary-item">
+                    <span>Payment Method:</span>
+                    <span id="payment-method-summary">Visa •••• 4242</span>
+                </div>
+            </div>
+            <div class="payment-confirm">
+                <button class="confirm-button">
+                    <i class="fas fa-lock"></i> Confirm Payment
+                </button>
+                <p class="secure-notice">
+                    <i class="fas fa-shield-alt"></i> Your payment is secure and encrypted
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Sample data for bookings (in a real app, this would come from your backend)
+const userBookings = {
+    maintenance: [
+        {
+            id: 1,
+            service: "House Cleaning",
+            date: "2023-07-15",
+            time: "9:00 AM",
+            price: "$120.00",
+            status: "Pending Payment"
+        },
+        {
+            id: 2,
+            service: "Garden Maintenance",
+            date: "2023-07-10",
+            frequency: "Monthly",
+            price: "$150.00",
+            status: "Pending Payment"
+        }
+    ],
+    facilities: [
+        {
+            id: 1,
+            facility: "Function Hall",
+            date: "2023-08-05",
+            duration: "4 hours",
+            startTime: "2:00 PM",
+            guests: 50,
+            price: "$500.00",
+            status: "Pending Payment"
+        }
+    ]
+};
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Tab switching functionality
+    const tabButtons = document.querySelectorAll('.tab-button');
+    const tabContents = document.querySelectorAll('.tab-content');
+    
+    tabButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            // Remove active class from all buttons and contents
+            tabButtons.forEach(btn => btn.classList.remove('active'));
+            tabContents.forEach(content => content.classList.remove('active'));
+            
+            // Add active class to clicked button
+            button.classList.add('active');
+            
+            // Show corresponding content
+            const tabId = button.getAttribute('data-tab');
+            document.getElementById(`${tabId}-tab`).classList.add('active');
+        });
+    });
+    
+    // Payment method selection
+    const methodCards = document.querySelectorAll('.method-card');
+    methodCards.forEach(card => {
+        card.addEventListener('click', () => {
+            methodCards.forEach(c => c.classList.remove('active'));
+            card.classList.add('active');
+        });
+    });
+    
+    // Load bookings when page loads
+    loadBookings();
+    
+    // Payment modal functionality
+    const payButtons = document.querySelectorAll('.pay-now-button, .pay-booking-button');
+    const paymentModal = document.getElementById('paymentModal');
+    const closeModal = document.querySelector('.close-modal');
+    
+    payButtons.forEach(button => {
+        button.addEventListener('click', (e) => {
+            e.preventDefault();
+            
+            // Set payment details in modal
+            if (button.classList.contains('pay-now-button')) {
+                // Rent payment
+                document.getElementById('payment-for').textContent = 'Monthly Rent - Luxury Villa';
+                document.getElementById('payment-amount-summary').textContent = 
+                    '$' + document.getElementById('payment-amount').value;
+            } else {
+                // Booking payment
+                const bookingCard = button.closest('.booking-card');
+                const bookingType = button.closest('.bookings-container').id.includes('maintenance') ? 
+                    'Maintenance Service' : 'Facility Booking';
+                const bookingName = bookingCard.querySelector('h4').textContent;
+                const bookingPrice = bookingCard.querySelector('.booking-price').textContent;
+                
+                document.getElementById('payment-for').textContent = `${bookingType} - ${bookingName}`;
+                document.getElementById('payment-amount-summary').textContent = bookingPrice;
+            }
+            
+            document.getElementById('payment-method-summary').textContent = 
+                document.querySelector('.method-card.active')?.textContent.trim() || 'Select a payment method';
+            
+            paymentModal.style.display = 'flex';
+        });
+    });
+    
+    closeModal.addEventListener('click', () => {
+        paymentModal.style.display = 'none';
+    });
+    
+    window.addEventListener('click', (e) => {
+        if (e.target === paymentModal) {
+            paymentModal.style.display = 'none';
+        }
+    });
+    
+    // Confirm payment button
+    const confirmButton = document.querySelector('.confirm-button');
+    confirmButton.addEventListener('click', () => {
+        alert('Payment processed successfully!');
+        paymentModal.style.display = 'none';
+        
+        // In a real app, you would update the booking status here
+    });
+});
+
+function loadBookings() {
+    const maintenanceContainer = document.getElementById('maintenance-bookings');
+    const facilityContainer = document.getElementById('facility-bookings');
+    
+    // Clear existing content except the no-bookings message
+    maintenanceContainer.innerHTML = '';
+    facilityContainer.innerHTML = '';
+    
+    // Add maintenance bookings if they exist
+    if (userBookings.maintenance.length > 0) {
+        userBookings.maintenance.forEach(booking => {
+            const bookingCard = createMaintenanceBookingCard(booking);
+            maintenanceContainer.appendChild(bookingCard);
+        });
+    } else {
+        maintenanceContainer.innerHTML = `
+            <div class="no-bookings">
+                <i class="fas fa-calendar-times"></i>
+                <p>You have no active maintenance bookings</p>
+                <a href="/Homeowner/Dashboard" class="book-now-button">Book a Service</a>
+            </div>
+        `;
+    }
+    
+    // Add facility bookings if they exist
+    if (userBookings.facilities.length > 0) {
+        userBookings.facilities.forEach(booking => {
+            const bookingCard = createFacilityBookingCard(booking);
+            facilityContainer.appendChild(bookingCard);
+        });
+    } else {
+        facilityContainer.innerHTML = `
+            <div class="no-bookings">
+                <i class="fas fa-calendar-times"></i>
+                <p>You have no facility reservations</p>
+                <a href="/Homeowner/Dashboard" class="book-now-button">Reserve a Facility</a>
+            </div>
+        `;
+    }
+}
+
+function createMaintenanceBookingCard(booking) {
+    const card = document.createElement('div');
+    card.className = 'booking-card';
+    
+    let detailsHtml = `
+        <div class="booking-detail">
+            <i class="fas fa-calendar-day"></i>
+            <span>${booking.date}</span>
+        </div>
+    `;
+    
+    if (booking.time) {
+        detailsHtml += `
+            <div class="booking-detail">
+                <i class="fas fa-clock"></i>
+                <span>${booking.time}</span>
+            </div>
+        `;
+    }
+    
+    if (booking.frequency) {
+        detailsHtml += `
+            <div class="booking-detail">
+                <i class="fas fa-sync-alt"></i>
+                <span>${booking.frequency}</span>
+            </div>
+        `;
+    }
+    
+    card.innerHTML = `
+        <div class="booking-info">
+            <h4>${booking.service}</h4>
+            <div class="booking-details">
+                ${detailsHtml}
+                <div class="booking-detail">
+                    <i class="fas fa-tag"></i>
+                    <span class="booking-price">${booking.price}</span>
+                </div>
+                <div class="booking-detail">
+                    <i class="fas fa-info-circle"></i>
+                    <span>${booking.status}</span>
+                </div>
+            </div>
+        </div>
+        <div class="booking-actions">
+            <button class="pay-booking-button">
+                <i class="fas fa-credit-card"></i> Pay Now
+            </button>
+            <button class="cancel-booking-button">
+                <i class="fas fa-times"></i> Cancel
+            </button>
+        </div>
+    `;
+    
+    return card;
+}
+
+function createFacilityBookingCard(booking) {
+    const card = document.createElement('div');
+    card.className = 'booking-card';
+    
+    card.innerHTML = `
+        <div class="booking-info">
+            <h4>${booking.facility}</h4>
+            <div class="booking-details">
+                <div class="booking-detail">
+                    <i class="fas fa-calendar-day"></i>
+                    <span>${booking.date}</span>
+                </div>
+                <div class="booking-detail">
+                    <i class="fas fa-clock"></i>
+                    <span>${booking.startTime}</span>
+                </div>
+                <div class="booking-detail">
+                    <i class="fas fa-hourglass-half"></i>
+                    <span>${booking.duration}</span>
+                </div>
+                <div class="booking-detail">
+                    <i class="fas fa-users"></i>
+                    <span>${booking.guests} guests</span>
+                </div>
+                <div class="booking-detail">
+                    <i class="fas fa-tag"></i>
+                    <span class="booking-price">${booking.price}</span>
+                </div>
+                <div class="booking-detail">
+                    <i class="fas fa-info-circle"></i>
+                    <span>${booking.status}</span>
+                </div>
+            </div>
+        </div>
+        <div class="booking-actions">
+            <button class="pay-booking-button">
+                <i class="fas fa-credit-card"></i> Pay Now
+            </button>
+            <button class="cancel-booking-button">
+                <i class="fas fa-times"></i> Cancel
+            </button>
+        </div>
+    `;
+    
+    return card;
+}
+</script>

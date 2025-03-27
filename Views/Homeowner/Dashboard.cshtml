@@ -2,145 +2,303 @@
     Layout = "~/Views/Shared/Dashboard_Layout.cshtml";
 }
 
-
-
-
-<!-- Hero Section -->
-<section class="hero-section" style="background-image: url('/images/rental1.png');">
+<!-- Hero Section - Property Showcase -->
+<section class="hero-section">
+    <div class="hero-image-container">
+        <img src="/images/frontview.jpg" alt="Luxury Villa" class="hero-image">
+    </div>
+    
     <div class="hero-content">
-        <h1 class="hero-title">HOMES SPHERE</h1>
-        <div class="thumbnail-gallery">
-            <img src="~/images/rental1.png" alt="Property 1" class="thumbnail">
-            <img src="~/images/rental2.png" alt="Property 2" class="thumbnail">
-            <img src="~/images/rental3.png" alt="Property 3" class="thumbnail">
-            <img src="~/images/rental4.png" alt="Property 4" class="thumbnail">
+        <div class="property-card">
+            <span class="property-badge">John Smith Property</span> <!--This world-class the owner of the Villa means user -->
+            <h1 class="property-title">Luxury Villa in Beverly Hills</h1>
+            
+            <div class="property-highlights">
+                <div class="highlight-item">
+                    <i class="fas fa-bed"></i>
+                    <span>5 Bedrooms</span>
+                </div>
+                <div class="highlight-item">
+                    <i class="fas fa-bath"></i>
+                    <span>4 Bathrooms</span>
+                </div>
+                <div class="highlight-item">
+                    <i class="fas fa-ruler-combined"></i>
+                    <span>4,200 sq.ft.</span>
+                </div>
+            </div>
+            
+            <div class="property-meta">
+                <div class="meta-item">
+                    <span class="meta-label">Monthly Payment</span>
+                    <span class="meta-value">$8,500</span>
+                </div>
+                <div class="meta-item">
+                    <span class="meta-label">Payment Status</span>
+                    <span class="meta-value status-paid">Paid</span>
+                </div>
+                <div class="meta-item">
+                    <span class="meta-label">Next Due</span>
+                    <span class="meta-value">July 1, 2023</span>
+                </div>
+            </div>
+            
+            <div class="thumbnail-container">
+                <div class="thumbnail-item active" data-image="/images/frontview.jpg">
+                    <img src="/images/frontview.jpg" alt="Front View">
+                </div>
+                <div class="thumbnail-item" data-image="/images/livingroom.jpg">
+                    <img src="/images/livingroom.jpg" alt="Living Room">
+                </div>
+                <div class="thumbnail-item" data-image="/images/kitchen.jpg">
+                    <img src="/images/kitchen.jpg" alt="Kitchen">
+                </div>
+                <div class="thumbnail-item" data-image="/images/backyard.jpg">
+                    <img src="/images/backyard.jpg" alt="Backyard">
+                </div>
+            </div>
+            
+            <div class="property-actions">
+                <button class="action-button payment-button">
+                    <i class="fas fa-credit-card"></i> Make Payment
+                </button>
+                <button class="action-button details-button">
+                    <i class="fas fa-info-circle"></i> View Details
+                </button>
+            </div>
         </div>
     </div>
 </section>
 
-<!-- Features Section -->
-<section class="features-section">
-    <div class="container">
-        <div class="power-home">
-            <h2>Power Your Home with HomeSphere</h2>
-            <p class="subtitle">SOME SUBTITLE TEXT</p>
-            <a href="#" class="cta-button">Learn More</a>
-        </div>
-        
-        <div class="features-grid">
-            <div class="feature-card">
-                <div class="icon">🏠</div>
-                <h3>Get started with HomeSphere</h3>
-                <p>Simple steps to begin your journey with our platform.</p>
-            </div>
-            
-            <div class="feature-card">
-                <div class="icon">📝</div>
-                <h3>Create a personalized account</h3>
-                <p>Customize your experience to match your preferences.</p>
-            </div>
-            
-            <div class="feature-card">
-                <div class="icon">🔍</div>
-                <h3>Browse our portfolio</h3>
-                <p>Explore our diverse selection of properties and designs.</p>
-            </div>
-            
-            <div class="feature-card">
-                <div class="icon">📱</div>
-                <h3>Take our design quiz</h3>
-                <p>Discover your unique style and perfect home match.</p>
-            </div>
-        </div>
-    </div>
-</section>
-
-<!-- Projects Section -->
-<section class="projects-section">
+<!-- Services Section - Property Maintenance -->
+<section class="services-section">
     <div class="container">
         <div class="section-header">
-            <h2>Our Successive Projects</h2>
+            <h2>Property Maintenance Services</h2>
+            <p class="section-subtitle">Professional services to keep your property in perfect condition</p>
         </div>
         
-        <div class="projects-grid">
-            <!-- Project Card 1 -->
-            <div class="project-card">
-                <img src="~/images/rental1.png" alt="Project" class="project-image">
-                <span class="project-badge">NEW</span>
-                <div class="project-content">
-                    <h3>What is HomeSphere?</h3>
-                    <a href="#" class="project-cta">Learn more</a>
-                </div>
+        <div class="services-grid">
+            <div class="service-card">
+                <div class="service-icon">🧹</div>
+                <h3>House Cleaning</h3>
+                <p>Thorough cleaning service including dusting, vacuuming, mopping, and bathroom sanitation for spotless living spaces.</p>
+                <span class="service-price">From $120/service</span>
+                <button class="book-service">Book Now</button>
             </div>
             
-            <!-- Project Card 2 -->
-            <div class="project-card">
-                <img src="~/images/rental2.png" alt="Project" class="project-image">
-                <span class="project-badge">NEW</span>
-                <div class="project-content">
-                    <h3>What is PhotoRealism?</h3>
-                    <a href="#" class="project-cta">Learn more</a>
-                </div>
+            <div class="service-card">
+                <div class="service-icon">🌿</div>
+                <h3>Garden Maintenance</h3>
+                <p>Regular lawn mowing, hedge trimming, weeding, and plant care to keep your outdoor spaces beautiful.</p>
+                <span class="service-price">From $150/service</span>
+                <button class="book-service">Book Now</button>
             </div>
             
-            <!-- Project Card 3 -->
-            <div class="project-card">
-                <img src="~/images/rental3.png" alt="Project" class="project-image">
-                <span class="project-badge">NEW</span>
-                <div class="project-content">
-                    <h3>What is TrustBuilders?</h3>
-                    <a href="#" class="project-cta">Learn more</a>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Second row of project cards -->
-        <div class="projects-grid">
-            <!-- Project Card 4 -->
-            <div class="project-card">
-                <img src="~/images/rental4.png" alt="Project" class="project-image">
-                <span class="project-badge">NEW</span>
-                <div class="project-content">
-                    <h3>What is HomeSphere?</h3>
-                    <a href="#" class="project-cta">Learn more</a>
-                </div>
+            <div class="service-card">
+                <div class="service-icon">🔧</div>
+                <h3>Handyman Services</h3>
+                <p>Repairs and maintenance for plumbing, electrical, carpentry, and general home improvement tasks.</p>
+                <span class="service-price">From $85/hour</span>
+                <button class="book-service">Book Now</button>
             </div>
             
-            <!-- Project Card 5 -->
-            <div class="project-card">
-                <img src="~/images/rental1.png" alt="Project" class="project-image">
-                <span class="project-badge">NEW</span>
-                <div class="project-content">
-                    <h3>What is PhotoRealism?</h3>
-                    <a href="#" class="project-cta">Learn more</a>
-                </div>
+            <div class="service-card">
+                <div class="service-icon">🧯</div>
+                <h3>Safety Inspection</h3>
+                <p>Comprehensive safety checks including smoke detectors, fire extinguishers, and security systems.</p>
+                <span class="service-price">From $200/inspection</span>
+                <button class="book-service">Book Now</button>
             </div>
             
-            <!-- Project Card 6 -->
-            <div class="project-card">
-                <img src="~/images/rental2.png" alt="Project" class="project-image">
-                <span class="project-badge">NEW</span>
-                <div class="project-content">
-                    <h3>What is TrustBuilders?</h3>
-                    <a href="#" class="project-cta">Learn more</a>
-                </div>
+            <div class="service-card">
+                <div class="service-icon">🧼</div>
+                <h3>Deep Cleaning</h3>
+                <p>Intensive cleaning service including carpets, windows, appliances, and hard-to-reach areas.</p>
+                <span class="service-price">From $250/service</span>
+                <button class="book-service">Book Now</button>
+            </div>
+            
+            <div class="service-card">
+                <div class="service-icon">❄️</div>
+                <h3>HVAC Maintenance</h3>
+                <p>Heating and cooling system inspection, cleaning, and tune-up for optimal performance.</p>
+                <span class="service-price">From $175/service</span>
+                <button class="book-service">Book Now</button>
             </div>
         </div>
     </div>
 </section>
 
-<!-- Newsletter Section -->
-<section class="newsletter-section">
-    <div class="newsletter-container">
-        <div class="newsletter-content">
-            <h3>Straight from our desk, to your inbox.</h3>
-            <p>Subscribe to our newsletter to get the latest updates and offers.</p>
+<!-- Facilities Section with Swiper -->
+<section class="facilities-section">
+    <div class="container">
+        <div class="section-header">
+            <h2>Our Premium Facilities</h2>
+            <p class="section-subtitle">Enjoy world-class amenities designed for your comfort and convenience</p>
         </div>
-        <div class="newsletter-form">
-            <input type="text" placeholder="Your Name">
-            <input type="email" placeholder="Your Email">
-            <button type="submit">Subscribe</button>
+        
+        <div class="swiper facilitiesSwiper">
+            <div class="swiper-wrapper">
+                <div class="swiper-slide">
+                    <div class="facility-card">
+                        <div class="facility-image">
+                            <img src="~/images/function-hall.jpg" alt="Function Hall">
+                        </div>
+                        <div class="facility-content">
+                            <h3>Function Hall</h3>
+                            <p>Elegant event space perfect for weddings, conferences, and celebrations with capacity up to 500 guests.</p>
+                            <div class="facility-features">
+                                <span>🎤 Audio-Visual System</span>
+                                <span>🍽️ Catering Kitchen</span>
+                                <span>🪑 Flexible Seating</span>
+                            </div>
+                            <a href="#" class="facility-button">Book Now</a>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="swiper-slide">
+                    <div class="facility-card">
+                        <div class="facility-image">
+                            <img src="~/images/sports-court.jpg" alt="Sports Court">
+                        </div>
+                        <div class="facility-content">
+                            <h3>Sport Court</h3>
+                            <p>Professional-grade court suitable for basketball, volleyball, badminton, and other indoor sports.</p>
+                            <div class="facility-features">
+                                <span>🏀 NBA-standard flooring</span>
+                                <span>🔦 LED Lighting</span>
+                                <span>👟 Locker Rooms</span>
+                            </div>
+                            <a href="#" class="facility-button">Reserve Court</a>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="swiper-slide">
+                    <div class="facility-card">
+                        <div class="facility-image">
+                            <img src="~/images/swimming-pool.jpg" alt="Swimming Pool">
+                        </div>
+                        <div class="facility-content">
+                            <h3>Swimming Pool</h3>
+                            <p>50-meter competition pool with diving boards, lap lanes, and separate children's wading area.</p>
+                            <div class="facility-features">
+                                <span>🏊‍♂️ 8 Lanes</span>
+                                <span>♨️ Heated in Winter</span>
+                                <span>🏊‍♀️ Lifeguards On Duty</span>
+                            </div>
+                            <a href="#" class="facility-button">View Schedule</a>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="swiper-slide">
+                    <div class="facility-card">
+                        <div class="facility-image">
+                            <img src="~/images/gym.jpg" alt="Gym Facility">
+                        </div>
+                        <div class="facility-content">
+                            <h3>State-of-the-Art Gym</h3>
+                            <p>Fully equipped fitness center with cardio machines, free weights, and group exercise studios.</p>
+                            <div class="facility-features">
+                                <span>💪 Personal Trainers</span>
+                                <span>🧘‍♀️ Yoga Classes</span>
+                                <span>🚿 Spa Facilities</span>
+                            </div>
+                            <a href="#" class="facility-button">Join Today</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="swiper-pagination"></div>
         </div>
     </div>
 </section>
 
+<!-- Font Awesome for icons -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<!-- Swiper JS -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@9/swiper-bundle.min.css" />
+<script src="https://cdn.jsdelivr.net/npm/swiper@9/swiper-bundle.min.js"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize Swiper for facilities
+    var facilitiesSwiper = new Swiper('.facilitiesSwiper', {
+        slidesPerView: 1,
+        spaceBetween: 20,
+        autoplay: {
+            delay: 3000,
+            disableOnInteraction: false,
+        },
+        pagination: {
+            el: '.swiper-pagination',
+            clickable: true,
+        },
+        breakpoints: {
+            640: {
+                slidesPerView: 2,
+            },
+            1024: {
+                slidesPerView: 3,
+            },
+        }
+    });
+
+    // Get all thumbnail items
+    const thumbnails = document.querySelectorAll('.thumbnail-item');
+    let currentThumbnailIndex = 0;
+    
+    // Function to change the active thumbnail and main image
+    function changeActiveThumbnail(index) {
+        // Remove active class from all thumbnails
+        thumbnails.forEach(thumb => {
+            thumb.classList.remove('active');
+        });
+        
+        // Add active class to the new thumbnail
+        thumbnails[index].classList.add('active');
+        
+        // Get the new image path from data-image attribute
+        const newImagePath = thumbnails[index].getAttribute('data-image');
+        
+        // Change main image source
+        document.querySelector('.hero-image').src = newImagePath;
+    }
+    
+    // Click event for manual thumbnail selection
+    thumbnails.forEach((item, index) => {
+        item.addEventListener('click', function() {
+            currentThumbnailIndex = index;
+            changeActiveThumbnail(currentThumbnailIndex);
+            // Reset the timer when user manually selects a thumbnail
+            clearInterval(thumbnailInterval);
+            thumbnailInterval = setInterval(cycleThumbnails, 5000);
+        });
+    });
+    
+    // Function to cycle through thumbnails
+    function cycleThumbnails() {
+        currentThumbnailIndex = (currentThumbnailIndex + 1) % thumbnails.length;
+        changeActiveThumbnail(currentThumbnailIndex);
+    }
+    
+    // Start the automatic cycling (every 5 seconds)
+    let thumbnailInterval = setInterval(cycleThumbnails, 5000);
+    
+    // Pause cycling when hovering over thumbnails
+    const thumbnailContainer = document.querySelector('.thumbnail-container');
+    thumbnailContainer.addEventListener('mouseenter', () => {
+        clearInterval(thumbnailInterval);
+    });
+    
+    // Resume cycling when mouse leaves thumbnails
+    thumbnailContainer.addEventListener('mouseleave', () => {
+        clearInterval(thumbnailInterval);
+        thumbnailInterval = setInterval(cycleThumbnails, 5000);
+    });
+});
+</script>

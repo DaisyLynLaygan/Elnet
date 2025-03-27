@@ -17,8 +17,6 @@
     --border-color: #dddfe2;
     --shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
     --card-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
-    
-    /* Spacing Variables */
     --spacing-unit: 16px;
     --header-height: 60px;
 }
@@ -242,7 +240,7 @@ body {
 .create-post {
     background-color: var(--white);
     border-radius: 10px;
-    padding: 15px;
+    padding: 20px;
     margin-bottom: 15px;
     box-shadow: var(--shadow);
 }
@@ -266,7 +264,7 @@ body {
     border: none;
     background-color: var(--light-gray);
     border-radius: 20px;
-    padding: 10px 15px;
+    padding: 15px 15px;
     font-size: 15px;
 }
 
@@ -595,4 +593,9 @@ body {
     .post-meta {
         font-size: 12px;
     }
+}
+
+@media screen and (max-width: 400px)
+{
+    
 }

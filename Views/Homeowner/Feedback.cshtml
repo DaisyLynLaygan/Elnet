@@ -1,296 +1,249 @@
 @page
-
 @{
     Layout = "~/Views/Shared/Dashboard_Layout.cshtml";
 }
 
+<link rel="stylesheet" href="https://unpkg.com/swiper/swiper-bundle.min.css" />
 <link rel="stylesheet" href="~/css/feedback.css" />
 <div class="container">
-        <div class="property-header">
-            <h1 class="property-title">HomeSphere</h1>
-            <div class="rating">
-                <span>4.5</span>
-                <div class="stars">★★★★☆</div>
-                <span>(167 Reviews)</span>
+    <!-- Facility Carousel Section -->
+    <section class="facility-carousel-section">
+        <h2>Explore Our Facilities</h2>
+        <p>Select a facility to learn more</p>
+        
+        <div class="swiper-container">
+            <div class="swiper-wrapper">
+                <!-- Facility 1: Function Hall -->
+                <div class="swiper-slide facility-card" data-facility-id="1">
+                    <div class="facility-image">
+                        <img src="~/images/function-hall.jpg" alt="Function Hall">
+                        <div class="facility-rating"><span>4.8 ★</span></div>
+                    </div>
+                    <div class="facility-details">
+                        <h3>Function Hall</h3>
+                    </div>
+                </div>
+
+                <!-- Facility 2: Sports Court -->
+                <div class="swiper-slide facility-card" data-facility-id="2">
+                    <div class="facility-image">
+                        <img src="~/images/sports-court.jpg" alt="Sports Court">
+                        <div class="facility-rating"><span>4.6 ★</span></div>
+                    </div>
+                    <div class="facility-details">
+                        <h3>Sports Court</h3>
+                    </div>
+                </div>
+
+                <!-- Facility 3: Swimming Pool -->
+                <div class="swiper-slide facility-card" data-facility-id="3">
+                    <div class="facility-image">
+                        <img src="~/images/swimming-pool.jpg" alt="Swimming Pool">
+                        <div class="facility-rating"><span>4.9 ★</span></div>
+                    </div>
+                    <div class="facility-details">
+                        <h3>Swimming Pool</h3>
+                    </div>
+                </div>
+
+                <!-- Facility 4: Gym Facility -->
+                <div class="swiper-slide facility-card" data-facility-id="4">
+                    <div class="facility-image">
+                        <img src="~/images/gym.jpg" alt="Gym Facility">
+                        <div class="facility-rating"><span>4.7 ★</span></div>
+                    </div>
+                    <div class="facility-details">
+                        <h3>Gym Facility</h3>
+                    </div>
+                </div>
             </div>
+            <div class="swiper-pagination"></div>
+        </div>
+    </section>
+
+    <!-- Feedback Section -->
+    <section class="feedback-section">
+        <div class="feedback-header">
+            <h1>Customer Feedback</h1>
+            <p>Share your experience with <span class="selected-facility">Function Hall</span></p>
         </div>
         
-        <div class="featured-property">
-            <img src="~/images/property.png" alt="Logo"  class="property-image"/>
-            <div class="property-details">
-                <div class="badge">Super Offer</div>
-                
-                <h2 class="property-name">HomeSphere</h2>
-                
-                <div class="property-meta">
-                    <div class="meta-item">
-                        <span>📏</span>
-                        <span>4,598 Sq Ft | North Kolam</span>
-                    </div>
-                    <div class="meta-item">
-                        <span>🏠</span>
-                        <span>2.5 Km from Business Area</span>
-                    </div>
-                    <div class="meta-item">
-                        <span>⏰</span>
-                        <span>Open from 9:30 AM - 11:30 PM</span>
-                    </div>
-                </div>
-                
-                <div class="source-offer">
-                    <button class="book-visit">Book a visit</button>
-                </div>
-            </div>
-        </div>
-        
-        <div class="calendar-section">
-            <div class="calendar">
-                <div class="calendar-header">
-                    <h3 class="calendar-title">Choose date</h3>
-                    <div>
-                        <span>January 2025</span>
-                    </div>
-                </div>
-                
-                <div class="calendar-grid">
-                    <div class="weekday">S</div>
-                    <div class="weekday">M</div>
-                    <div class="weekday">T</div>
-                    <div class="weekday">W</div>
-                    <div class="weekday">T</div>
-                    <div class="weekday">F</div>
-                    <div class="weekday">S</div>
-                    
-                    <div class="day">31</div>
-                    <div class="day">1</div>
-                    <div class="day">2</div>
-                    <div class="day">3</div>
-                    <div class="day">4</div>
-                    <div class="day">5</div>
-                    <div class="day">6</div>
-                    
-                    <div class="day">7</div>
-                    <div class="day">8</div>
-                    <div class="day">9</div>
-                    <div class="day">10</div>
-                    <div class="day">11</div>
-                    <div class="day">12</div>
-                    <div class="day">13</div>
-                    
-                    <div class="day">14</div>
-                    <div class="day">15</div>
-                    <div class="day active">16</div>
-                    <div class="day">17</div>
-                    <div class="day">18</div>
-                    <div class="day">19</div>
-                    <div class="day">20</div>
-                    
-                    <div class="day">21</div>
-                    <div class="day">22</div>
-                    <div class="day">23</div>
-                    <div class="day">24</div>
-                    <div class="day">25</div>
-                    <div class="day">26</div>
-                    <div class="day">27</div>
-                    
-                    <div class="day">28</div>
-                    <div class="day">29</div>
-                    <div class="day">30</div>
-                    <div class="day">31</div>
-                    <div class="day">1</div>
-                    <div class="day">2</div>
-                    <div class="day">3</div>
-                </div>
+        <!-- Rating Summary -->
+        <div class="rating-summary">
+            <div class="overall-rating">
+                <div class="rating-number">4.8</div>
+                <div class="rating-stars">★★★★☆</div>
+                <div class="rating-count">124 reviews</div>
             </div>
             
-            <div class="time-slots">
-                <h3 class="slot-title">Event time slot</h3>
-                
-                <div class="slot-tabs">
-                    <div class="slot-tab active">Morning</div>
-                    <div class="slot-tab">Afternoon</div>
-                    <div class="slot-tab">Evening</div>
-                </div>
-                
-                <div class="time-buttons">
-                    <div class="time-button">09:00</div>
-                    <div class="time-button selected">10:00</div>
-                    <div class="time-button">11:00</div>
-                    <div class="time-button">12:00</div>
-                </div>
-                
-               
-            </div>
-        </div>
-        <div class="listing-section">
-            <div class="section-header">
-                <h2 class="section-title">Rental Properties</h2>
-                <div class="section-tabs">
-                    <span style="margin-right: 1rem; color: var(--primary); font-weight: 500;">Rent</span>
-                    <span style="color: var(--secondary);">All</span>
-                </div>
-            </div>
-            
-            <div class="properties-grid">
-                <div class="property-card">
-                    <img src="~/images/rental1.png" alt="Property" class="card-image" />
-                    <div class="card-content">
-                        <div class="card-title">Vintage</div>
-                        <div class="card-meta">Bedroom: 3 | 326.5 SQM | 4HK</div>
-                        <div class="card-price">$30</div>
-                        <div class="card-rating">
-                            <div class="stars">★★★★☆</div>
-                            <button class="favorite-button">♡</button>
-                        </div>
+            <div class="rating-details">
+                <div class="rating-item">
+                    <span class="rating-label">Cleanliness</span>
+                    <div class="rating-bar">
+                        <div class="bar-fill cleanliness-bar" style="width: 92%;"></div>
                     </div>
+                    <span class="rating-value cleanliness-value">4.6</span>
                 </div>
                 
-                <div class="property-card">
-                    <img src="~/images/rental2.png" alt="Property" class="card-image" />
-                    <div class="card-content">
-                        <div class="card-title">Vintage</div>
-                        <div class="card-meta">Bedroom: 3 | 326.5 SQM | 4HK</div>
-                        <div class="card-price">$30</div>
-                        <div class="card-rating">
-                            <div class="stars">★★★★☆</div>
-                            <button class="favorite-button">♡</button>
-                        </div>
+                <div class="rating-item">
+                    <span class="rating-label">Equipment</span>
+                    <div class="rating-bar">
+                        <div class="bar-fill equipment-bar" style="width: 88%;"></div>
                     </div>
+                    <span class="rating-value equipment-value">4.4</span>
                 </div>
                 
-                <div class="property-card">
-                    <img src="~/images/rental3.png" alt="Property" class="card-image" />
-                    <div class="card-content">
-                        <div class="card-title">Vintage</div>
-                        <div class="card-meta">Bedroom: 3 | 326.5 SQM | 4HK</div>
-                        <div class="card-price">$30</div>
-                        <div class="card-rating">
-                            <div class="stars">★★★★☆</div>
-                            <button class="favorite-button active">❤️</button>
-                        </div>
+                <div class="rating-item">
+                    <span class="rating-label">Staff</span>
+                    <div class="rating-bar">
+                        <div class="bar-fill staff-bar" style="width: 90%;"></div>
                     </div>
+                    <span class="rating-value staff-value">4.5</span>
                 </div>
                 
-                <div class="property-card">
-                    <img src="~/images/rental4.png" alt="Property" class="card-image" />
-                    <div class="card-content">
-                        <div class="card-title">Vintage</div>
-                        <div class="card-meta">Bedroom: 3 | 326.5 SQM | 4HK</div>
-                        <div class="card-price">$30</div>
-                        <div class="card-rating">
-                            <div class="stars">★★★★☆</div>
-                            <button class="favorite-button">♡</button>
-                        </div>
+                <div class="rating-item">
+                    <span class="rating-label">Value</span>
+                    <div class="rating-bar">
+                        <div class="bar-fill value-bar" style="width: 86%;"></div>
                     </div>
+                    <span class="rating-value value-value">4.3</span>
                 </div>
             </div>
         </div>
         
-        <div class="reviews-section">
-            <div class="section-header">
-                <h2 class="section-title">Reviews and Ratings</h2>
+        <!-- Feedback Form -->
+        <div class="feedback-form">
+            <h3>Share Your Experience</h3>
+            <form id="feedbackForm">
+                <input type="hidden" id="facilityId" value="1">
+                
+                <div class="form-group">
+                    <label>Your Overall Rating</label>
+                    <div class="star-rating">
+                        <span class="star" data-value="1">★</span>
+                        <span class="star" data-value="2">★</span>
+                        <span class="star" data-value="3">★</span>
+                        <span class="star" data-value="4">★</span>
+                        <span class="star" data-value="5">★</span>
+                        <input type="hidden" id="overallRating" name="overallRating" required>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>Category Ratings</label>
+                    <div class="category-ratings">
+                        <div class="category-item">
+                            <span>Cleanliness</span>
+                            <div class="category-stars">
+                                <span class="cat-star" data-category="cleanliness" data-value="1">★</span>
+                                <span class="cat-star" data-category="cleanliness" data-value="2">★</span>
+                                <span class="cat-star" data-category="cleanliness" data-value="3">★</span>
+                                <span class="cat-star" data-category="cleanliness" data-value="4">★</span>
+                                <span class="cat-star" data-category="cleanliness" data-value="5">★</span>
+                                <input type="hidden" id="cleanlinessRating" name="cleanlinessRating" required>
+                            </div>
+                        </div>
+                        
+                        <div class="category-item">
+                            <span>Equipment</span>
+                            <div class="category-stars">
+                                <span class="cat-star" data-category="equipment" data-value="1">★</span>
+                                <span class="cat-star" data-category="equipment" data-value="2">★</span>
+                                <span class="cat-star" data-category="equipment" data-value="3">★</span>
+                                <span class="cat-star" data-category="equipment" data-value="4">★</span>
+                                <span class="cat-star" data-category="equipment" data-value="5">★</span>
+                                <input type="hidden" id="equipmentRating" name="equipmentRating" required>
+                            </div>
+                        </div>
+                        
+                        <div class="category-item">
+                            <span>Staff</span>
+                            <div class="category-stars">
+                                <span class="cat-star" data-category="staff" data-value="1">★</span>
+                                <span class="cat-star" data-category="staff" data-value="2">★</span>
+                                <span class="cat-star" data-category="staff" data-value="3">★</span>
+                                <span class="cat-star" data-category="staff" data-value="4">★</span>
+                                <span class="cat-star" data-category="staff" data-value="5">★</span>
+                                <input type="hidden" id="staffRating" name="staffRating" required>
+                            </div>
+                        </div>
+                        
+                        <div class="category-item">
+                            <span>Value</span>
+                            <div class="category-stars">
+                                <span class="cat-star" data-category="value" data-value="1">★</span>
+                                <span class="cat-star" data-category="value" data-value="2">★</span>
+                                <span class="cat-star" data-category="value" data-value="3">★</span>
+                                <span class="cat-star" data-category="value" data-value="4">★</span>
+                                <span class="cat-star" data-category="value" data-value="5">★</span>
+                                <input type="hidden" id="valueRating" name="valueRating" required>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="feedback-title">Title</label>
+                    <input type="text" id="feedback-title" name="feedbackTitle" placeholder="Summarize your experience" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="feedback-comment">Your Feedback</label>
+                    <textarea id="feedback-comment" name="feedbackComment" rows="5" placeholder="Share details of your experience..." required></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label>Add Photos (Optional)</label>
+                    <div class="photo-upload">
+                        <div class="upload-box" id="uploadTrigger">
+                            <span>+</span>
+                            <p>Add Photo</p>
+                            <input type="file" id="photoUpload" name="feedbackPhotos" accept="image/*" multiple style="display: none;">
+                        </div>
+                        <div class="upload-preview" id="uploadPreview"></div>
+                    </div>
+                </div>
+                
+                <button type="submit" class="submit-button">Submit Feedback</button>
+            </form>
+        </div>
+        
+        <!-- Feedback List -->
+        <div class="feedback-list">
+            <div class="feedback-list-header">
+                <h3>Recent Reviews</h3>
+                <div class="sort-options">
+                    <span>Sort by:</span>
+                    <select id="sortReviews">
+                        <option value="newest">Newest First</option>
+                        <option value="highest">Highest Rating</option>
+                        <option value="lowest">Lowest Rating</option>
+                    </select>
+                </div>
             </div>
             
-            <div class="review-metrics">
-                <div class="metric-overall">
-                    <div class="metric-score">4.5</div>
-                    <div class="metric-stars">★★★★☆</div>
-                </div>
-                
-                <div class="metric-bar">
-                    <div class="metric-label">Overall</div>
-                    <div class="progress-bar">
-                        <div class="progress-fill" style="width: 90%;"></div>
-                    </div>
-                    <div class="metric-value">4.5</div>
-                </div>
-                
-                <div class="metric-bar">
-                    <div class="metric-label">Amenity</div>
-                    <div class="progress-bar">
-                        <div class="progress-fill" style="width: 92%; background-color: #4CAF50;"></div>
-                    </div>
-                    <div class="metric-value">4.6</div>
-                </div>
-                
-                <div class="metric-bar">
-                    <div class="metric-label">Location</div>
-                    <div class="progress-bar">
-                        <div class="progress-fill" style="width: 96%; background-color: #4CAF50;"></div>
-                    </div>
-                    <div class="metric-value">4.8</div>
-                </div>
-                
-                <div class="metric-bar">
-                    <div class="metric-label">Service</div>
-                    <div class="progress-bar">
-                        <div class="progress-fill" style="width: 88%; background-color: #4CAF50;"></div>
-                    </div>
-                    <div class="metric-value">4.4</div>
-                </div>
-                
-                <div style="margin-top: 1rem; font-size: 0.9rem; color: var(--secondary);">
-                    Based on 167 reviews total
-                </div>
+            <div class="feedback-items-container">
+                <!-- Reviews will be loaded dynamically based on selected facility -->
             </div>
             
-            <div class="reviews-list">
-            <!-- Review Card 1 -->
-                <div class="review-card">
-                    <div class="reviewer">
-                        <img src="~/images/user-default-picture.jpg" alt="Reviewer" class="reviewer-avatar" />
-                        <div class="reviewer-info">
-                            <div class="reviewer-name">Pradeep Kumar Singh</div>
-                            <div class="reviewer-date">2 days ago</div>
-                        </div>
-                        <div class="reviewer-rating">★★★★★</div>
-                    </div>
-                    <div class="review-text">
-                        I very much enjoyed my stay here. The staff was very courteous and helpful. They went out of their way to make me feel comfortable. The facilities were top-notch.
-                    </div>
-                    <div class="review-photos">
-                        <img src="~/images/rental1.png" alt="Review photo" class="review-photo" />
-                        <img src="~/images/rental2.png" alt="Review photo" class="review-photo" />
-                        <img src="~/images/rental3.png" alt="Review photo" class="review-photo" />
-                        <img src="~/images/rental4.png" alt="Review photo" class="review-photo" />
-                    </div>
-                </div>
+            <button class="load-more-button">Load More Reviews</button>
+        </div>
+    </section>
+</div>
 
-                <!-- Review Card 2 -->
-                <div class="review-card">
-                    <div class="reviewer">
-                        <img src="~/images/user-default-picture.jpg" alt="Reviewer" class="reviewer-avatar" />
-                        <div class="reviewer-info">
-                            <div class="reviewer-name">Anjali Sharma</div>
-                            <div class="reviewer-date">1 week ago</div>
-                        </div>
-                        <div class="reviewer-rating">★★★★☆</div>
-                    </div>
-                    <div class="review-text">
-                        The location is perfect, and the amenities are excellent. However, the service could be a bit faster. Overall, a great experience!
-                    </div>
-                    <div class="review-photos">
-                        <img src="~/images/rental2.png" alt="Review photo" class="review-photo" />
-                        <img src="~/images/rental4.png" alt="Review photo" class="review-photo" />
-                    </div>
-                </div>
+<!-- Success Modal -->
+<div class="modal" id="successModal">
+    <div class="modal-content">
+        <span class="close-modal">&times;</span>
+        <div class="modal-icon success">
+            <i class="fas fa-check-circle"></i>
+        </div>
+        <h3>Thank You!</h3>
+        <p>Your feedback has been submitted successfully.</p>
+        <button class="modal-button">OK</button>
+    </div>
+</div>
 
-                <!-- Review Card 3 -->
-                <div class="review-card">
-                    <div class="reviewer">
-                        <img src="~/images/user-default-picture.jpg" alt="Reviewer" class="reviewer-avatar" />
-                        <div class="reviewer-info">
-                            <div class="reviewer-name">Rahul Mehta</div>
-                            <div class="reviewer-date">2 weeks ago</div>
-                        </div>
-                        <div class="reviewer-rating">★★★★★</div>
-                    </div>
-                    <div class="review-text">
-                        Amazing place! The staff is very friendly, and the facilities are well-maintained. Highly recommend this place for a relaxing stay.
-                    </div>
-                    <div class="review-photos">
-                        <img src="~/images/rental3.png" alt="Review photo" class="review-photo" />
-                    </div>
-                </div>
-            </div>
-
+<script src="https://unpkg.com/swiper/swiper-bundle.min.js"></script>
+<script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+<script src="~/js/feedback.js" asp-append-version="true"></script>

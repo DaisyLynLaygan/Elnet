@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - HomeOwner</title>
     <link rel="stylesheet" href="~/css/dashboardhomeowners.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
 </head>
 <body>
 
@@ -19,26 +20,13 @@
     <ul class="nav-menu">
         <li class="nav-item"><a asp-controller="Homeowner" asp-action="Dashboard" class="nav-link">Home</a></li>
         <li class="nav-item">
-            <a href="#" class="nav-link">Services</a>
-        </li>
-        <li class="nav-item">
             <a asp-controller="Homeowner" asp-action="Feedback" class="nav-link">Feedback</a>
         </li>        
         <li class="nav-item">
             <a href="#" class="nav-link">Billing <span>▼</span></a>
             <div class="dropdown-content">
-                <a href="#" class="dropdown-link">Make Payment</a>
+                <a asp-controller="Homeowner" asp-action="Payment" class="dropdown-link">Make Payment</a>
                 <a href="#" class="dropdown-link">View History</a>
-                <a href="#" class="dropdown-link">Setup Autopay</a>
-            </div>
-        </li>
-        <li class="nav-item">
-            <a href="#" class="nav-link">Facilities <span>▼</span></a>
-            <div class="dropdown-content">
-                <a href="#" class="dropdown-link">Reserve Pool</a>
-                <a href="#" class="dropdown-link">Book Event Space</a>
-                <a href="#" class="dropdown-link">Gym Access</a>
-                <a href="#" class="dropdown-link">Tennis Courts</a>
             </div>
         </li>
         <li class="nav-item">
@@ -46,51 +34,54 @@
         </li>
     </ul>
 
-    <!-- User Profile with Dropdown -->
-    <div class="user-profile" onclick="toggleProfileDropdown()">
-        <span>John Smith</span>
-        <img src="~/images/user-default-picture.jpg" alt="User profile" />
-        <!-- Dropdown Menu -->
-        <div class="profile-dropdown">
-            <a href="#" class="dropdown-link">Settings</a>
-            <!-- Log Out Form -->
-            <form asp-controller="Home" asp-action="LogOut" method="post" class="dropdown-link-form">
-                <button type="submit" class="dropdown-link">Log Out</button>
-            </form>
+    <!-- User Profile and Hamburger Container -->
+    <div class="user-hamburger-container">
+        <!-- Hamburger Menu for Mobile -->
+        <button class="hamburger" onclick="toggleMenu()">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+
+        <!-- User Profile with Dropdown -->
+        <div class="user-profile" onclick="toggleProfileDropdown()">
+            <span>John Smith</span>
+            <img src="~/images/user-default-picture.jpg" alt="User profile" />
+            <!-- Dropdown Menu -->
+            <div class="profile-dropdown">
+                <a href="#" class="dropdown-link">Settings</a>
+                <!-- Log Out Form -->
+                <form asp-controller="Home" asp-action="LogOut" method="post" class="dropdown-link-form">
+                    <button type="submit" class="dropdown-link">Log Out</button>
+                </form>
+            </div>
         </div>
     </div>
-
-    <!-- Hamburger Menu for Mobile -->
-    <button class="hamburger" onclick="toggleMenu()">
-        <span></span>
-        <span></span>
-        <span></span>
-    </button>
 </nav>
 
-
-
-        <div>
-        <main>
-            @RenderBody()
-        </main>
-    </div>
+<div>
+    <main>
+        @RenderBody()
+    </main>
+</div>
 
 
 
-    <script src="~/lib/jquery/dist/jquery.min.js"></script>
-    <script src="https://unpkg.com/swiper/swiper-bundle.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.js"></script>
-    <script src="~/js/site.js" asp-append-version="true"></script>
+<script src="~/lib/jquery/dist/jquery.min.js"></script>
+<script src="https://unpkg.com/swiper/swiper-bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.js"></script>
+<script src="~/js/site.js" asp-append-version="true"></script>
 
-    <script>
+<script>
 // Mobile menu toggle
-const hamburger = document.querySelector('.hamburger');
-const navMenu = document.querySelector('.nav-menu');
-
-hamburger.addEventListener('click', () => {
+function toggleMenu() {
+    const navMenu = document.querySelector('.nav-menu');
     navMenu.classList.toggle('active');
-});
+    
+    // Toggle hamburger animation
+    const hamburger = document.querySelector('.hamburger');
+    hamburger.classList.toggle('active');
+}
 
 // Mobile dropdown toggle
 const navLinks = document.querySelectorAll('.nav-link');
@@ -109,7 +100,8 @@ navLinks.forEach(link => {
 // Close mobile menu and dropdowns when clicking outside
 document.addEventListener('click', (e) => {
     if (!e.target.closest('.navbar')) {
-        navMenu.classList.remove('active');
+        document.querySelector('.nav-menu').classList.remove('active');
+        document.querySelector('.hamburger').classList.remove('active');
         document.querySelectorAll('.dropdown-content').forEach(dropdown => {
             dropdown.classList.remove('show');
         });
@@ -154,6 +146,36 @@ document.addEventListener('DOMContentLoaded', function () {
             link.classList.add('active');
         });
     });
+});
+
+// Prevent dropdown from disappearing when moving mouse from nav item to dropdown
+document.querySelectorAll('.nav-item').forEach(item => {
+    const dropdown = item.querySelector('.dropdown-content');
+    if (dropdown) {
+        // Add mouseenter event to keep dropdown open when hovering over it
+        dropdown.addEventListener('mouseenter', () => {
+            item.classList.add('hover');
+        });
+        
+        // Add mouseleave event to close dropdown when leaving it
+        dropdown.addEventListener('mouseleave', () => {
+            item.classList.remove('hover');
+            dropdown.style.display = 'none';
+        });
+        
+        // Add mouseenter event to parent item
+        item.addEventListener('mouseenter', () => {
+            dropdown.style.display = 'block';
+        });
+        
+        // Add mouseleave event to parent item
+        item.addEventListener('mouseleave', () => {
+            // Only hide if not hovering over dropdown
+            if (!item.classList.contains('hover')) {
+                dropdown.style.display = 'none';
+            }
+        });
+    }
 });
 
 // Highlight today's date and select a date (if applicable)
