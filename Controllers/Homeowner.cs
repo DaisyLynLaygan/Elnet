@@ -20,7 +20,15 @@ namespace HomeOwner.Controllers
         {
             return View();
         }
-          public IActionResult Payment()
+        public IActionResult Payment()
+        {
+            return View();
+        }
+        public IActionResult History()
+        {
+            return View();
+        }
+        public IActionResult UserProfile()
         {
             return View();
         }

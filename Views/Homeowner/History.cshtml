@@ -1,0 +1,140 @@
+@page
+@{
+    Layout = "~/Views/Shared/Dashboard_Layout.cshtml";
+}
+
+<link rel="stylesheet" href="~/css/history.css" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<section class="history-section">
+    <div class="container">
+        <div class="history-header">
+            <h1>Payment History</h1>
+            <p>Track and analyze all your property-related payments in one place. View detailed records of rent, maintenance, and facility payments.</p>
+        </div>
+
+        <div class="history-stats">
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-money-bill-wave"></i>
+                </div>
+                <div class="stat-info">
+                    <span class="stat-label">Total Spent</span>
+                    <span class="stat-value">$12,450.00</span>
+                </div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-calendar-check"></i>
+                </div>
+                <div class="stat-info">
+                    <span class="stat-label">This Month</span>
+                    <span class="stat-value">$3,200.00</span>
+                </div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-home"></i>
+                </div>
+                <div class="stat-info">
+                    <span class="stat-label">Rent Payments</span>
+                    <span class="stat-value">10</span>
+                </div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-tools"></i>
+                </div>
+                <div class="stat-info">
+                    <span class="stat-label">Maintenance</span>
+                    <span class="stat-value">7</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="history-graph">
+            <div class="graph-header">
+                <h3><i class="fas fa-chart-bar"></i> Monthly Spending Overview</h3>
+                <div class="graph-filter">
+                    <select id="timeFilter">
+                        <option value="6">Last 6 Months</option>
+                        <option value="12" selected>Last 12 Months</option>
+                        <option value="24">Last 2 Years</option>
+                    </select>
+                </div>
+            </div>
+            <div class="chart-container">
+                <canvas id="spendingChart"></canvas>
+            </div>
+        </div>
+
+        <div class="history-filters">
+            <div class="filter-group">
+                <label for="paymentType"><i class="fas fa-filter"></i> Payment Type</label>
+                <select id="paymentType">
+                    <option value="all">All Types</option>
+                    <option value="rent">Rent</option>
+                    <option value="maintenance">Maintenance</option>
+                    <option value="facilities">Facilities</option>
+                </select>
+            </div>
+            
+            <div class="filter-group">
+                <label for="dateRange"><i class="fas fa-calendar-alt"></i> Date Range</label>
+                <select id="dateRange">
+                    <option value="all">All Time</option>
+                    <option value="month">This Month</option>
+                    <option value="3month">Last 3 Months</option>
+                    <option value="year">This Year</option>
+                </select>
+            </div>
+            
+            <div class="filter-group">
+                <label for="statusFilter"><i class="fas fa-info-circle"></i> Status</label>
+                <select id="statusFilter">
+                    <option value="all">All Statuses</option>
+                    <option value="completed">Completed</option>
+                    <option value="pending">Pending</option>
+                    <option value="failed">Failed</option>
+                </select>
+            </div>
+            
+            <button class="reset-filters">
+                <i class="fas fa-sync-alt"></i> Reset Filters
+            </button>
+        </div>
+
+        <div class="history-list">
+            <div class="list-header">
+                <div class="header-item">Date</div>
+                <div class="header-item">Description</div>
+                <div class="header-item">Type</div>
+                <div class="header-item">Amount</div>
+                <div class="header-item">Status</div>
+                <div class="header-item">Receipt</div>
+            </div>
+            
+            <div class="list-items" id="paymentHistoryItems">
+                <!-- Payment items will be loaded here by JavaScript -->
+            </div>
+            
+            <div class="list-pagination">
+                <button class="pagination-button" id="prevPage" disabled>
+                    <i class="fas fa-chevron-left"></i> Previous
+                </button>
+                <div class="page-numbers">
+                    <span class="current-page">1</span> of <span class="total-pages">3</span>
+                </div>
+                <button class="pagination-button" id="nextPage">
+                    Next <i class="fas fa-chevron-right"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script src="~/js/history.js" asp-append-version="true"></script>

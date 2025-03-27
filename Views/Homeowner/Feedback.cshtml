@@ -6,227 +6,352 @@
 <link rel="stylesheet" href="https://unpkg.com/swiper/swiper-bundle.min.css" />
 <link rel="stylesheet" href="~/css/feedback.css" />
 <div class="container">
-    <!-- Facility Carousel Section -->
-    <section class="facility-carousel-section">
-        <h2>Explore Our Facilities</h2>
-        <p>Select a facility to learn more</p>
-        
-        <div class="swiper-container">
-            <div class="swiper-wrapper">
-                <!-- Facility 1: Function Hall -->
-                <div class="swiper-slide facility-card" data-facility-id="1">
-                    <div class="facility-image">
-                        <img src="~/images/function-hall.jpg" alt="Function Hall">
-                        <div class="facility-rating"><span>4.8 ★</span></div>
+    <!-- Feedback Tabs -->
+    <div class="feedback-tabs">
+        <button class="tab-button active" data-tab="facility-feedback">Facility Feedback</button>
+        <button class="tab-button" data-tab="service-complaints">Service Complaints</button>
+    </div>
+
+    <!-- Facility Feedback Section -->
+    <section class="feedback-content active" id="facility-feedback">
+        <!-- Facility Carousel Section -->
+        <section class="facility-carousel-section">
+            <h2>Explore Our Facilities</h2>
+            <p>Select a facility to provide feedback</p>
+            
+            <div class="swiper-container">
+                <div class="swiper-wrapper">
+                    <!-- Facility 1: Function Hall -->
+                    <div class="swiper-slide facility-card" data-facility-id="1">
+                        <div class="facility-image">
+                            <img src="~/images/function-hall.jpg" alt="Function Hall">
+                            <div class="facility-rating"><span>4.8 ★</span></div>
+                        </div>
+                        <div class="facility-details">
+                            <h3>Function Hall</h3>
+                        </div>
                     </div>
-                    <div class="facility-details">
-                        <h3>Function Hall</h3>
+
+                    <!-- Facility 2: Sports Court -->
+                    <div class="swiper-slide facility-card" data-facility-id="2">
+                        <div class="facility-image">
+                            <img src="~/images/sports-court.jpg" alt="Sports Court">
+                            <div class="facility-rating"><span>4.6 ★</span></div>
+                        </div>
+                        <div class="facility-details">
+                            <h3>Sports Court</h3>
+                        </div>
+                    </div>
+
+                    <!-- Facility 3: Swimming Pool -->
+                    <div class="swiper-slide facility-card" data-facility-id="3">
+                        <div class="facility-image">
+                            <img src="~/images/swimming-pool.jpg" alt="Swimming Pool">
+                            <div class="facility-rating"><span>4.9 ★</span></div>
+                        </div>
+                        <div class="facility-details">
+                            <h3>Swimming Pool</h3>
+                        </div>
+                    </div>
+
+                    <!-- Facility 4: Gym Facility -->
+                    <div class="swiper-slide facility-card" data-facility-id="4">
+                        <div class="facility-image">
+                            <img src="~/images/gym.jpg" alt="Gym Facility">
+                            <div class="facility-rating"><span>4.7 ★</span></div>
+                        </div>
+                        <div class="facility-details">
+                            <h3>Gym Facility</h3>
+                        </div>
                     </div>
                 </div>
+                <div class="swiper-pagination"></div>
+            </div>
+        </section>
 
-                <!-- Facility 2: Sports Court -->
-                <div class="swiper-slide facility-card" data-facility-id="2">
-                    <div class="facility-image">
-                        <img src="~/images/sports-court.jpg" alt="Sports Court">
-                        <div class="facility-rating"><span>4.6 ★</span></div>
-                    </div>
-                    <div class="facility-details">
-                        <h3>Sports Court</h3>
-                    </div>
+        <!-- Feedback Section -->
+        <section class="feedback-section">
+            <div class="feedback-header">
+                <h1>Facility Feedback</h1>
+                <p>Share your experience with <span class="selected-facility">Function Hall</span></p>
+            </div>
+            
+            <!-- Rating Summary -->
+            <div class="rating-summary">
+                <div class="overall-rating">
+                    <div class="rating-number">4.8</div>
+                    <div class="rating-stars">★★★★☆</div>
+                    <div class="rating-count">124 reviews</div>
                 </div>
-
-                <!-- Facility 3: Swimming Pool -->
-                <div class="swiper-slide facility-card" data-facility-id="3">
-                    <div class="facility-image">
-                        <img src="~/images/swimming-pool.jpg" alt="Swimming Pool">
-                        <div class="facility-rating"><span>4.9 ★</span></div>
+                
+                <div class="rating-details">
+                    <div class="rating-item">
+                        <span class="rating-label">Cleanliness</span>
+                        <div class="rating-bar">
+                            <div class="bar-fill cleanliness-bar" style="width: 92%;"></div>
+                        </div>
+                        <span class="rating-value cleanliness-value">4.6</span>
                     </div>
-                    <div class="facility-details">
-                        <h3>Swimming Pool</h3>
+                    
+                    <div class="rating-item">
+                        <span class="rating-label">Equipment</span>
+                        <div class="rating-bar">
+                            <div class="bar-fill equipment-bar" style="width: 88%;"></div>
+                        </div>
+                        <span class="rating-value equipment-value">4.4</span>
                     </div>
-                </div>
-
-                <!-- Facility 4: Gym Facility -->
-                <div class="swiper-slide facility-card" data-facility-id="4">
-                    <div class="facility-image">
-                        <img src="~/images/gym.jpg" alt="Gym Facility">
-                        <div class="facility-rating"><span>4.7 ★</span></div>
+                    
+                    <div class="rating-item">
+                        <span class="rating-label">Staff</span>
+                        <div class="rating-bar">
+                            <div class="bar-fill staff-bar" style="width: 90%;"></div>
+                        </div>
+                        <span class="rating-value staff-value">4.5</span>
                     </div>
-                    <div class="facility-details">
-                        <h3>Gym Facility</h3>
+                    
+                    <div class="rating-item">
+                        <span class="rating-label">Value</span>
+                        <div class="rating-bar">
+                            <div class="bar-fill value-bar" style="width: 86%;"></div>
+                        </div>
+                        <span class="rating-value value-value">4.3</span>
                     </div>
                 </div>
             </div>
-            <div class="swiper-pagination"></div>
-        </div>
+            
+            <!-- Feedback Form -->
+            <div class="feedback-form">
+                <h3>Share Your Experience</h3>
+                <form id="facilityFeedbackForm">
+                    <input type="hidden" id="facilityId" value="1">
+                    
+                    <div class="form-group">
+                        <label>Your Overall Rating</label>
+                        <div class="star-rating">
+                            <span class="star" data-value="1">★</span>
+                            <span class="star" data-value="2">★</span>
+                            <span class="star" data-value="3">★</span>
+                            <span class="star" data-value="4">★</span>
+                            <span class="star" data-value="5">★</span>
+                            <input type="hidden" id="overallRating" name="overallRating" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Category Ratings</label>
+                        <div class="category-ratings">
+                            <div class="category-item">
+                                <span>Cleanliness</span>
+                                <div class="category-stars">
+                                    <span class="cat-star" data-category="cleanliness" data-value="1">★</span>
+                                    <span class="cat-star" data-category="cleanliness" data-value="2">★</span>
+                                    <span class="cat-star" data-category="cleanliness" data-value="3">★</span>
+                                    <span class="cat-star" data-category="cleanliness" data-value="4">★</span>
+                                    <span class="cat-star" data-category="cleanliness" data-value="5">★</span>
+                                    <input type="hidden" id="cleanlinessRating" name="cleanlinessRating" required>
+                                </div>
+                            </div>
+                            
+                            <div class="category-item">
+                                <span>Equipment</span>
+                                <div class="category-stars">
+                                    <span class="cat-star" data-category="equipment" data-value="1">★</span>
+                                    <span class="cat-star" data-category="equipment" data-value="2">★</span>
+                                    <span class="cat-star" data-category="equipment" data-value="3">★</span>
+                                    <span class="cat-star" data-category="equipment" data-value="4">★</span>
+                                    <span class="cat-star" data-category="equipment" data-value="5">★</span>
+                                    <input type="hidden" id="equipmentRating" name="equipmentRating" required>
+                                </div>
+                            </div>
+                            
+                            <div class="category-item">
+                                <span>Staff</span>
+                                <div class="category-stars">
+                                    <span class="cat-star" data-category="staff" data-value="1">★</span>
+                                    <span class="cat-star" data-category="staff" data-value="2">★</span>
+                                    <span class="cat-star" data-category="staff" data-value="3">★</span>
+                                    <span class="cat-star" data-category="staff" data-value="4">★</span>
+                                    <span class="cat-star" data-category="staff" data-value="5">★</span>
+                                    <input type="hidden" id="staffRating" name="staffRating" required>
+                                </div>
+                            </div>
+                            
+                            <div class="category-item">
+                                <span>Value</span>
+                                <div class="category-stars">
+                                    <span class="cat-star" data-category="value" data-value="1">★</span>
+                                    <span class="cat-star" data-category="value" data-value="2">★</span>
+                                    <span class="cat-star" data-category="value" data-value="3">★</span>
+                                    <span class="cat-star" data-category="value" data-value="4">★</span>
+                                    <span class="cat-star" data-category="value" data-value="5">★</span>
+                                    <input type="hidden" id="valueRating" name="valueRating" required>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="feedback-title">Title</label>
+                        <input type="text" id="feedback-title" name="feedbackTitle" placeholder="Summarize your experience" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="feedback-comment">Your Feedback</label>
+                        <textarea id="feedback-comment" name="feedbackComment" rows="5" placeholder="Share details of your experience..." required></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Add Photos (Optional)</label>
+                        <div class="photo-upload">
+                            <div class="upload-box" id="facilityUploadTrigger">
+                                <span>+</span>
+                                <p>Add Photo</p>
+                                <input type="file" id="facilityPhotoUpload" name="feedbackPhotos" accept="image/*" multiple style="display: none;">
+                            </div>
+                            <div class="upload-preview" id="facilityUploadPreview"></div>
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="submit-button">Submit Feedback</button>
+                </form>
+            </div>
+            
+            <!-- Feedback List -->
+            <div class="feedback-list">
+                <div class="feedback-list-header">
+                    <h3>Recent Reviews</h3>
+                    <div class="sort-options">
+                        <span>Sort by:</span>
+                        <select id="sortReviews">
+                            <option value="newest">Newest First</option>
+                            <option value="highest">Highest Rating</option>
+                            <option value="lowest">Lowest Rating</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="feedback-items-container">
+                    <!-- Reviews will be loaded dynamically based on selected facility -->
+                </div>
+                
+                <button class="load-more-button">Load More Reviews</button>
+            </div>
+        </section>
     </section>
 
-    <!-- Feedback Section -->
-    <section class="feedback-section">
-        <div class="feedback-header">
-            <h1>Customer Feedback</h1>
-            <p>Share your experience with <span class="selected-facility">Function Hall</span></p>
+    <!-- Service Complaints Section -->
+    <section class="feedback-content" id="service-complaints">
+        <div class="complaints-header">
+            <h1>Service Complaints</h1>
+            <p>Report issues with maintenance services you've received</p>
         </div>
-        
-        <!-- Rating Summary -->
-        <div class="rating-summary">
-            <div class="overall-rating">
-                <div class="rating-number">4.8</div>
-                <div class="rating-stars">★★★★☆</div>
-                <div class="rating-count">124 reviews</div>
-            </div>
-            
-            <div class="rating-details">
-                <div class="rating-item">
-                    <span class="rating-label">Cleanliness</span>
-                    <div class="rating-bar">
-                        <div class="bar-fill cleanliness-bar" style="width: 92%;"></div>
+
+        <!-- Complaint Status Tabs -->
+        <div class="complaint-status-tabs">
+            <button class="status-tab active" data-status="all">All Complaints</button>
+            <button class="status-tab" data-status="open">Open</button>
+            <button class="status-tab" data-status="in-progress">In Progress</button>
+            <button class="status-tab" data-status="resolved">Resolved</button>
+        </div>
+
+        <!-- Complaint Form -->
+        <div class="complaint-form-container">
+            <button id="newComplaintBtn" class="new-complaint-button">
+                <i class="fas fa-plus"></i> New Complaint
+            </button>
+
+            <div class="complaint-form" id="complaintForm" style="display: none;">
+                <h3>File a New Complaint</h3>
+                <form id="serviceComplaintForm">
+                    <div class="form-group">
+                        <label for="complaint-service">Service Type</label>
+                        <select id="complaint-service" name="serviceType" required>
+                            <option value="">Select a service</option>
+                            <option value="House Cleaning">House Cleaning</option>
+                            <option value="Garden Maintenance">Garden Maintenance</option>
+                            <option value="Handyman Services">Handyman Services</option>
+                            <option value="Safety Inspection">Safety Inspection</option>
+                            <option value="Deep Cleaning">Deep Cleaning</option>
+                            <option value="HVAC Maintenance">HVAC Maintenance</option>
+                            <option value="Other">Other</option>
+                        </select>
                     </div>
-                    <span class="rating-value cleanliness-value">4.6</span>
-                </div>
-                
-                <div class="rating-item">
-                    <span class="rating-label">Equipment</span>
-                    <div class="rating-bar">
-                        <div class="bar-fill equipment-bar" style="width: 88%;"></div>
+
+                    <div class="form-group">
+                        <label for="complaint-title">Complaint Title</label>
+                        <input type="text" id="complaint-title" name="complaintTitle" placeholder="Brief description of the issue" required>
                     </div>
-                    <span class="rating-value equipment-value">4.4</span>
-                </div>
-                
-                <div class="rating-item">
-                    <span class="rating-label">Staff</span>
-                    <div class="rating-bar">
-                        <div class="bar-fill staff-bar" style="width: 90%;"></div>
+
+                    <div class="form-group">
+                        <label for="complaint-description">Detailed Description</label>
+                        <textarea id="complaint-description" name="complaintDescription" rows="5" placeholder="Describe the issue in detail..." required></textarea>
                     </div>
-                    <span class="rating-value staff-value">4.5</span>
-                </div>
-                
-                <div class="rating-item">
-                    <span class="rating-label">Value</span>
-                    <div class="rating-bar">
-                        <div class="bar-fill value-bar" style="width: 86%;"></div>
+
+                    <div class="form-group">
+                        <label>Severity Level</label>
+                        <div class="severity-levels">
+                            <label class="severity-option">
+                                <input type="radio" name="severity" value="low" checked>
+                                <span class="severity-label low">Low</span>
+                                <span class="severity-desc">Minor inconvenience</span>
+                            </label>
+                            <label class="severity-option">
+                                <input type="radio" name="severity" value="medium">
+                                <span class="severity-label medium">Medium</span>
+                                <span class="severity-desc">Affects functionality</span>
+                            </label>
+                            <label class="severity-option">
+                                <input type="radio" name="severity" value="high">
+                                <span class="severity-label high">High</span>
+                                <span class="severity-desc">Urgent - needs immediate attention</span>
+                            </label>
+                        </div>
                     </div>
-                    <span class="rating-value value-value">4.3</span>
-                </div>
+
+                    <div class="form-group">
+                        <label>Service Date</label>
+                        <input type="date" id="service-date" name="serviceDate" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Add Supporting Documents (Optional)</label>
+                        <div class="photo-upload">
+                            <div class="upload-box" id="complaintUploadTrigger">
+                                <span>+</span>
+                                <p>Add File</p>
+                                <input type="file" id="complaintFileUpload" name="complaintFiles" accept="image/*,.pdf,.doc,.docx" multiple style="display: none;">
+                            </div>
+                            <div class="upload-preview" id="complaintUploadPreview"></div>
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="button" class="cancel-button" id="cancelComplaint">Cancel</button>
+                        <button type="submit" class="submit-button">Submit Complaint</button>
+                    </div>
+                </form>
             </div>
         </div>
-        
-        <!-- Feedback Form -->
-        <div class="feedback-form">
-            <h3>Share Your Experience</h3>
-            <form id="feedbackForm">
-                <input type="hidden" id="facilityId" value="1">
-                
-                <div class="form-group">
-                    <label>Your Overall Rating</label>
-                    <div class="star-rating">
-                        <span class="star" data-value="1">★</span>
-                        <span class="star" data-value="2">★</span>
-                        <span class="star" data-value="3">★</span>
-                        <span class="star" data-value="4">★</span>
-                        <span class="star" data-value="5">★</span>
-                        <input type="hidden" id="overallRating" name="overallRating" required>
-                    </div>
-                </div>
-                
-                <div class="form-group">
-                    <label>Category Ratings</label>
-                    <div class="category-ratings">
-                        <div class="category-item">
-                            <span>Cleanliness</span>
-                            <div class="category-stars">
-                                <span class="cat-star" data-category="cleanliness" data-value="1">★</span>
-                                <span class="cat-star" data-category="cleanliness" data-value="2">★</span>
-                                <span class="cat-star" data-category="cleanliness" data-value="3">★</span>
-                                <span class="cat-star" data-category="cleanliness" data-value="4">★</span>
-                                <span class="cat-star" data-category="cleanliness" data-value="5">★</span>
-                                <input type="hidden" id="cleanlinessRating" name="cleanlinessRating" required>
-                            </div>
-                        </div>
-                        
-                        <div class="category-item">
-                            <span>Equipment</span>
-                            <div class="category-stars">
-                                <span class="cat-star" data-category="equipment" data-value="1">★</span>
-                                <span class="cat-star" data-category="equipment" data-value="2">★</span>
-                                <span class="cat-star" data-category="equipment" data-value="3">★</span>
-                                <span class="cat-star" data-category="equipment" data-value="4">★</span>
-                                <span class="cat-star" data-category="equipment" data-value="5">★</span>
-                                <input type="hidden" id="equipmentRating" name="equipmentRating" required>
-                            </div>
-                        </div>
-                        
-                        <div class="category-item">
-                            <span>Staff</span>
-                            <div class="category-stars">
-                                <span class="cat-star" data-category="staff" data-value="1">★</span>
-                                <span class="cat-star" data-category="staff" data-value="2">★</span>
-                                <span class="cat-star" data-category="staff" data-value="3">★</span>
-                                <span class="cat-star" data-category="staff" data-value="4">★</span>
-                                <span class="cat-star" data-category="staff" data-value="5">★</span>
-                                <input type="hidden" id="staffRating" name="staffRating" required>
-                            </div>
-                        </div>
-                        
-                        <div class="category-item">
-                            <span>Value</span>
-                            <div class="category-stars">
-                                <span class="cat-star" data-category="value" data-value="1">★</span>
-                                <span class="cat-star" data-category="value" data-value="2">★</span>
-                                <span class="cat-star" data-category="value" data-value="3">★</span>
-                                <span class="cat-star" data-category="value" data-value="4">★</span>
-                                <span class="cat-star" data-category="value" data-value="5">★</span>
-                                <input type="hidden" id="valueRating" name="valueRating" required>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="form-group">
-                    <label for="feedback-title">Title</label>
-                    <input type="text" id="feedback-title" name="feedbackTitle" placeholder="Summarize your experience" required>
-                </div>
-                
-                <div class="form-group">
-                    <label for="feedback-comment">Your Feedback</label>
-                    <textarea id="feedback-comment" name="feedbackComment" rows="5" placeholder="Share details of your experience..." required></textarea>
-                </div>
-                
-                <div class="form-group">
-                    <label>Add Photos (Optional)</label>
-                    <div class="photo-upload">
-                        <div class="upload-box" id="uploadTrigger">
-                            <span>+</span>
-                            <p>Add Photo</p>
-                            <input type="file" id="photoUpload" name="feedbackPhotos" accept="image/*" multiple style="display: none;">
-                        </div>
-                        <div class="upload-preview" id="uploadPreview"></div>
-                    </div>
-                </div>
-                
-                <button type="submit" class="submit-button">Submit Feedback</button>
-            </form>
-        </div>
-        
-        <!-- Feedback List -->
-        <div class="feedback-list">
-            <div class="feedback-list-header">
-                <h3>Recent Reviews</h3>
-                <div class="sort-options">
-                    <span>Sort by:</span>
-                    <select id="sortReviews">
-                        <option value="newest">Newest First</option>
-                        <option value="highest">Highest Rating</option>
-                        <option value="lowest">Lowest Rating</option>
-                    </select>
+
+        <!-- Complaints List -->
+        <div class="complaints-list">
+            <div class="complaints-list-header">
+                <h3>Your Complaints</h3>
+                <div class="complaints-count">
+                    <span id="totalComplaints">0</span> complaints (<span id="openComplaints">0</span> open)
                 </div>
             </div>
-            
-            <div class="feedback-items-container">
-                <!-- Reviews will be loaded dynamically based on selected facility -->
+
+            <div class="complaints-items-container">
+                <!-- Complaints will be loaded dynamically -->
+                <div class="no-complaints" id="noComplaintsMessage">
+                    <img src="~/images/no-complaints.svg" alt="No complaints">
+                    <p>You haven't filed any complaints yet</p>
+                    <button class="new-complaint-button" id="newComplaintEmptyBtn">
+                        <i class="fas fa-plus"></i> File a Complaint
+                    </button>
+                </div>
             </div>
-            
-            <button class="load-more-button">Load More Reviews</button>
         </div>
     </section>
 </div>
@@ -238,9 +363,61 @@
         <div class="modal-icon success">
             <i class="fas fa-check-circle"></i>
         </div>
-        <h3>Thank You!</h3>
-        <p>Your feedback has been submitted successfully.</p>
+        <h3 id="modalTitle">Thank You!</h3>
+        <p id="modalMessage">Your feedback has been submitted successfully.</p>
         <button class="modal-button">OK</button>
+    </div>
+</div>
+
+<!-- Complaint Details Modal -->
+<div class="modal" id="complaintDetailsModal">
+    <div class="modal-content">
+        <span class="close-modal">&times;</span>
+        <div class="complaint-details-header">
+            <h3 id="complaintModalTitle"></h3>
+            <div class="complaint-status-badge" id="complaintModalStatus"></div>
+        </div>
+        
+        <div class="complaint-details-body">
+            <div class="complaint-meta">
+                <div class="meta-item">
+                    <span class="meta-label">Service Type:</span>
+                    <span class="meta-value" id="complaintModalService"></span>
+                </div>
+                <div class="meta-item">
+                    <span class="meta-label">Date Filed:</span>
+                    <span class="meta-value" id="complaintModalDate"></span>
+                </div>
+                <div class="meta-item">
+                    <span class="meta-label">Severity:</span>
+                    <span class="meta-value" id="complaintModalSeverity"></span>
+                </div>
+            </div>
+            
+            <div class="complaint-description">
+                <h4>Description</h4>
+                <p id="complaintModalDescription"></p>
+            </div>
+            
+            <div class="complaint-attachments" id="complaintModalAttachments">
+                <h4>Attachments</h4>
+                <div class="attachments-container"></div>
+            </div>
+            
+            <div class="complaint-updates" id="complaintModalUpdates">
+                <h4>Updates</h4>
+                <div class="updates-container"></div>
+            </div>
+            
+            <div class="complaint-response-form" id="complaintResponseForm">
+                <h4>Add Update</h4>
+                <textarea id="complaintResponseText" placeholder="Add additional information or reply to the admin..."></textarea>
+                <div class="form-actions">
+                    <button type="button" class="cancel-button" id="cancelResponse">Cancel</button>
+                    <button type="button" class="submit-button" id="submitResponse">Submit Update</button>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 

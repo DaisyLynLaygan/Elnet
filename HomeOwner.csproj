@@ -4,6 +4,8 @@
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <RazorCompileOnBuild>true</RazorCompileOnBuild> <!-- Ensure Razor views are compiled during build -->
+    <RazorCompileOnRun>false</RazorCompileOnRun>    <!-- Disable runtime compilation to avoid ENC0021 -->
   </PropertyGroup>
 
   <ItemGroup>
