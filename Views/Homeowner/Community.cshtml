@@ -13,70 +13,35 @@
             <div class="sidebar-section">
                 <div class="sidebar-item active">
                     <i class="fas fa-home"></i>
-                    <span>My Home</span>
+                    <span>Home</span>
                 </div>
                 <div class="sidebar-item">
-                    <i class="fas fa-users"></i>
-                    <span>Neighbors</span>
-                </div>
-                <div class="sidebar-item">
-                    <i class="fas fa-comments"></i>
-                    <span>Community Forum</span>
-                    <span class="badge">5</span>
+                    <i class="fas fa-comment-alt"></i>
+                    <span>Feedback</span>
                 </div>
                 <div class="sidebar-item">
                     <i class="far fa-calendar-alt"></i>
-                    <span>Local Events</span>
-                </div>
-            </div>
-
-            <div class="sidebar-section">
-                <h3 class="sidebar-title">Neighborhood</h3>
-                <div class="sidebar-item">
-                    <i class="fas fa-tree"></i>
-                    <span>Garden Club</span>
-                </div>
-                <div class="sidebar-item">
-                    <i class="fas fa-dog"></i>
-                    <span>Pet Owners</span>
-                </div>
-                <div class="sidebar-item">
-                    <i class="fas fa-child"></i>
-                    <span>Parents Group</span>
-                </div>
-            </div>
-
-            <div class="sidebar-section">
-                <h3 class="sidebar-title">Resources</h3>
-                <div class="sidebar-item">
-                    <i class="fas fa-tools"></i>
-                    <span>Maintenance</span>
-                </div>
-                <div class="sidebar-item">
-                    <i class="fas fa-shield-alt"></i>
-                    <span>Safety</span>
+                    <span>Events</span>
                 </div>
             </div>
         </div>
 
         <!-- Middle Content (60%) -->
         <div class="community-newsfeed">
-         
-            <!-- Create Post -->
+            <!-- Create Post Section -->
             <div class="create-post">
                 <div class="create-post-header">
                     <img src="~/images/user-default-picture.jpg" alt="Profile">
-                    <input type="text" placeholder="Share with neighbors..." class="post-input">
+                    <input type="text" placeholder="Share with neighbors..." class="post-input" id="postInput">
                 </div>
                 <div class="post-actions">
-                    <button class="post-action">
+                    <button class="post-action" id="addPhotoBtn">
                         <i class="fas fa-image" style="color: #45bd62;"></i> Photo
                     </button>
-                    <button class="post-action">
-                        <i class="fas fa-calendar" style="color: #f7b928;"></i> Event
-                    </button>
-                    <button class="post-submit">Post</button>
+                    <input type="file" id="photoUpload" accept="image/*" multiple style="display: none;">
+                    <button class="post-submit" id="submitPostBtn">Post</button>
                 </div>
+                <div class="photo-preview-container" id="photoPreviewContainer"></div>
             </div>
 
             <!-- Neighborhood Posts -->
@@ -103,7 +68,7 @@
                     <span class="reactions">
                         <i class="fas fa-thumbs-up"></i> 12
                     </span>
-                    <span class="comments">
+                    <span class="comments" data-post-id="1">
                         5 comments
                     </span>
                 </div>
@@ -111,7 +76,7 @@
                     <button class="interaction-button">
                         <i class="far fa-thumbs-up"></i> <span>Helpful</span>
                     </button>
-                    <button class="interaction-button">
+                    <button class="interaction-button comment-btn" data-post-id="1">
                         <i class="far fa-comment"></i> <span>Comment</span>
                     </button>
                     <button class="interaction-button">
@@ -140,7 +105,7 @@
                     <span class="reactions">
                         <i class="fas fa-thumbs-up"></i> 24
                     </span>
-                    <span class="comments">
+                    <span class="comments" data-post-id="2">
                         8 comments
                     </span>
                 </div>
@@ -148,7 +113,7 @@
                     <button class="interaction-button">
                         <i class="far fa-thumbs-up"></i> <span>Helpful</span>
                     </button>
-                    <button class="interaction-button">
+                    <button class="interaction-button comment-btn" data-post-id="2">
                         <i class="far fa-comment"></i> <span>Comment</span>
                     </button>
                     <button class="interaction-button">
@@ -209,6 +174,28 @@
     </div>
 </div>
 
+<!-- Comment Modal -->
+<div class="modal" id="commentModal">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Comments</h3>
+                <button type="button" class="close-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="comments-container" id="commentsContainer">
+                    <!-- Comments will be loaded here -->
+                </div>
+                <div class="add-comment">
+                    <img src="~/images/user-default-picture.jpg" alt="User">
+                    <input type="text" placeholder="Write a comment..." id="commentInput">
+                    <button class="btn-post-comment">Post</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 @functions {
     private string GetRandomPropertyImage()
     {
@@ -222,3 +209,5 @@
         return images[random.Next(images.Count)];
     }
 }
+
+<script src="~/js/community.js" asp-append-version="true"></script>

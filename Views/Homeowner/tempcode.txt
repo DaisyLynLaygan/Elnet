@@ -1,831 +1,335 @@
-/* Base Styles */
-:root {
-    --brown: #6B4423;
-    --light-brown: #8B5D3D;
-    --dark-brown: #4A2E1A;
-    --beige: #F5F0E6;
-    --cream: #FFF8F0;
-    --light-gray: #f0f2f5;
-    --gray: #E0E0E0;
-    --white: #FFFFFF;
-    --primary: var(--brown);
-    --secondary: var(--light-brown);
-    --accent: #D4A373;
-    --text-dark: #050505;
-    --text-light: #F5F5F5;
-    --text-gray: #65676B;
-    --border-color: #dddfe2;
-    --shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-    --card-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
-    --spacing-unit: 16px;
-    --header-height: 60px;
-}
-
-/* Payment Section Styles */
-.payment-section {
-    padding: 2rem 0;
-    background-color: var(--light-gray);
-}
-
-.container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 0 1.5rem;
-}
-
-.payment-header {
-    text-align: center;
-    margin-bottom: 2rem;
-}
-
-.payment-header h1 {
-    font-size: 2.2rem;
-    color: var(--primary);
-    margin-bottom: 0.5rem;
-}
-
-.pay-now-button, .setup-autopay {
-    flex: 1;
-    padding: 1rem;
-    border: none;
-    border-radius: 8px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-}
-
-.pay-now-button {
-    background-color: var(--primary);
-    color: var(--white);
-}
-
-.pay-now-button:hover {
-    background-color: var(--dark-brown);
-}
-
-.setup-autopay {
-    background-color: var(--white);
-    color: var(--primary);
-    border: 1px solid var(--primary);
-}
-
-.setup-autopay:hover {
-    background-color: rgba(107, 68, 35, 0.05);
-}
-.payment-header p {
-    color: var(--secondary);
-    font-size: 1.1rem;
-}
-
-/* Payment Tabs */
-.payment-tabs {
-    display: flex;
-    border-bottom: 1px solid var(--border-color);
-    margin-bottom: 2rem;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-}
-
-.tab-button {
-    padding: 0.75rem 1.5rem;
-    background: none;
-    border: none;
-    border-bottom: 3px solid transparent;
-    font-weight: 600;
-    color: var(--text-gray);
-    cursor: pointer;
-    transition: all 0.3s ease;
-    white-space: nowrap;
-    flex-shrink: 0;
-}
-
-.tab-button.active {
-    color: var(--primary);
-    border-bottom-color: var(--primary);
-}
-
-.tab-content {
-    display: none;
-}
-
-.tab-content.active {
-    display: block;
-}
-
-/* Payment Card Styles */
-.payment-card {
-    background-color: var(--white);
-    border-radius: 8px;
-    box-shadow: var(--card-shadow);
-    padding: 2rem;
-    margin-bottom: 2rem;
-}
-
-.payment-details {
-    display: flex;
-    gap: 2rem;
-    margin-bottom: 2rem;
-}
-
-.property-info {
-    flex: 1;
-}
-
-.property-info h3 {
-    font-size: 1.5rem;
-    color: var(--primary);
-    margin-bottom: 1rem;
-}
-
-.property-meta {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 1.5rem;
-}
-
-.meta-item {
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
-}
-
-.meta-label {
-    font-size: 0.9rem;
-    color: var(--secondary);
-}
-
-.meta-value {
-    font-size: 1.1rem;
-    font-weight: 600;
-}
-
-.status-paid {
-    color: #27AE60;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-.status-pending {
-    color: #F2C94C;
-}
-
-.payment-options {
-    flex: 1;
-}
-
-.payment-options h4 {
-    margin-bottom: 1rem;
-    color: var(--primary);
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-.payment-methods {
-    display: flex;
-    gap: 1rem;
-    margin-bottom: 1.5rem;
-    flex-wrap: wrap;
-}
-
-.method-card {
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
-    padding: 0.75rem 1rem;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    flex: 1 1 200px;
-}
-
-.method-card.active {
-    border-color: var(--primary);
-    background-color: rgba(107, 68, 35, 0.05);
-}
-
-.method-card i {
-    font-size: 1.5rem;
-}
-
-.method-card:hover {
-    border-color: var(--primary);
-}
-
-.method-card.add-card {
-    color: var(--light-brown);
-    justify-content: center;
-}
-
-.method-card.add-card:hover {
-    background: var(--light-gray);
-}
-
-.payment-amount {
-    margin-bottom: 1.5rem;
-}
-
-.payment-amount label {
-    display: block;
-    margin-bottom: 0.5rem;
-    color: var(--secondary);
-}
-
-.amount-input {
-    display: flex;
-    align-items: center;
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
-    padding: 0.75rem 1rem;
-    max-width: 300px;
-}
-
-.amount-input span {
-    font-weight: 600;
-    margin-right: 0.5rem;
-}
-
-.amount-input input {
-    border: none;
-    outline: none;
-    font-size: 1.1rem;
-    width: 100%;
-}
-
-.payment-actions {
-    display: flex;
-    gap: 1rem;
-}
-
-.btn {
-    padding: 0.8rem 1.5rem;
-    border: none;
-    border-radius: 6px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-}
-
-.pay-now {
-    background: var(--brown);
-    color: white;
-    flex: 1;
-}
-
-.pay-now:hover {
-    background: var(--dark-brown);
-}
-
-.setup-autopay {
-    background: var(--beige);
-    color: var(--dark-brown);
-    flex: 1;
-    border: 1px solid var(--border-color);
-}
-
-.setup-autopay:hover {
-    background: #e8e1d3;
-}
-
-/* Services Tab Styles */
-.services-container {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 1.5rem;
-    margin-bottom: 2rem;
-}
-
-.service-card {
-    background: var(--white);
-    border-radius: 12px;
-    padding: 1.5rem;
-    box-shadow: var(--card-shadow);
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-    transition: transform 0.3s ease;
-}
-
-.service-card:hover {
-    transform: translateY(-5px);
-}
-
-.service-icon {
-    width: 60px;
-    height: 60px;
-    background: var(--beige);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.5rem;
-    color: var(--brown);
-}
-
-.service-info h3 {
-    font-size: 1.2rem;
-    margin: 0.5rem 0;
-    color: var(--dark-brown);
-}
-
-.service-info p {
-    color: var(--text-gray);
-    margin-bottom: 0.5rem;
-    font-size: 0.9rem;
-}
-
-.service-price {
-    font-weight: 600;
-    color: var(--dark-brown);
-}
-
-.book-service {
-    background: var(--light-brown);
-    color: white;
-    width: 100%;
-    padding: 0.75rem;
-    border: none;
-    border-radius: 6px;
-    font-weight: 600;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    margin-top: auto;
-}
-
-.book-service:hover {
-    background: var(--dark-brown);
-}
-
-/* Facilities Tab Styles */
-.facilities-container {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 1.5rem;
-    margin-bottom: 2rem;
-}
-
-.facility-card {
-    background: var(--white);
-    border-radius: 12px;
-    overflow: hidden;
-    box-shadow: var(--card-shadow);
-    transition: transform 0.3s ease;
-}
-
-.facility-card:hover {
-    transform: translateY(-5px);
-}
-
-.facility-image {
-    height: 180px;
-    overflow: hidden;
-}
-
-.facility-image img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    transition: transform 0.3s ease;
-}
-
-.facility-card:hover .facility-image img {
-    transform: scale(1.05);
-}
-
-.facility-info {
-    padding: 1.5rem;
-}
-
-.facility-info h3 {
-    font-size: 1.3rem;
-    margin-bottom: 0.5rem;
-    color: var(--dark-brown);
-}
-
-.facility-info p {
-    color: var(--text-gray);
-    margin-bottom: 1rem;
-    font-size: 0.9rem;
-}
-
-.facility-meta {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 1rem;
-    margin-bottom: 1.5rem;
-    font-size: 0.9rem;
-}
-
-.facility-meta span {
-    display: flex;
-    align-items: center;
-    gap: 0.3rem;
-}
-
-.book-facility {
-    background: var(--light-brown);
-    color: white;
-    width: 100%;
-    padding: 0.75rem;
-    border: none;
-    border-radius: 6px;
-    font-weight: 600;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-}
-
-.book-facility:hover {
-    background: var(--dark-brown);
-}
-
-/* Bookings Container (for maintenance and facilities) */
-.bookings-container {
-    background-color: var(--white);
-    border-radius: 8px;
-    box-shadow: var(--card-shadow);
-    padding: 2rem;
-    margin-bottom: 2rem;
-}
-
-.no-bookings {
-    text-align: center;
-    padding: 2rem;
-    color: var(--text-gray);
-}
-
-.no-bookings i {
-    font-size: 3rem;
-    color: var(--gray);
-    margin-bottom: 1rem;
-}
-
-.no-bookings p {
-    margin-bottom: 1.5rem;
-}
-
-.book-now-button {
-    display: inline-block;
-    padding: 0.75rem 1.5rem;
-    background-color: var(--primary);
-    color: white;
-    border-radius: 8px;
-    text-decoration: none;
-    font-weight: 600;
-    transition: background-color 0.3s ease;
-}
-
-.book-now-button:hover {
-    background-color: var(--dark-brown);
-}
-
-/* Booking Cards */
-.booking-card {
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
-    padding: 1.5rem;
-    margin-bottom: 1rem;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.booking-info h4 {
-    color: var(--primary);
-    margin-bottom: 0.5rem;
-}
-
-.booking-details {
-    display: flex;
-    gap: 1.5rem;
-    margin-top: 0.5rem;
-}
-
-.booking-detail {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    color: var(--secondary);
-}
-
-.booking-actions {
-    display: flex;
-    gap: 0.5rem;
-}
-
-.pay-booking-button {
-    padding: 0.75rem 1.5rem;
-    background-color: var(--primary);
-    color: white;
-    border: none;
-    border-radius: 8px;
-    font-weight: 600;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-.pay-booking-button:hover {
-    background-color: var(--dark-brown);
-}
-
-.cancel-booking-button {
-    padding: 0.75rem 1.5rem;
-    background-color: var(--white);
-    color: var(--danger);
-    border: 1px solid var(--danger);
-    border-radius: 8px;
-    font-weight: 600;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-.cancel-booking-button:hover {
-    background-color: rgba(235, 87, 87, 0.05);
-}
-
-/* Payment Modal */
-.payment-modal {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
-    z-index: 1000;
-    align-items: center;
-    justify-content: center;
-    padding: 1rem;
-    box-sizing: border-box;
-}
-
-.modal-content {
-    background-color: var(--white);
-    border-radius: 8px;
-    width: 100%;
-    max-width: 500px;
-    box-shadow: var(--shadow);
-    max-height: 90vh;
-    overflow-y: auto;
-}
-
-.modal-header {
-    padding: 1.5rem;
-    border-bottom: 1px solid var(--border-color);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    position: sticky;
-    top: 0;
-    background-color: var(--white);
-    z-index: 1;
-}
-
-.modal-header h2 {
-    margin: 0;
-    font-size: 1.5rem;
-    color: var(--dark-brown);
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-.close-modal {
-    background: none;
-    border: none;
-    font-size: 1.8rem;
-    cursor: pointer;
-    color: var(--text-gray);
-}
-
-.modal-body {
-    padding: 1.5rem;
-}
-
-.payment-summary {
-    margin-bottom: 1.5rem;
-}
-
-.payment-summary h3 {
-    margin-top: 0;
-    margin-bottom: 1.5rem;
-    color: var(--dark-brown);
-}
-
-.summary-item {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 1rem;
-    padding-bottom: 1rem;
-    border-bottom: 1px solid var(--border-color);
-}
-
-.summary-item .label {
-    color: var(--text-gray);
-    font-weight: 500;
-}
-
-.summary-item .value {
-    font-weight: 600;
-}
-
-.payment-confirm {
-    text-align: center;
-}
-
-.confirm-button {
-    background: var(--brown);
-    color: white;
-    width: 100%;
-    padding: 1rem;
-    font-size: 1.1rem;
-    border: none;
-    border-radius: 6px;
-    font-weight: 600;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-}
-
-.confirm-button:hover {
-    background: var(--dark-brown);
-}
-
-.secure-note {
-    margin-top: 1rem;
-    font-size: 0.9rem;
-    color: var(--text-gray);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-}
-
-/* Responsive Styles */
-@media (max-width: 1024px) {
-    /* Tablet styles */
-    .payment-details {
-        flex-direction: column;
+@page
+@{
+    Layout = "~/Views/Shared/Dashboard_Nav.cshtml";
+}
+
+<link rel="stylesheet" href="~/css/community.css" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+<div class="community-wrapper">
+    <div class="community-container">
+
+            <div class="sidebar-section">
+                <div class="sidebar-item active">
+                    <i class="fas fa-home"></i>
+                    <span>My Home</span>
+                </div>
+                <div class="sidebar-item">
+                    <i class="fas fa-users"></i>
+                    <span>Neighbors</span>
+                </div>
+                <div class="sidebar-item">
+                    <i class="fas fa-comments"></i>
+                    <span>Community Forum</span>
+                    <span class="badge">5</span>
+                </div>
+                <div class="sidebar-item">
+                    <i class="far fa-calendar-alt"></i>
+                    <span>Local Events</span>
+                </div>
+            </div>
+
+        <!-- Middle Content (60%) -->
+        <div class="community-newsfeed">
+            <!-- Create Post -->
+            <div class="create-post">
+                <div class="create-post-header">
+                    <img src="~/images/user-default-picture.jpg" alt="Profile">
+                    <input type="text" placeholder="Share with neighbors..." class="post-input">
+                </div>
+                <div class="post-actions">
+                    <button class="post-action" id="addPhotoBtn">
+                        <i class="fas fa-image" style="color: #45bd62;"></i> Photo
+                    </button>
+                    <input type="file" id="photoUpload" accept="image/*" multiple style="display: none;">
+                    <button class="post-action">
+                        <i class="fas fa-calendar" style="color: #f7b928;"></i> Event
+                    </button>
+                    <button class="post-submit" id="submitPostBtn">Post</button>
+                </div>
+                <div class="photo-preview-container" id="photoPreviewContainer"></div>
+            </div>
+
+            <!-- Neighborhood Posts -->
+            <div class="neighborhood-post">
+                <div class="post-header">
+                    <img src="~/images/user-default-picture.jpg" alt="User">
+                    <div class="post-user-info">
+                        <strong>Sarah Johnson</strong>
+                        <div class="post-meta">
+                            <span>Yesterday · Oak Street</span>
+                        </div>
+                    </div>
+                    <button class="post-options">
+                        <i class="fas fa-ellipsis-h"></i>
+                    </button>
+                </div>
+                <div class="post-content">
+                    Does anyone have recommendations for a good plumber? Our kitchen sink is leaking badly.
+                </div>
+                <div class="post-image">
+                    <img src="@GetRandomPropertyImage()" alt="Leaking sink">
+                </div>
+                <div class="post-stats">
+                    <span class="reactions">
+                        <i class="fas fa-thumbs-up"></i> 12
+                    </span>
+                    <span class="comments" data-post-id="1">
+                        5 comments
+                    </span>
+                </div>
+                <div class="post-interactions">
+                    <button class="interaction-button">
+                        <i class="far fa-thumbs-up"></i> <span>Helpful</span>
+                    </button>
+                    <button class="interaction-button comment-btn" data-post-id="1">
+                        <i class="far fa-comment"></i> <span>Comment</span>
+                    </button>
+                    <button class="interaction-button">
+                        <i class="fas fa-share"></i> <span>Share</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- ... (other posts) ... -->
+        </div>
+
+       <!-- Right Sidebar (20%) -->
+        <div class="community-announcements">
+            <div class="announcements-header">
+                <h3><i class="fas fa-bullhorn"></i> Announcements</h3>
+            </div>
+            
+            <div class="announcement-item important">
+                <i class="fas fa-exclamation-circle" style="color: #f02849;"></i>
+                <div class="announcement-content">
+                    <strong>Water Maintenance</strong>
+                    <span>June 15, 8am-4pm</span>
+                </div>
+            </div>
+            
+            <div class="announcement-item">
+                <i class="fas fa-trash" style="color: #45bd62;"></i>
+                <div class="announcement-content">
+                    <strong>Trash Schedule</strong>
+                    <span>No pickup on Monday</span>
+                </div>
+            </div>
+
+            <div class="announcements-header">
+                <h3><i class="fas fa-calendar-alt"></i> Upcoming Events</h3>
+            </div>
+            
+            <div class="event-item">
+                <div class="event-date">
+                    <span class="day">15</span>
+                    <span class="month">JUN</span>
+                </div>
+                <div class="event-details">
+                    <strong>Block Party</strong>
+                    <span>Main Street, 12-5pm</span>
+                </div>
+            </div>
+            
+            <div class="event-item">
+                <div class="event-date">
+                    <span class="day">22</span>
+                    <span class="month">JUN</span>
+                </div>
+                <div class="event-details">
+                    <strong>Yard Sale</strong>
+                    <span>Oak Street, 8am-2pm</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Comment Modal -->
+<div class="modal" id="commentModal">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Comments</h3>
+                <button type="button" class="close-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="comments-container" id="commentsContainer">
+                    <!-- Comments will be loaded here -->
+                </div>
+                <div class="add-comment">
+                    <img src="~/images/user-default-picture.jpg" alt="User">
+                    <input type="text" placeholder="Write a comment..." id="commentInput">
+                    <button class="btn-post-comment">Post</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@functions {
+    private string GetRandomPropertyImage()
+    {
+        var random = new Random();
+        var images = new List<string> { 
+            "/images/rental1.png", 
+            "/images/rental2.png",
+            "/images/rental3.png",
+            "/images/rental4.png"
+        };
+        return images[random.Next(images.Count)];
+    }
+}
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Comment Modal Functionality
+    const commentModal = document.getElementById('commentModal');
+    const commentBtns = document.querySelectorAll('.comment-btn');
+    const closeModalBtn = document.querySelector('#commentModal .close-modal');
+    const commentsContainer = document.getElementById('commentsContainer');
+    const commentInput = document.getElementById('commentInput');
+    const postCommentBtn = document.querySelector('.btn-post-comment');
+    
+    // Sample comments data
+    const sampleComments = {
+        1: [
+            { id: 1, user: 'Mike Thompson', avatar: '/images/user-default-picture.jpg', text: 'I recommend John from Thompson Plumbing. He fixed our leak last month.', time: '2 hours ago' },
+            { id: 2, user: 'Lisa Wong', avatar: '/images/user-default-picture.jpg', text: 'Avoid City Plumbing - they overcharge!', time: '1 hour ago' },
+            { id: 3, user: 'David Miller', avatar: '/images/user-default-picture.jpg', text: 'We used Ace Plumbing - reasonable rates and quick service.', time: '45 minutes ago' },
+            { id: 4, user: 'Emma Johnson', avatar: '/images/user-default-picture.jpg', text: 'I have a contact for a great independent plumber. Will DM you.', time: '30 minutes ago' },
+            { id: 5, user: 'Robert Chen', avatar: '/images/user-default-picture.jpg', text: 'PlumbRight did good work for us last year.', time: '15 minutes ago' }
+        ]
+    };
+    
+    // Open comment modal
+    commentBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+            const postId = this.getAttribute('data-post-id');
+            loadComments(postId);
+            commentModal.classList.add('show');
+            document.body.style.overflow = 'hidden';
+        });
+    });
+    
+    // Close modal
+    closeModalBtn.addEventListener('click', function() {
+        commentModal.classList.remove('show');
+        document.body.style.overflow = '';
+    });
+    
+    // Load comments for a post
+    function loadComments(postId) {
+        commentsContainer.innerHTML = '';
+        const comments = sampleComments[postId] || [];
+        
+        if (comments.length === 0) {
+            commentsContainer.innerHTML = '<p class="no-comments">No comments yet. Be the first to comment!</p>';
+            return;
+        }
+        
+        comments.forEach(comment => {
+            const commentEl = document.createElement('div');
+            commentEl.className = 'comment';
+            commentEl.innerHTML = `
+                <img src="${comment.avatar}" alt="${comment.user}">
+                <div class="comment-content">
+                    <div class="comment-header">
+                        <strong>${comment.user}</strong>
+                        <span>${comment.time}</span>
+                    </div>
+                    <p>${comment.text}</p>
+                </div>
+            `;
+            commentsContainer.appendChild(commentEl);
+        });
     }
     
-    .payment-options {
-        width: 100%;
-    }
+    // Post a new comment
+    postCommentBtn.addEventListener('click', function() {
+        const commentText = commentInput.value.trim();
+        if (commentText) {
+            const newComment = {
+                id: Date.now(),
+                user: 'You',
+                avatar: '/images/user-default-picture.jpg',
+                text: commentText,
+                time: 'Just now'
+            };
+            
+            const commentEl = document.createElement('div');
+            commentEl.className = 'comment';
+            commentEl.innerHTML = `
+                <img src="${newComment.avatar}" alt="${newComment.user}">
+                <div class="comment-content">
+                    <div class="comment-header">
+                        <strong>${newComment.user}</strong>
+                        <span>${newComment.time}</span>
+                    </div>
+                    <p>${newComment.text}</p>
+                </div>
+            `;
+            
+            commentsContainer.appendChild(commentEl);
+            commentInput.value = '';
+            
+            // Scroll to bottom
+            commentsContainer.scrollTop = commentsContainer.scrollHeight;
+        }
+    });
     
-    .amount-input {
-        max-width: 100%;
-    }
+    // Create Post Functionality
+    const addPhotoBtn = document.getElementById('addPhotoBtn');
+    const photoUpload = document.getElementById('photoUpload');
+    const photoPreviewContainer = document.getElementById('photoPreviewContainer');
+    const submitPostBtn = document.getElementById('submitPostBtn');
     
-    .services-container, .facilities-container {
-        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-    }
-}
-
-@media (max-width: 768px) {
-    /* Small tablet styles */
-    .payment-header h1 {
-        font-size: 1.8rem;
-    }
+    // Add photo button click
+    addPhotoBtn.addEventListener('click', function() {
+        photoUpload.click();
+    });
     
-    .property-meta {
-        grid-template-columns: 1fr 1fr;
-    }
+    // Handle photo selection
+    photoUpload.addEventListener('change', function(e) {
+        photoPreviewContainer.innerHTML = '';
+        
+        if (e.target.files && e.target.files.length > 0) {
+            Array.from(e.target.files).forEach(file => {
+                if (file.type.match('image.*')) {
+                    const reader = new FileReader();
+                    reader.onload = function(event) {
+                        const previewItem = document.createElement('div');
+                        previewItem.className = 'photo-preview-item';
+                        previewItem.innerHTML = `
+                            <img src="${event.target.result}" alt="Preview">
+                            <button class="remove-photo">&times;</button>
+                        `;
+                        photoPreviewContainer.appendChild(previewItem);
+                        
+                        // Remove photo button
+                        previewItem.querySelector('.remove-photo').addEventListener('click', function() {
+                            previewItem.remove();
+                        });
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+        }
+    });
     
-    .payment-actions {
-        flex-direction: column;
-    }
-    
-    .services-container, .facilities-container {
-        grid-template-columns: 1fr;
-    }
-    
-    .service-card, .facility-card {
-        max-width: 100%;
-    }
-    
-    .booking-card {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 1rem;
-    }
-    
-    .booking-actions {
-        width: 100%;
-    }
-    
-    .pay-booking-button, .cancel-booking-button {
-        width: 100%;
-    }
-}
-
-@media (max-width: 576px) {
-    /* Mobile styles */
-    .container {
-        padding: 0 1rem;
-    }
-    
-    .payment-header h1 {
-        font-size: 1.6rem;
-    }
-    
-    .payment-header p {
-        font-size: 1rem;
-    }
-    
-    .payment-tabs {
-        flex-wrap: nowrap;
-        overflow-x: auto;
-        padding-bottom: 0.5rem;
-    }
-    
-    .tab-button {
-        padding: 0.75rem 1rem;
-        font-size: 0.9rem;
-    }
-    
-    .payment-card {
-        padding: 1.5rem;
-    }
-    
-    .property-meta {
-        grid-template-columns: 1fr;
-    }
-    
-    .method-card {
-        flex: 1 1 100%;
-    }
-    
-    .modal-content {
-        max-height: 85vh;
-    }
-    
-    .modal-header h2 {
-        font-size: 1.3rem;
-    }
-    
-    .summary-item {
-        flex-direction: column;
-        gap: 0.5rem;
-    }
-}
-
-@media (max-width: 515px) {
-    /* Small mobile adjustments */
-    .payment-header h1 {
-        font-size: 1.4rem;
-    }
-    
-    .tab-button {
-        padding: 0.5rem 0.75rem;
-        font-size: 0.85rem;
-    }
-    
-    .payment-card {
-        padding: 1rem;
-    }
-    
-    .service-card, .facility-card {
-        padding: 1rem;
-    }
-    
-    .service-icon {
-        width: 50px;
-        height: 50px;
-        font-size: 1.2rem;
-    }
-    
-    .facility-image {
-        height: 150px;
-    }
-    
-    .book-service, .book-facility {
-        padding: 0.6rem 1rem;
-        font-size: 0.9rem;
-    }
-    
-    .booking-details {
-        flex-direction: column;
-        gap: 0.5rem;
-    }
-}
+    // Submit post button
+    submitPostBtn.addEventListener('click', function() {
+        const postText = document.querySelector('.post-input').value.trim();
+        const hasPhotos = photoPreviewContainer.children.length > 0;
+        
+        if (postText || hasPhotos) {
+            // In a real app, this would send to backend
+            alert('Post submitted! (This is a UI demo only)');
+            document.querySelector('.post-input').value = '';
+            photoPreviewContainer.innerHTML = '';
+        } else {
+            alert('Please add some text or photos to your post');
+        }
+    });
+});
+</script>

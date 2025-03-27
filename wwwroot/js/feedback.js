@@ -123,6 +123,86 @@ const facilities = {
     }
 };
 
+// Sample complaints data
+const complaintsData = {
+    complaints: [
+        {
+            id: 1,
+            serviceType: "House Cleaning",
+            title: "Incomplete cleaning service",
+            description: "The cleaners missed several areas including under the furniture and the kitchen cabinets. I paid for a full cleaning but didn't receive it.",
+            severity: "high",
+            dateFiled: "2023-05-15",
+            serviceDate: "2023-05-14",
+            status: "open",
+            attachments: [],
+            updates: [
+                {
+                    author: "You",
+                    date: "2023-05-15",
+                    content: "Filed the complaint"
+                }
+            ]
+        },
+        {
+            id: 2,
+            serviceType: "Garden Maintenance",
+            title: "Poor hedge trimming",
+            description: "The gardener cut the hedges unevenly and left clippings all over the lawn. The service was not up to the usual standard.",
+            severity: "medium",
+            dateFiled: "2023-05-10",
+            serviceDate: "2023-05-09",
+            status: "in-progress",
+            attachments: [
+                {
+                    type: "image",
+                    url: "https://images.unsplash.com/photo-1600880292203-757bb62b4baf?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80"
+                }
+            ],
+            updates: [
+                {
+                    author: "You",
+                    date: "2023-05-10",
+                    content: "Filed the complaint with photo evidence"
+                },
+                {
+                    author: "Admin",
+                    date: "2023-05-11",
+                    content: "We've assigned a senior gardener to review and correct the work. They will visit on Friday."
+                }
+            ]
+        },
+        {
+            id: 3,
+            serviceType: "Handyman Services",
+            title: "Leaky faucet not fixed",
+            description: "The handyman came to fix the leaky faucet but it's still dripping. The issue wasn't resolved properly.",
+            severity: "low",
+            dateFiled: "2023-04-28",
+            serviceDate: "2023-04-27",
+            status: "resolved",
+            attachments: [],
+            updates: [
+                {
+                    author: "You",
+                    date: "2023-04-28",
+                    content: "Reported the issue"
+                },
+                {
+                    author: "Admin",
+                    date: "2023-04-29",
+                    content: "We've scheduled a different technician to revisit and fix the issue properly."
+                },
+                {
+                    author: "You",
+                    date: "2023-05-02",
+                    content: "The faucet was properly fixed on the second visit. Thank you."
+                }
+            ]
+        }
+    ]
+};
+
 document.addEventListener('DOMContentLoaded', function() {
     // Initialize Swiper with responsive settings
     const swiper = new Swiper('.swiper-container', {
@@ -143,6 +223,28 @@ document.addEventListener('DOMContentLoaded', function() {
                 slidesPerView: 4,
             },
         }
+    });
+
+    // Tab functionality
+    const tabs = document.querySelectorAll('.tab-button');
+    const tabContents = document.querySelectorAll('.feedback-content');
+    
+    tabs.forEach(tab => {
+        tab.addEventListener('click', function() {
+            // Remove active class from all tabs and contents
+            tabs.forEach(t => t.classList.remove('active'));
+            tabContents.forEach(c => c.classList.remove('active'));
+            
+            // Add active class to clicked tab and corresponding content
+            this.classList.add('active');
+            const tabId = this.getAttribute('data-tab');
+            document.getElementById(tabId).classList.add('active');
+            
+            // If switching to complaints tab, load complaints
+            if (tabId === 'service-complaints') {
+                loadComplaints('all');
+            }
+        });
     });
 
     // Function to update facility details and reviews
@@ -317,17 +419,17 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // Photo upload functionality
-    const uploadTrigger = document.getElementById('uploadTrigger');
-    const photoUpload = document.getElementById('photoUpload');
-    const uploadPreview = document.getElementById('uploadPreview');
+    // Photo upload functionality for facility feedback
+    const facilityUploadTrigger = document.getElementById('facilityUploadTrigger');
+    const facilityPhotoUpload = document.getElementById('facilityPhotoUpload');
+    const facilityUploadPreview = document.getElementById('facilityUploadPreview');
 
-    uploadTrigger.addEventListener('click', function() {
-        photoUpload.click();
+    facilityUploadTrigger.addEventListener('click', function() {
+        facilityPhotoUpload.click();
     });
 
-    photoUpload.addEventListener('change', function(e) {
-        uploadPreview.innerHTML = '';
+    facilityPhotoUpload.addEventListener('change', function(e) {
+        facilityUploadPreview.innerHTML = '';
         
         if (this.files) {
             Array.from(this.files).forEach(file => {
@@ -370,7 +472,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         
                         imgContainer.appendChild(img);
                         imgContainer.appendChild(removeBtn);
-                        uploadPreview.appendChild(imgContainer);
+                        facilityUploadPreview.appendChild(imgContainer);
                     }
                     
                     reader.readAsDataURL(file);
@@ -393,45 +495,458 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // Form submission
-    const feedbackForm = document.getElementById('feedbackForm');
+    // Form submission for facility feedback
+    const feedbackForm = document.getElementById('facilityFeedbackForm');
     if (feedbackForm) {
         feedbackForm.addEventListener('submit', function(e) {
             e.preventDefault();
             
             // Show success modal
+            document.getElementById('modalTitle').textContent = 'Thank You!';
+            document.getElementById('modalMessage').textContent = 'Your feedback has been submitted successfully.';
             document.getElementById('successModal').style.display = 'flex';
             
             // Reset form
             this.reset();
-            uploadPreview.innerHTML = '';
+            facilityUploadPreview.innerHTML = '';
             stars.forEach(star => star.classList.remove('active'));
             categoryStars.forEach(star => star.classList.remove('active'));
         });
     }
 
+    // Complaint status tabs
+    const statusTabs = document.querySelectorAll('.status-tab');
+    statusTabs.forEach(tab => {
+        tab.addEventListener('click', function() {
+            // Remove active class from all tabs
+            statusTabs.forEach(t => t.classList.remove('active'));
+            
+            // Add active class to clicked tab
+            this.classList.add('active');
+            
+            // Load complaints with selected status
+            const status = this.getAttribute('data-status');
+            loadComplaints(status);
+        });
+    });
+
+    // Load complaints function
+    function loadComplaints(status) {
+        const complaintsContainer = document.querySelector('.complaints-items-container');
+        complaintsContainer.innerHTML = '';
+        
+        // Filter complaints by status
+        let filteredComplaints = complaintsData.complaints;
+        if (status !== 'all') {
+            filteredComplaints = complaintsData.complaints.filter(complaint => complaint.status === status);
+        }
+        
+        // Update counts
+        const totalComplaints = complaintsData.complaints.length;
+        const openComplaints = complaintsData.complaints.filter(c => c.status === 'open').length;
+        
+        document.getElementById('totalComplaints').textContent = totalComplaints;
+        document.getElementById('openComplaints').textContent = openComplaints;
+        
+        // Show no complaints message if none
+        if (filteredComplaints.length === 0) {
+            document.getElementById('noComplaintsMessage').style.display = 'block';
+            return;
+        } else {
+            document.getElementById('noComplaintsMessage').style.display = 'none';
+        }
+        
+        // Display complaints
+        filteredComplaints.forEach(complaint => {
+            const complaintItem = document.createElement('div');
+            complaintItem.className = 'complaint-item';
+            complaintItem.setAttribute('data-complaint-id', complaint.id);
+            
+            // Format dates
+            const filedDate = new Date(complaint.dateFiled);
+            const serviceDate = new Date(complaint.serviceDate);
+            const options = { year: 'numeric', month: 'short', day: 'numeric' };
+            
+            // Determine severity class and label
+            let severityClass = '';
+            let severityLabel = '';
+            switch(complaint.severity) {
+                case 'low':
+                    severityClass = 'low';
+                    severityLabel = 'Low';
+                    break;
+                case 'medium':
+                    severityClass = 'medium';
+                    severityLabel = 'Medium';
+                    break;
+                case 'high':
+                    severityClass = 'high';
+                    severityLabel = 'High';
+                    break;
+            }
+            
+            // Determine status class and label
+            let statusClass = '';
+            let statusLabel = '';
+            switch(complaint.status) {
+                case 'open':
+                    statusClass = 'open';
+                    statusLabel = 'Open';
+                    break;
+                case 'in-progress':
+                    statusClass = 'in-progress';
+                    statusLabel = 'In Progress';
+                    break;
+                case 'resolved':
+                    statusClass = 'resolved';
+                    statusLabel = 'Resolved';
+                    break;
+            }
+            
+            complaintItem.innerHTML = `
+                <div class="complaint-header">
+                    <h3 class="complaint-title">${complaint.title}</h3>
+                    <span class="complaint-status ${statusClass}">${statusLabel}</span>
+                </div>
+                <div class="complaint-meta">
+                    <span class="complaint-service">${complaint.serviceType}</span>
+                    <span class="complaint-date">Filed on ${filedDate.toLocaleDateString('en-US', options)}</span>
+                    <span class="complaint-severity ${severityClass}">${severityLabel}</span>
+                </div>
+                <p class="complaint-preview">${complaint.description}</p>
+            `;
+            
+            complaintsContainer.appendChild(complaintItem);
+        });
+        
+        // Add click event to complaint items
+        document.querySelectorAll('.complaint-item').forEach(item => {
+            item.addEventListener('click', function() {
+                const complaintId = parseInt(this.getAttribute('data-complaint-id'));
+                showComplaintDetails(complaintId);
+            });
+        });
+    }
+
+    // Show complaint details in modal
+    function showComplaintDetails(complaintId) {
+        const complaint = complaintsData.complaints.find(c => c.id === complaintId);
+        if (!complaint) return;
+        
+        // Format dates
+        const filedDate = new Date(complaint.dateFiled);
+        const serviceDate = new Date(complaint.serviceDate);
+        const options = { year: 'numeric', month: 'long', day: 'numeric' };
+        
+        // Determine severity class and label
+        let severityClass = '';
+        let severityLabel = '';
+        switch(complaint.severity) {
+            case 'low':
+                severityClass = 'low';
+                severityLabel = 'Low';
+                break;
+            case 'medium':
+                severityClass = 'medium';
+                severityLabel = 'Medium';
+                break;
+            case 'high':
+                severityClass = 'high';
+                severityLabel = 'High';
+                break;
+        }
+        
+        // Determine status class and label
+        let statusClass = '';
+        let statusLabel = '';
+        switch(complaint.status) {
+            case 'open':
+                statusClass = 'open';
+                statusLabel = 'Open';
+                break;
+            case 'in-progress':
+                statusClass = 'in-progress';
+                statusLabel = 'In Progress';
+                break;
+            case 'resolved':
+                statusClass = 'resolved';
+                statusLabel = 'Resolved';
+                break;
+        }
+        
+        // Set modal content
+        document.getElementById('complaintModalTitle').textContent = complaint.title;
+        document.getElementById('complaintModalStatus').className = `complaint-status-badge ${statusClass}`;
+        document.getElementById('complaintModalStatus').textContent = statusLabel;
+        document.getElementById('complaintModalService').textContent = complaint.serviceType;
+        document.getElementById('complaintModalDate').textContent = filedDate.toLocaleDateString('en-US', options);
+        document.getElementById('complaintModalSeverity').className = `complaint-severity ${severityClass}`;
+        document.getElementById('complaintModalSeverity').textContent = severityLabel;
+        document.getElementById('complaintModalDescription').textContent = complaint.description;
+        
+        // Set attachments
+        const attachmentsContainer = document.querySelector('#complaintModalAttachments .attachments-container');
+        attachmentsContainer.innerHTML = '';
+        
+        if (complaint.attachments.length > 0) {
+            complaint.attachments.forEach(attachment => {
+                if (attachment.type === 'image') {
+                    attachmentsContainer.innerHTML += `
+                        <div class="attachment-item">
+                            <img src="${attachment.url}" alt="Complaint attachment">
+                        </div>
+                    `;
+                } else {
+                    attachmentsContainer.innerHTML += `
+                        <div class="attachment-item">
+                            <div class="file-icon">
+                                <i class="fas fa-file-alt"></i>
+                            </div>
+                            <div class="file-name">Document</div>
+                        </div>
+                    `;
+                }
+            });
+        } else {
+            attachmentsContainer.innerHTML = '<p>No attachments</p>';
+        }
+        
+        // Set updates
+        const updatesContainer = document.querySelector('#complaintModalUpdates .updates-container');
+        updatesContainer.innerHTML = '';
+        
+        complaint.updates.forEach(update => {
+            const updateDate = new Date(update.date);
+            updatesContainer.innerHTML += `
+                <div class="update-item">
+                    <div class="update-header">
+                        <span class="update-author">${update.author}</span>
+                        <span class="update-date">${updateDate.toLocaleDateString('en-US', options)}</span>
+                    </div>
+                    <div class="update-content">${update.content}</div>
+                </div>
+            `;
+        });
+        
+        // Show response form only for open or in-progress complaints
+        if (complaint.status === 'open' || complaint.status === 'in-progress') {
+            document.getElementById('complaintResponseForm').style.display = 'block';
+        } else {
+            document.getElementById('complaintResponseForm').style.display = 'none';
+        }
+        
+        // Show modal
+        document.getElementById('complaintDetailsModal').style.display = 'flex';
+    }
+
+    // New complaint button
+    document.getElementById('newComplaintBtn').addEventListener('click', function() {
+        document.getElementById('complaintForm').style.display = 'block';
+        this.style.display = 'none';
+    });
+
+    // New complaint button from empty state
+    document.getElementById('newComplaintEmptyBtn').addEventListener('click', function() {
+        document.getElementById('complaintForm').style.display = 'block';
+        document.getElementById('newComplaintBtn').style.display = 'none';
+    });
+
+    // Cancel complaint button
+    document.getElementById('cancelComplaint').addEventListener('click', function() {
+        document.getElementById('complaintForm').style.display = 'none';
+        document.getElementById('newComplaintBtn').style.display = 'block';
+        document.getElementById('serviceComplaintForm').reset();
+        document.getElementById('complaintUploadPreview').innerHTML = '';
+    });
+
+    // Photo upload functionality for complaints
+    const complaintUploadTrigger = document.getElementById('complaintUploadTrigger');
+    const complaintFileUpload = document.getElementById('complaintFileUpload');
+    const complaintUploadPreview = document.getElementById('complaintUploadPreview');
+
+    complaintUploadTrigger.addEventListener('click', function() {
+        complaintFileUpload.click();
+    });
+
+    complaintFileUpload.addEventListener('change', function(e) {
+        complaintUploadPreview.innerHTML = '';
+        
+        if (this.files) {
+            Array.from(this.files).forEach(file => {
+                const fileContainer = document.createElement('div');
+                fileContainer.className = 'file-preview';
+                fileContainer.style.position = 'relative';
+                fileContainer.style.display = 'inline-block';
+                fileContainer.style.marginRight = '10px';
+                
+                if (file.type.match('image.*')) {
+                    const reader = new FileReader();
+                    
+                    reader.onload = function(e) {
+                        const img = document.createElement('img');
+                        img.src = e.target.result;
+                        img.style.width = '100px';
+                        img.style.height = '100px';
+                        img.style.objectFit = 'cover';
+                        img.style.borderRadius = '8px';
+                        
+                        const removeBtn = document.createElement('span');
+                        removeBtn.innerHTML = '&times;';
+                        removeBtn.style.position = 'absolute';
+                        removeBtn.style.top = '0';
+                        removeBtn.style.right = '0';
+                        removeBtn.style.background = 'rgba(0,0,0,0.5)';
+                        removeBtn.style.color = 'white';
+                        removeBtn.style.width = '20px';
+                        removeBtn.style.height = '20px';
+                        removeBtn.style.borderRadius = '50%';
+                        removeBtn.style.display = 'flex';
+                        removeBtn.style.alignItems = 'center';
+                        removeBtn.style.justifyContent = 'center';
+                        removeBtn.style.cursor = 'pointer';
+                        removeBtn.style.fontSize = '12px';
+                        
+                        removeBtn.addEventListener('click', function() {
+                            fileContainer.remove();
+                        });
+                        
+                        fileContainer.appendChild(img);
+                        fileContainer.appendChild(removeBtn);
+                        complaintUploadPreview.appendChild(fileContainer);
+                    }
+                    
+                    reader.readAsDataURL(file);
+                } else {
+                    const fileIcon = document.createElement('div');
+                    fileIcon.className = 'file-icon';
+                    fileIcon.innerHTML = '<i class="fas fa-file-alt"></i>';
+                    
+                    const fileName = document.createElement('div');
+                    fileName.className = 'file-name';
+                    fileName.textContent = file.name;
+                    
+                    const removeBtn = document.createElement('span');
+                    removeBtn.innerHTML = '&times;';
+                    removeBtn.style.position = 'absolute';
+                    removeBtn.style.top = '0';
+                    removeBtn.style.right = '0';
+                    removeBtn.style.background = 'rgba(0,0,0,0.5)';
+                    removeBtn.style.color = 'white';
+                    removeBtn.style.width = '20px';
+                    removeBtn.style.height = '20px';
+                    removeBtn.style.borderRadius = '50%';
+                    removeBtn.style.display = 'flex';
+                    removeBtn.style.alignItems = 'center';
+                    removeBtn.style.justifyContent = 'center';
+                    removeBtn.style.cursor = 'pointer';
+                    removeBtn.style.fontSize = '12px';
+                    
+                    removeBtn.addEventListener('click', function() {
+                        fileContainer.remove();
+                    });
+                    
+                    fileContainer.appendChild(fileIcon);
+                    fileContainer.appendChild(fileName);
+                    fileContainer.appendChild(removeBtn);
+                    complaintUploadPreview.appendChild(fileContainer);
+                }
+            });
+        }
+    });
+
+    // Form submission for service complaints
+    const complaintForm = document.getElementById('serviceComplaintForm');
+    if (complaintForm) {
+        complaintForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Create new complaint
+            const newComplaint = {
+                id: complaintsData.complaints.length + 1,
+                serviceType: document.getElementById('complaint-service').value,
+                title: document.getElementById('complaint-title').value,
+                description: document.getElementById('complaint-description').value,
+                severity: document.querySelector('input[name="severity"]:checked').value,
+                dateFiled: new Date().toISOString().split('T')[0],
+                serviceDate: document.getElementById('service-date').value,
+                status: 'open',
+                attachments: [],
+                updates: [
+                    {
+                        author: 'You',
+                        date: new Date().toISOString().split('T')[0],
+                        content: 'Filed the complaint'
+                    }
+                ]
+            };
+            
+            // Add to complaints array
+            complaintsData.complaints.unshift(newComplaint);
+            
+            // Show success modal
+            document.getElementById('modalTitle').textContent = 'Complaint Filed!';
+            document.getElementById('modalMessage').textContent = 'Your complaint has been submitted successfully. We will review it and get back to you soon.';
+            document.getElementById('successModal').style.display = 'flex';
+            
+            // Reset form and hide it
+            this.reset();
+            document.getElementById('complaintForm').style.display = 'none';
+            document.getElementById('newComplaintBtn').style.display = 'block';
+            complaintUploadPreview.innerHTML = '';
+            
+            // Reload complaints
+            loadComplaints('all');
+        });
+    }
+
+    // Cancel response button in complaint details
+    document.getElementById('cancelResponse').addEventListener('click', function() {
+        document.getElementById('complaintResponseText').value = '';
+    });
+
+    // Submit response button in complaint details
+    document.getElementById('submitResponse').addEventListener('click', function() {
+        const responseText = document.getElementById('complaintResponseText').value.trim();
+        if (!responseText) return;
+        
+        // In a real app, this would send to the server
+        // For demo, we'll just show a success message
+        document.getElementById('modalTitle').textContent = 'Update Submitted!';
+        document.getElementById('modalMessage').textContent = 'Your update has been added to the complaint.';
+        document.getElementById('successModal').style.display = 'flex';
+        
+        // Clear the response field
+        document.getElementById('complaintResponseText').value = '';
+    });
+
     // Modal close functionality
-    const modal = document.getElementById('successModal');
-    const closeModal = document.querySelector('.close-modal');
-    const modalButton = document.querySelector('.modal-button');
+    const modals = document.querySelectorAll('.modal');
+    const closeButtons = document.querySelectorAll('.close-modal');
+    const modalButtons = document.querySelectorAll('.modal-button');
 
-    if (closeModal) {
-        closeModal.addEventListener('click', function() {
-            modal.style.display = 'none';
+    closeButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            modals.forEach(modal => {
+                modal.style.display = 'none';
+            });
         });
-    }
+    });
 
-    if (modalButton) {
-        modalButton.addEventListener('click', function() {
-            modal.style.display = 'none';
+    modalButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            modals.forEach(modal => {
+                modal.style.display = 'none';
+            });
         });
-    }
+    });
 
     // Close modal when clicking outside
     window.addEventListener('click', function(e) {
-        if (e.target === modal) {
-            modal.style.display = 'none';
-        }
+        modals.forEach(modal => {
+            if (e.target === modal) {
+                modal.style.display = 'none';
+            }
+        });
     });
 
     // Sort reviews functionality

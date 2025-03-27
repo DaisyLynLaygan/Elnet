@@ -2,6 +2,7 @@
     Layout = "~/Views/Shared/Dashboard_Layout.cshtml";
 }
 
+
 <!-- Hero Section - Property Showcase -->
 <section class="hero-section">
     <div class="hero-image-container">
@@ -10,7 +11,7 @@
     
     <div class="hero-content">
         <div class="property-card">
-            <span class="property-badge">John Smith Property</span> <!--This world-class the owner of the Villa means user -->
+            <span class="property-badge">John Smith Property</span>
             <h1 class="property-title">Luxury Villa in Beverly Hills</h1>
             
             <div class="property-highlights">
@@ -58,14 +59,15 @@
                 </div>
             </div>
             
-            <div class="property-actions">
-                <button class="action-button payment-button">
-                    <i class="fas fa-credit-card"></i> Make Payment
-                </button>
-                <button class="action-button details-button">
-                    <i class="fas fa-info-circle"></i> View Details
-                </button>
-            </div>
+          <div class="property-actions">
+            <a href="@Url.Action("Payment", "Homeowner")" class="action-button payment-button">
+                <i class="fas fa-credit-card"></i> Make Payment
+            </a>
+            <button class="action-button details-button">
+                <i class="fas fa-info-circle"></i> View Details
+            </button>
+        </div>
+
         </div>
     </div>
 </section>
@@ -84,7 +86,7 @@
                 <h3>House Cleaning</h3>
                 <p>Thorough cleaning service including dusting, vacuuming, mopping, and bathroom sanitation for spotless living spaces.</p>
                 <span class="service-price">From $120/service</span>
-                <button class="book-service">Book Now</button>
+                <button class="book-service" data-service="House Cleaning" data-price="120" data-icon="🧹">Book Now</button>
             </div>
             
             <div class="service-card">
@@ -92,7 +94,7 @@
                 <h3>Garden Maintenance</h3>
                 <p>Regular lawn mowing, hedge trimming, weeding, and plant care to keep your outdoor spaces beautiful.</p>
                 <span class="service-price">From $150/service</span>
-                <button class="book-service">Book Now</button>
+                <button class="book-service" data-service="Garden Maintenance" data-price="150" data-icon="🌿">Book Now</button>
             </div>
             
             <div class="service-card">
@@ -100,7 +102,7 @@
                 <h3>Handyman Services</h3>
                 <p>Repairs and maintenance for plumbing, electrical, carpentry, and general home improvement tasks.</p>
                 <span class="service-price">From $85/hour</span>
-                <button class="book-service">Book Now</button>
+                <button class="book-service" data-service="Handyman Services" data-price="85" data-icon="🔧">Book Now</button>
             </div>
             
             <div class="service-card">
@@ -108,7 +110,7 @@
                 <h3>Safety Inspection</h3>
                 <p>Comprehensive safety checks including smoke detectors, fire extinguishers, and security systems.</p>
                 <span class="service-price">From $200/inspection</span>
-                <button class="book-service">Book Now</button>
+                <button class="book-service" data-service="Safety Inspection" data-price="200" data-icon="🧯">Book Now</button>
             </div>
             
             <div class="service-card">
@@ -116,7 +118,7 @@
                 <h3>Deep Cleaning</h3>
                 <p>Intensive cleaning service including carpets, windows, appliances, and hard-to-reach areas.</p>
                 <span class="service-price">From $250/service</span>
-                <button class="book-service">Book Now</button>
+                <button class="book-service" data-service="Deep Cleaning" data-price="250" data-icon="🧼">Book Now</button>
             </div>
             
             <div class="service-card">
@@ -124,7 +126,7 @@
                 <h3>HVAC Maintenance</h3>
                 <p>Heating and cooling system inspection, cleaning, and tune-up for optimal performance.</p>
                 <span class="service-price">From $175/service</span>
-                <button class="book-service">Book Now</button>
+                <button class="book-service" data-service="HVAC Maintenance" data-price="175" data-icon="❄️">Book Now</button>
             </div>
         </div>
     </div>
@@ -153,7 +155,7 @@
                                 <span>🍽️ Catering Kitchen</span>
                                 <span>🪑 Flexible Seating</span>
                             </div>
-                            <a href="#" class="facility-button">Book Now</a>
+                            <button class="facility-button" data-facility="Function Hall" data-price="500" data-icon="🎪" data-hourly="125">Book Now</button>
                         </div>
                     </div>
                 </div>
@@ -171,7 +173,7 @@
                                 <span>🔦 LED Lighting</span>
                                 <span>👟 Locker Rooms</span>
                             </div>
-                            <a href="#" class="facility-button">Reserve Court</a>
+                            <button class="facility-button" data-facility="Sport Court" data-price="100" data-icon="🏀" data-hourly="30">Book Now</button>
                         </div>
                     </div>
                 </div>
@@ -189,7 +191,7 @@
                                 <span>♨️ Heated in Winter</span>
                                 <span>🏊‍♀️ Lifeguards On Duty</span>
                             </div>
-                            <a href="#" class="facility-button">View Schedule</a>
+                            <button class="facility-button" data-facility="Swimming Pool" data-price="150" data-icon="🏊‍♂️" data-hourly="50">Book Now</button>
                         </div>
                     </div>
                 </div>
@@ -200,14 +202,14 @@
                             <img src="~/images/gym.jpg" alt="Gym Facility">
                         </div>
                         <div class="facility-content">
-                            <h3>State-of-the-Art Gym</h3>
+                            <h3>Fitness Gym</h3>
                             <p>Fully equipped fitness center with cardio machines, free weights, and group exercise studios.</p>
                             <div class="facility-features">
                                 <span>💪 Personal Trainers</span>
                                 <span>🧘‍♀️ Yoga Classes</span>
                                 <span>🚿 Spa Facilities</span>
                             </div>
-                            <a href="#" class="facility-button">Join Today</a>
+                            <button class="facility-button" data-facility="Fitness Gym" data-price="75" data-icon="💪" data-hourly="25">Book Now</button>
                         </div>
                     </div>
                 </div>
@@ -217,88 +219,249 @@
         </div>
     </div>
 </section>
+<!-- Maintenance Service Booking Modal -->
+<div class="booking-modal" id="maintenanceBookingModal">
+    <div class="booking-modal-content">
+        <div class="booking-modal-header">
+            <h3>Book Maintenance Service</h3>
+            <span class="close-booking-modal">&times;</span>
+        </div>
+        
+        <div class="booking-step-indicator">
+            <div class="booking-step active" data-step="1">
+                <div class="booking-step-number">1</div>
+                <div class="booking-step-label">Service Details</div>
+            </div>
+            <div class="booking-step" data-step="2">
+                <div class="booking-step-number">2</div>
+                <div class="booking-step-label">Schedule</div>
+            </div>
+            <div class="booking-step" data-step="3">
+                <div class="booking-step-number">3</div>
+                <div class="booking-step-label">Confirmation</div>
+            </div>
+        </div>
+        
+        <!-- Step 1: Service Details -->
+        <div class="booking-form-step active" data-step="1">
+            <div class="booking-form-group">
+                <label>Selected Service</label>
+                <div class="service-option active" id="selected-service-display">
+                    <div class="service-option-icon" id="service-icon-display">🧹</div>
+                    <div class="service-option-details">
+                        <div class="service-option-title" id="service-name-display">House Cleaning</div>
+                        <div class="service-option-price" id="service-price-display">From $120/service</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="booking-form-group">
+                <label>Service Frequency</label>
+                <div class="frequency-options">
+                    <div class="frequency-option active" data-frequency="once">One-time</div>
+                    <div class="frequency-option" data-frequency="weekly">Weekly</div>
+                    <div class="frequency-option" data-frequency="biweekly">Bi-weekly</div>
+                    <div class="frequency-option" data-frequency="monthly">Monthly</div>
+                </div>
+            </div>
+            
+            <div class="booking-form-group">
+                <label for="service-notes">Special Instructions</label>
+                <textarea id="service-notes" rows="3" placeholder="Any special requests or instructions for the service provider..."></textarea>
+            </div>
+            
+            <div class="booking-modal-footer">
+                <button class="btn-next" onclick="nextStep(1)">Next</button>
+            </div>
+        </div>
+        
+        <!-- Step 2: Schedule -->
+        <div class="booking-form-step" data-step="2">
+            <div class="booking-form-row">
+                <div class="booking-form-group">
+                    <label for="service-date">Date</label>
+                    <input type="date" id="service-date" min="">
+                </div>
+                <div class="booking-form-group">
+                    <label for="service-time">Time</label>
+                    <input type="time" id="service-time" min="08:00" max="20:00">
+                </div>
+            </div>
+            
+            <div class="booking-modal-footer">
+                <button class="btn-back" onclick="prevStep(2)">Back</button>
+                <button class="btn-next" onclick="nextStep(2)">Next</button>
+            </div>
+        </div>
+        
+        <!-- Step 3: Confirmation -->
+        <div class="booking-form-step" data-step="3">
+            <div class="booking-summary">
+                <h4>Booking Summary</h4>
+                <div class="booking-summary-item">
+                    <span>Service:</span>
+                    <span id="summary-service">House Cleaning</span>
+                </div>
+                <div class="booking-summary-item">
+                    <span>Date:</span>
+                    <span id="summary-date">-</span>
+                </div>
+                <div class="booking-summary-item">
+                    <span>Time:</span>
+                    <span id="summary-time">-</span>
+                </div>
+                <div class="booking-summary-item">
+                    <span>Frequency:</span>
+                    <span id="summary-frequency">One-time</span>
+                </div>
+                <div class="booking-summary-item">
+                    <span>Special Instructions:</span>
+                    <span id="summary-notes">-</span>
+                </div>
+                <div class="booking-summary-item total">
+                    <span>Total:</span>
+                    <span id="summary-total">$120.00</span>
+                </div>
+            </div>
+            
+            <div class="booking-modal-footer">
+                <button class="btn-back" onclick="prevStep(3)">Back</button>
+                <button class="btn-confirm-booking" onclick="confirmMaintenanceBooking()">Confirm Booking</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Facility Booking Modal -->
+<div class="booking-modal" id="facilityBookingModal">
+    <div class="booking-modal-content">
+        <div class="booking-modal-header">
+            <h3>Book Facility</h3>
+            <span class="close-booking-modal">&times;</span>
+        </div>
+        
+        <div class="booking-step-indicator">
+            <div class="booking-step active" data-step="1">
+                <div class="booking-step-number">1</div>
+                <div class="booking-step-label">Facility Details</div>
+            </div>
+            <div class="booking-step" data-step="2">
+                <div class="booking-step-number">2</div>
+                <div class="booking-step-label">Schedule</div>
+            </div>
+            <div class="booking-step" data-step="3">
+                <div class="booking-step-number">3</div>
+                <div class="booking-step-label">Confirmation</div>
+            </div>
+        </div>
+        
+        <!-- Step 1: Facility Details -->
+        <div class="booking-form-step active" data-step="1">
+            <div class="booking-form-group">
+                <label>Selected Facility</label>
+                <div class="service-option active" id="selected-facility-display">
+                    <div class="service-option-icon" id="facility-icon-display">🎪</div>
+                    <div class="service-option-details">
+                        <div class="service-option-title" id="facility-name-display">Function Hall</div>
+                        <div class="service-option-price" id="facility-price-display">Starting at $500/event</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="booking-form-group">
+                <label for="facility-guests">Number of Guests</label>
+                <input type="number" id="facility-guests" min="1" value="10">
+            </div>
+            
+            <div class="booking-form-group">
+                <label for="facility-purpose">Purpose of Booking</label>
+                <input type="text" id="facility-purpose" placeholder="e.g., Birthday party, Corporate event...">
+            </div>
+            
+            <div class="booking-modal-footer">
+                <button class="btn-next" onclick="nextStep(1, 'facility')">Next</button>
+            </div>
+        </div>
+        
+        <!-- Step 2: Schedule -->
+        <div class="booking-form-step" data-step="2">
+            <div class="booking-form-row">
+                <div class="booking-form-group">
+                    <label for="facility-date">Date</label>
+                    <input type="date" id="facility-date" min="">
+                </div>
+                <div class="booking-form-group">
+                    <label for="facility-time">Time</label>
+                    <input type="time" id="facility-time" min="08:00" max="20:00">
+                </div>
+            </div>
+            
+            <div class="booking-form-group">
+                <label for="facility-duration">Duration</label>
+                <select id="facility-duration">
+                    <option value="1">1 hour</option>
+                    <option value="2">2 hours</option>
+                    <option value="3">3 hours</option>
+                    <option value="4">4 hours</option>
+                    <option value="5">5+ hours (custom)</option>
+                </select>
+            </div>
+            
+            <div class="booking-modal-footer">
+                <button class="btn-back" onclick="prevStep(2, 'facility')">Back</button>
+                <button class="btn-next" onclick="nextStep(2, 'facility')">Next</button>
+            </div>
+        </div>
+        
+        <!-- Step 3: Confirmation -->
+        <div class="booking-form-step" data-step="3">
+            <div class="booking-summary">
+                <h4>Booking Summary</h4>
+                <div class="booking-summary-item">
+                    <span>Facility:</span>
+                    <span id="facility-summary-name">Function Hall</span>
+                </div>
+                <div class="booking-summary-item">
+                    <span>Date:</span>
+                    <span id="facility-summary-date">-</span>
+                </div>
+                <div class="booking-summary-item">
+                    <span>Time:</span>
+                    <span id="facility-summary-time">-</span>
+                </div>
+                <div class="booking-summary-item">
+                    <span>Duration:</span>
+                    <span id="facility-summary-duration">-</span>
+                </div>
+                <div class="booking-summary-item">
+                    <span>Guests:</span>
+                    <span id="facility-summary-guests">10</span>
+                </div>
+                <div class="booking-summary-item">
+                    <span>Purpose:</span>
+                    <span id="facility-summary-purpose">-</span>
+                </div>
+                <div class="booking-summary-item total">
+                    <span>Total:</span>
+                    <span id="facility-summary-total">$500.00</span>
+                </div>
+            </div>
+            
+            <div class="booking-modal-footer">
+                <button class="btn-back" onclick="prevStep(3, 'facility')">Back</button>
+                <button class="btn-confirm-booking" onclick="confirmFacilityBooking()">Confirm Booking</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 
 <!-- Font Awesome for icons -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <!-- Swiper JS -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@9/swiper-bundle.min.css" />
+<!-- SweetAlert2 -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
 <script src="https://cdn.jsdelivr.net/npm/swiper@9/swiper-bundle.min.js"></script>
-
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Initialize Swiper for facilities
-    var facilitiesSwiper = new Swiper('.facilitiesSwiper', {
-        slidesPerView: 1,
-        spaceBetween: 20,
-        autoplay: {
-            delay: 3000,
-            disableOnInteraction: false,
-        },
-        pagination: {
-            el: '.swiper-pagination',
-            clickable: true,
-        },
-        breakpoints: {
-            640: {
-                slidesPerView: 2,
-            },
-            1024: {
-                slidesPerView: 3,
-            },
-        }
-    });
-
-    // Get all thumbnail items
-    const thumbnails = document.querySelectorAll('.thumbnail-item');
-    let currentThumbnailIndex = 0;
-    
-    // Function to change the active thumbnail and main image
-    function changeActiveThumbnail(index) {
-        // Remove active class from all thumbnails
-        thumbnails.forEach(thumb => {
-            thumb.classList.remove('active');
-        });
-        
-        // Add active class to the new thumbnail
-        thumbnails[index].classList.add('active');
-        
-        // Get the new image path from data-image attribute
-        const newImagePath = thumbnails[index].getAttribute('data-image');
-        
-        // Change main image source
-        document.querySelector('.hero-image').src = newImagePath;
-    }
-    
-    // Click event for manual thumbnail selection
-    thumbnails.forEach((item, index) => {
-        item.addEventListener('click', function() {
-            currentThumbnailIndex = index;
-            changeActiveThumbnail(currentThumbnailIndex);
-            // Reset the timer when user manually selects a thumbnail
-            clearInterval(thumbnailInterval);
-            thumbnailInterval = setInterval(cycleThumbnails, 5000);
-        });
-    });
-    
-    // Function to cycle through thumbnails
-    function cycleThumbnails() {
-        currentThumbnailIndex = (currentThumbnailIndex + 1) % thumbnails.length;
-        changeActiveThumbnail(currentThumbnailIndex);
-    }
-    
-    // Start the automatic cycling (every 5 seconds)
-    let thumbnailInterval = setInterval(cycleThumbnails, 5000);
-    
-    // Pause cycling when hovering over thumbnails
-    const thumbnailContainer = document.querySelector('.thumbnail-container');
-    thumbnailContainer.addEventListener('mouseenter', () => {
-        clearInterval(thumbnailInterval);
-    });
-    
-    // Resume cycling when mouse leaves thumbnails
-    thumbnailContainer.addEventListener('mouseleave', () => {
-        clearInterval(thumbnailInterval);
-        thumbnailInterval = setInterval(cycleThumbnails, 5000);
-    });
-});
-</script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="~/js/dashboard.js" asp-append-version="true"></script>
