@@ -1,4 +1,5 @@
 @page
+@model HomeOwner.Models.User
 @{
     Layout = "~/Views/Shared/Dashboard_Layout.cshtml";
 }
@@ -21,7 +22,7 @@
                 <input type="file" id="avatarUpload" accept="image/*" style="display: none;">
             </div>
             <div class="profile-details">
-                <h1>John Smith</h1>
+                <h1>@ViewBag.fullname</h1>
                 <p class="profile-title">Homeowner</p>
                 <div class="profile-stats">
                     <div class="stat-item">
@@ -46,9 +47,9 @@
             <div class="sidebar-section about-section">
                 <h3><i class="fas fa-user-circle"></i> About</h3>
                 <div class="about-content">
-                    <p><i class="fas fa-envelope"></i> john.smith@example.com</p>
-                    <p><i class="fas fa-phone"></i> +1 (555) 123-4567</p>
-                    <p><i class="fas fa-map-marker-alt"></i> 123 Main St, Beverly Hills, CA 90210</p>
+                    <p><i class="fas fa-envelope"></i> @ViewBag.email</p>
+                    <p><i class="fas fa-phone"></i> @ViewBag.contact</p>
+                    <p><i class="fas fa-map-marker-alt"></i> @ViewBag.address</p>
                     <p><i class="fas fa-calendar-alt"></i> Joined June 2020</p>
                 </div>
                 <button class="btn-edit-profile"><i class="fas fa-pencil-alt"></i> Edit Profile</button>
@@ -83,7 +84,7 @@
         <!-- Overview content remains the same -->
         <div class="card welcome-card">
             <div class="card-body">
-                <h2>Welcome Back, John!</h2>
+                <h2>Welcome Back, @ViewBag.name</h2>
                 <p>Here's what's happening with your properties today.</p>
                 <div class="welcome-stats">
                     <div class="stat-card">
@@ -271,34 +272,38 @@
                 <button type="button" class="close-modal">&times;</button>
             </div>
             <div class="modal-body">
-                <form>
+                        <form asp-action="UpdateProfile" asp-controller="Homeowner">
+                            <input name="username" type="hidden" value=@ViewBag.username/>
                     <div class="form-row">
                         <div class="form-group">
                             <label>First Name</label>
-                            <input type="text" value="John">
+                            <input name="firstname" type="text" value=@ViewBag.firstname>
                         </div>
                         <div class="form-group">
                             <label>Last Name</label>
-                            <input type="text" value="Smith">
+                                    <input name="lastname" type="text" value=@ViewBag.lastname>
                         </div>
                     </div>
                     
                     <div class="form-row">
                         <div class="form-group">
                             <label>Email</label>
-                            <input type="email" value="john.smith@example.com">
+                            <input name="email" type="email" value=@ViewBag.email>
                         </div>
                         <div class="form-group">
                             <label>Phone</label>
-                            <input type="tel" value="+1 (555) 123-4567">
+                                    <input name="contact_no" type="tel" value=@ViewBag.contact>
                         </div>
                     </div>
                     
                     <div class="form-group">
                         <label>Address</label>
-                        <textarea>123 Main St, Beverly Hills, CA 90210</textarea>
+                                <textarea name="address" value=@ViewBag.address></textarea>
                     </div>
-                    
+                            <div class="form-actions">
+                                <button type="button" class="btn-cancel">Cancel</button>
+                                <button type="submit" class="btn-save">Save Changes</button>
+                            </div>
                     <div class="form-group">
                         <label>Profile Picture</label>
                         <div class="avatar-upload">
@@ -308,10 +313,7 @@
                         </div>
                     </div>
                     
-                    <div class="form-actions">
-                        <button type="button" class="btn-cancel">Cancel</button>
-                        <button type="submit" class="btn-save">Save Changes</button>
-                    </div>
+                  
                 </form>
             </div>
         </div>

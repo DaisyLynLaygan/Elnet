@@ -1,4 +1,4 @@
-@model HomeOwner.Models.Register
+@model HomeOwner.Models.User
 
 @{
     ViewData["Title"] = "Register";
@@ -9,6 +9,7 @@
 
 <div class="register-wrapper">
     <div class="container">
+        @ViewBag.message
         <div class="row justify-content-center align-items-center min-vh-100 py-4">
             <div class="col-md-10 col-lg-8 col-xl-6">
                 <div class="card shadow-lg border-0 rounded-lg">
@@ -21,7 +22,7 @@
                         <h2 class="my-4 mt-5 text-center">Create Your Account</h2>
                     </div>
                     <div class="card-body p-4">
-                        <form asp-action="Create" method="post">
+                        <form asp-action="Create" asp-controller="Home">
                             <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
                             
                             <div class="row">
@@ -40,7 +41,19 @@
                                     </div>
                                 </div>
                             </div>
-                            
+                            <div class="form-floating mb-3">
+                                <input asp-for="firstname" class="form-control" id="firstname" placeholder="First Name" />
+                                <label asp-for="firstname">First Name</label>
+                                <span asp-validation-for="firstname" class="text-danger small"></span>
+                            </div>
+                            <div class="form-floating mb-3">
+                                <input asp-for="lastname" class="form-control" id="lastname" placeholder="Last Name" />
+                                <label asp-for="lastname">Last Name</label>
+                                <span asp-validation-for="lastname" class="text-danger small"></span>
+                            </div>
+
+                           
+
                             <div class="form-floating mb-3">
                                 <input asp-for="email" class="form-control" id="email" placeholder="Email Address" />
                                 <label asp-for="email">Email Address</label>

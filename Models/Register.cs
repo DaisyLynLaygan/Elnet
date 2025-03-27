@@ -2,6 +2,8 @@ using System.ComponentModel.DataAnnotations;
 
 namespace HomeOwner.Models
 {
+
+    //Ana daisy wala ni labot HAHAH
     public class Register
     {
         [Key]

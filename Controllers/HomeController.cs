@@ -48,7 +48,13 @@ public class HomeController : Controller
             }
             else
             {
+             
                 HttpContext.Session.SetString("name", user?.username);
+                HttpContext.Session.SetString("firstname", user?.firstname);
+                HttpContext.Session.SetString("lastname", user?.lastname);
+                HttpContext.Session.SetString("contact", user?.contact_no);
+                HttpContext.Session.SetString("address", user?.address);
+                HttpContext.Session.SetString("email", user?.email);
                 HttpContext.Session.SetInt32("id", (int)user.user_id);
                 return RedirectToAction("Dashboard", "Homeowner");
             }
@@ -62,27 +68,36 @@ public class HomeController : Controller
     }
 
     [HttpPost]
-    public IActionResult Create(Register model)
+    public IActionResult Create(User model)
     {
         if (ModelState.IsValid)
         {
             // Map Register model to User model
-            var user = new User
+            var checkUser = _context.User.FirstOrDefault(m => m.username == model.username);
+
+            if (checkUser == null)
             {
-                username = model.username,
-                user_password = model.user_password,
-                email = model.email,
-                address = model.address,
-                contact_no = model.contact_no
-            };
+                var user = new User
+                {
+                    username = model.username,
+                    user_password = model.user_password,
+                    email = model.email,
+                    address = model.address,
+                    contact_no = model.contact_no,
+                    firstname = model.firstname,
+                    lastname = model.lastname,
+                };
 
-            // Save the user to the database
-            _context.User.Add(user);
-            _context.SaveChanges();
+                // Save the user to the database
+                _context.User.Add(user);
+                _context.SaveChanges();
 
 
-            // Redirect to the Login page
-            return RedirectToAction("Login");
+                // Redirect to the Login page
+                return RedirectToAction("Login");
+            }
+            ViewBag.message = "Error username existed";
+            return View();
         }
 
         // If the model is invalid, return to the registration form
