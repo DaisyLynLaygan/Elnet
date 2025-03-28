@@ -504,3 +504,244 @@ body {
         padding: 50px 0;
     }
 }
+
+/* Services Section */
+.services-section {
+    padding: 100px 0;
+    background-color: var(--light-gray);
+}
+
+.service-card {
+    background-color: white;
+    border-radius: 16px;
+    padding: 2rem;
+    height: 100%;
+    transition: all 0.3s ease;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+    text-align: center;
+}
+
+.service-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 15px 30px rgba(139, 69, 19, 0.1);
+}
+
+.service-icon {
+    height: 80px;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.service-icon img {
+    max-height: 100%;
+    width: auto;
+}
+
+.service-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    color: var(--primary);
+}
+
+.service-text {
+    color: var(--text-dark);
+    margin-bottom: 1.5rem;
+    min-height: 80px;
+}
+
+.service-price {
+    display: block;
+    font-weight: 600;
+    color: var(--primary);
+    margin-bottom: 1.5rem;
+    font-size: 1.1rem;
+}
+
+/* Facilities Section */
+.facilities-section {
+    padding: 100px 0;
+    background-color: white;
+}
+
+.facility-slide {
+    padding: 20px;
+}
+
+.facility-video {
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.facility-video video {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+.facility-content {
+    padding: 2rem;
+}
+
+.facility-content h3 {
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    color: var(--primary);
+}
+
+.facility-content p {
+    color: var(--text-dark);
+    margin-bottom: 1.5rem;
+}
+
+.facility-features {
+    margin-bottom: 2rem;
+}
+
+.facility-features span {
+    display: block;
+    margin-bottom: 0.8rem;
+    color: var(--text-dark);
+    font-size: 1.1rem;
+}
+
+.facility-features i {
+    margin-right: 0.5rem;
+    color: var(--primary);
+}
+
+.swiper-button-next, .swiper-button-prev {
+    color: var(--primary) !important;
+}
+
+.swiper-button-next:after, .swiper-button-prev:after {
+    font-size: 2rem !important;
+}
+
+/* Community Section */
+.community-section {
+    padding: 100px 0;
+    background-color: var(--light-gray);
+}
+
+.community-features {
+    list-style: none;
+    padding: 0;
+    margin: 2rem 0;
+}
+
+.community-features li {
+    margin-bottom: 1rem;
+    padding-left: 2rem;
+    position: relative;
+    font-size: 1.1rem;
+}
+
+.community-features li i {
+    position: absolute;
+    left: 0;
+    top: 0.25rem;
+    color: var(--primary);
+    font-size: 1.2rem;
+}
+
+/* Security Section */
+.security-section {
+    padding: 100px 0;
+}
+
+.security-features {
+    list-style: none;
+    padding: 0;
+    margin: 2rem 0;
+}
+
+.security-features li {
+    margin-bottom: 1rem;
+    padding-left: 2rem;
+    position: relative;
+    font-size: 1.1rem;
+}
+
+.security-features li i {
+    position: absolute;
+    left: 0;
+    top: 0.25rem;
+    color: var(--primary);
+    font-size: 1.2rem;
+}
+
+/* Swiper Customizations */
+.swiper {
+    padding-bottom: 50px;
+}
+
+.swiper-pagination-bullet {
+    background-color: var(--primary);
+    opacity: 0.5;
+    width: 10px;
+    height: 10px;
+    margin: 0 5px !important;
+}
+
+.swiper-pagination-bullet-active {
+    opacity: 1;
+    background-color: var(--primary);
+}
+
+/* Responsive adjustments */
+@media (max-width: 992px) {
+    .facility-slide .row {
+        flex-direction: column;
+    }
+    
+    .facility-content {
+        padding: 1.5rem 0;
+    }
+}
+
+@media (max-width: 768px) {
+    .service-text, .facility-content p {
+        min-height: auto;
+    }
+    
+    .service-icon {
+        height: 60px;
+    }
+    
+    .facility-video {
+        margin-bottom: 1.5rem;
+    }
+    
+    .section-title {
+        font-size: 2.5rem;
+    }
+    
+    .lead.fs-4 {
+        font-size: 1.2rem !important;
+    }
+}
+
+@media (max-width: 576px) {
+    .services-section, .facilities-section, 
+    .community-section, .testimonial-section, 
+    .security-section {
+        padding: 60px 0;
+    }
+    
+    .section-title {
+        font-size: 2rem;
+    }
+    
+    .hero-title {
+        font-size: 2.3rem;
+    }
+    
+    .hero-text {
+        font-size: 1.1rem;
+    }
+}

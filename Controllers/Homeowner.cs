@@ -29,18 +29,24 @@ namespace HomeOwner.Controllers
         {
             try
             {
-                // Find the user in the database
-                var existingUser = _context.User.FirstOrDefault(u => u.Id == model.Id);
+                // Find the user in the database - MATCH THE PROPERTY NAMES
+                var existingUser = _context.User.FirstOrDefault(u => u.user_id == model.user_id);
 
                 if (existingUser == null)
                 {
                     return NotFound(); // Return 404 if user is not found
                 }
 
-                // Update only the modified fields
-                existingUser.Username = model.Username;
-                existingUser.Email = model.Email;
-                existingUser.Password = model.Password; // Consider hashing this before saving!
+                // Update only the modified fields - USE THE CORRECT PROPERTY NAMES
+                existingUser.username = model.username;
+                existingUser.email = model.email;
+                existingUser.user_password = model.user_password; // Consider hashing this!
+                
+                // Update other fields if needed
+                existingUser.firstname = model.firstname;
+                existingUser.lastname = model.lastname;
+                existingUser.address = model.address;
+                existingUser.contact_no = model.contact_no;
 
                 _context.User.Update(existingUser);
                 _context.SaveChanges();
