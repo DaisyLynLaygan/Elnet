@@ -48,14 +48,8 @@ public class HomeController : Controller
             }
             else
             {
-             
-                HttpContext.Session.SetString("name", user?.username);
-                HttpContext.Session.SetString("firstname", user?.firstname);
-                HttpContext.Session.SetString("lastname", user?.lastname);
-                HttpContext.Session.SetString("contact", user?.contact_no);
-                HttpContext.Session.SetString("address", user?.address);
-                HttpContext.Session.SetString("email", user?.email);
-                HttpContext.Session.SetInt32("id", (int)user.user_id);
+
+                HttpContext.Session.SetObject("CurrentUser", user);
                 return RedirectToAction("Dashboard", "Homeowner");
             }
         }
@@ -86,7 +80,9 @@ public class HomeController : Controller
                     contact_no = model.contact_no,
                     firstname = model.firstname,
                     lastname = model.lastname,
+                    date_created = DateOnly.FromDateTime(DateTime.Now)
                 };
+
 
                 // Save the user to the database
                 _context.User.Add(user);
