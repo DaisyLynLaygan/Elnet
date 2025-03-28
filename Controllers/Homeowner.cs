@@ -7,7 +7,7 @@ namespace HomeOwner.Controllers
 {
 
    
-    public class Homeowner : Controller
+    public class Homeowner : BaseController
     {
         private readonly HomeOwnerContext _context;
         public Homeowner(HomeOwnerContext db) {
@@ -16,14 +16,8 @@ namespace HomeOwner.Controllers
 
         public void ViewContents()
         {
-           ViewBag.name =  HttpContext.Session.GetString("name");
-           ViewBag.email =  HttpContext.Session.GetString("email");
-           ViewBag.contact =  HttpContext.Session.GetString("contact");
-           ViewBag.address =  HttpContext.Session.GetString("address");
-           ViewBag.firstname =  HttpContext.Session.GetString("firstname");
-           ViewBag.lastname =  HttpContext.Session.GetString("lastname");
-           ViewBag.fullname = HttpContext.Session.GetString("firstname")+ " " + HttpContext.Session.GetString("lastname");
-            
+            ViewBag.CurrentUser = CurrentUser;
+
         }
         public  void UpdateProfile(User model)
         {
@@ -71,27 +65,27 @@ namespace HomeOwner.Controllers
         }
         public IActionResult Feedback()
         {
-            ViewContents();
+            
             return View();
         }
         public IActionResult Community()
         {
-            ViewContents();
+           
             return View();
         }
         public IActionResult Payment()
         {
-            ViewContents();
+           
             return View();
         }
         public IActionResult History()
         {
-            ViewContents();
+            
             return View();
         }
         public IActionResult UserProfile()
         {
-            ViewContents(); 
+            ViewContents();
             return View();
         }
     }

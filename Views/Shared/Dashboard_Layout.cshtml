@@ -1,3 +1,8 @@
+@model HomeOwner.Models.User
+@{
+    var user = ViewBag.CurrentUser as User;
+}
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -45,7 +50,7 @@
 
         <!-- User Profile with Dropdown -->
         <div class="user-profile" onclick="toggleProfileDropdown()">
-            <span>@ViewBag.fullname</span>
+            <span>@user.firstname @user.lastname</span>
             <img src="~/images/user-default-picture.jpg" alt="User profile" />
             <!-- Dropdown Menu -->
             <div class="profile-dropdown">
