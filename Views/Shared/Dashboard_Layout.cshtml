@@ -13,7 +13,6 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
 </head>
 <body>
-
 <nav class="navbar">
     <!-- Logo -->
     <a href="#" class="logo">
@@ -27,7 +26,7 @@
         <li class="nav-item">
             <a asp-controller="Homeowner" asp-action="Feedback" class="nav-link">Feedback</a>
         </li>        
-        <li class="nav-item">
+        <li class="nav-item has-dropdown">
             <a href="#" class="nav-link">Billing <span>▼</span></a>
             <div class="dropdown-content">
                 <a asp-controller="Homeowner" asp-action="Payment" class="dropdown-link">Make Payment</a>
@@ -87,31 +86,6 @@ function toggleMenu() {
     hamburger.classList.toggle('active');
 }
 
-// Mobile dropdown toggle
-const navLinks = document.querySelectorAll('.nav-link');
-
-navLinks.forEach(link => {
-    if (link.nextElementSibling && link.nextElementSibling.classList.contains('dropdown-content')) {
-        link.addEventListener('click', (e) => {
-            if (window.innerWidth <= 900) {
-                e.preventDefault();
-                link.nextElementSibling.classList.toggle('show');
-            }
-        });
-    }
-});
-
-// Close mobile menu and dropdowns when clicking outside
-document.addEventListener('click', (e) => {
-    if (!e.target.closest('.navbar')) {
-        document.querySelector('.nav-menu').classList.remove('active');
-        document.querySelector('.hamburger').classList.remove('active');
-        document.querySelectorAll('.dropdown-content').forEach(dropdown => {
-            dropdown.classList.remove('show');
-        });
-    }
-});
-
 // Profile dropdown toggle
 function toggleProfileDropdown() {
     const userProfile = document.querySelector('.user-profile');
@@ -126,29 +100,61 @@ document.addEventListener('click', function (event) {
     }
 });
 
+// Mobile dropdown toggle for billing
+document.addEventListener('DOMContentLoaded', function() {
+    const billingLink = document.querySelector('.has-dropdown .nav-link');
+    const dropdownContent = document.querySelector('.has-dropdown .dropdown-content');
+    
+    if (window.innerWidth <= 900) {
+        billingLink.addEventListener('click', function(e) {
+            e.preventDefault();
+            dropdownContent.classList.toggle('show');
+        });
+    }
+    
+    // Update event listener on window resize
+    window.addEventListener('resize', function() {
+        if (window.innerWidth <= 900) {
+            billingLink.addEventListener('click', function(e) {
+                e.preventDefault();
+                dropdownContent.classList.toggle('show');
+            });
+        } else {
+            // Clone the element and replace it to remove event listeners
+            const newBillingLink = billingLink.cloneNode(true);
+            billingLink.parentNode.replaceChild(newBillingLink, billingLink);
+        }
+    });
+});
+
 // Highlight active navigation link based on URL
 document.addEventListener('DOMContentLoaded', function () {
-    const navLinks = document.querySelectorAll('.nav-menu > .nav-item > .nav-link'); // Only top-level links
-    const currentUrl = window.location.pathname; // Get the current pathname only
+    const navLinks = document.querySelectorAll('.nav-menu > .nav-item > .nav-link');
+    const currentUrl = window.location.pathname;
 
-    // Highlight the active link based on the current URL
     navLinks.forEach(link => {
-        const linkHref = link.getAttribute('href'); // Get the href attribute directly
+        const linkHref = link.getAttribute('href');
 
         if (linkHref === currentUrl) {
             link.classList.add('active');
         }
     });
 
-    // Add click event to all navigation links
     navLinks.forEach(link => {
         link.addEventListener('click', () => {
-            // Remove active class from all links
             navLinks.forEach(link => link.classList.remove('active'));
-
-            // Add active class to the clicked link
             link.classList.add('active');
         });
+    });
+});
+
+// Close mobile menu when clicking on a link
+document.querySelectorAll('.nav-link:not(.has-dropdown .nav-link), .dropdown-link').forEach(link => {
+    link.addEventListener('click', () => {
+        if (window.innerWidth <= 900) {
+            document.querySelector('.nav-menu').classList.remove('active');
+            document.querySelector('.hamburger').classList.remove('active');
+        }
     });
 });
 
