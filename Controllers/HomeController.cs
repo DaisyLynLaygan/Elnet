@@ -31,6 +31,18 @@ public class HomeController : Controller
     {
         return View();
     }
+    public IActionResult About()
+    {
+        return View();
+    }
+    public IActionResult Services()
+    {
+        return View();
+    }
+    public IActionResult Contact()
+    {
+        return View();
+    }
 
     public async Task<IActionResult> LoginTask(string? Username, string Password)
     {

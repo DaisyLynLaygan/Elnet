@@ -1,0 +1,126 @@
+:root {
+    --brown: #6B4423;
+    --light-brown: #8B5D3D;
+    --dark-brown: #4A2E1A;
+    --beige: #F5F0E6;
+    --cream: #FFF8F0;
+    --accent: #D4A373;
+    --text-dark: #3E3E3E;
+    --text-light: #F5F5F5;
+}
+
+/* Contact Hero */
+.contact-hero {
+    background: linear-gradient(rgba(107, 68, 35, 0.8), rgba(107, 68, 35, 0.8)), 
+                url('https://images.unsplash.com/photo-1523050854058-8df90110c9f1?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80');
+    background-size: cover;
+    background-position: center;
+    color: white;
+    padding: 6rem 1rem;
+    text-align: center;
+}
+
+/* Contact Cards */
+.contact-info-card,
+.contact-form-card {
+    background: white;
+    border-radius: 12px;
+    padding: 2rem;
+    height: 100%;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+}
+
+.contact-info-card h3 {
+    color: var(--brown);
+    font-size: 1.2rem;
+    margin-bottom: 0.8rem;
+    border-bottom: 2px solid var(--accent);
+    padding-bottom: 0.5rem;
+    display: inline-block;
+}
+
+.team-contacts p {
+    margin-bottom: 1rem;
+    padding-left: 1.5rem;
+    position: relative;
+}
+
+.team-contacts p:before {
+    content: "•";
+    color: var(--accent);
+    position: absolute;
+    left: 0;
+}
+
+/* Form Styles */
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    color: var(--brown);
+}
+
+.form-control {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.form-control:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 0.25rem rgba(212, 163, 115, 0.25);
+    outline: none;
+}
+
+textarea.form-control {
+    min-height: 150px;
+}
+
+/* Button */
+.btn-primary {
+    background-color: var(--brown);
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+    background-color: var(--dark-brown);
+    transform: translateY(-2px);
+}
+
+/* Map Section */
+.map-section {
+    background-color: var(--beige);
+}
+
+.map-container {
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .contact-hero {
+        padding: 4rem 1rem;
+    }
+    
+    .contact-info-card,
+    .contact-form-card {
+        padding: 1.5rem;
+    }
+    
+    .team-contacts p {
+        padding-left: 1rem;
+    }
+}

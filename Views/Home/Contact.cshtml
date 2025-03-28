@@ -1,0 +1,112 @@
+@{
+    ViewData["Title"] = "Contact Us";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<link rel="stylesheet" href="~/css/landingpage/contact.css" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+<!-- Hero Section -->
+<section class="contact-hero">
+    <div class="container">
+        <h1 class="display-3 fw-bold">Contact Our Team</h1>
+        <p class="lead">We're students at University of Cebu Main Campus</p>
+    </div>
+</section>
+
+<!-- Contact Content -->
+<section class="contact-content py-5">
+    <div class="container">
+        <div class="row g-4">
+            <!-- Contact Info -->
+            <div class="col-lg-4">
+                <div class="contact-info-card">
+                    <h3><i class="fas fa-school text-accent me-2"></i> Our School</h3>
+                    <p>University of Cebu Main Campus<br>
+                    Sanciangko St, Cebu City<br>
+                    6000 Cebu</p>
+                    
+                    <h3 class="mt-4"><i class="fas fa-users text-accent me-2"></i> Development Team</h3>
+                    <div class="team-contacts">
+                        <p><strong>Froillan Kim B. Edem</strong><br>
+                        Project Manager</p>
+                        
+                        <p><strong>Jane Lopez</strong><br>
+                        Front End Developer</p>
+                        
+                        <p><strong>Maverick Villarta</strong><br>
+                        Back End Developer</p>
+                        
+                        <p><strong>Daisy Lyn Laygan</strong><br>
+                        Back End Developer</p>
+                        
+                        <p><strong>Henryken Magsayo</strong><br>
+                        Database Designer</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Contact Form -->
+            <div class="col-lg-8">
+                <div class="contact-form-card">
+                    <h2 class="mb-4">Send Us a Message</h2>
+                    <p class="mb-4">Have questions about our HomeSphere project? Reach out to our team!</p>
+                    
+                    <form>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="name" class="form-label">Your Name</label>
+                                    <input type="text" class="form-control" id="name" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="email" class="form-label">Email Address</label>
+                                    <input type="email" class="form-control" id="email" required>
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <div class="form-group">
+                                    <label for="subject" class="form-label">Subject</label>
+                                    <select class="form-control" id="subject" required>
+                                        <option value="">Select a topic</option>
+                                        <option>Project Inquiry</option>
+                                        <option>Technical Support</option>
+                                        <option>Feature Request</option>
+                                        <option>Other Question</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <div class="form-group">
+                                    <label for="message" class="form-label">Message</label>
+                                    <textarea class="form-control" id="message" rows="5" required></textarea>
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-paper-plane me-2"></i> Send Message
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Map Section -->
+<section class="map-section py-5 bg-light">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2>Our Campus Location</h2>
+            <p class="lead">University of Cebu Main Campus</p>
+        </div>
+        <div class="map-container">
+            <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3925.234835887738!2d123.8955383152875!3d10.29675419266027!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x33a99932389a03a1%3A0x4e113d7f55ef9c09!2sUniversity%20of%20Cebu%20-%20Main%20Campus!5e0!3m2!1sen!2sph!4v1620000000000!5m2!1sen!2sph" 
+                    width="100%" height="450" style="border:0;" allowfullscreen="" loading="lazy" 
+                    referrerpolicy="no-referrer-when-downgrade"></iframe>
+        </div>
+    </div>
+</section>
