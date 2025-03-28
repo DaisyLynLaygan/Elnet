@@ -32,7 +32,7 @@ public class HomeController : Controller
         return View();
     }
 
-    public async Task<IActionResult> LoginTask(string? Username, string Password)
+    public IActionResult LoginTask(string? Username, string Password)
     {
         if (Username?.CompareTo("admin") == 0 && Password.CompareTo("admin") == 0)
         {
