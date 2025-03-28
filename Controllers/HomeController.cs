@@ -36,7 +36,7 @@ public class HomeController : Controller
     {
         if (Username?.CompareTo("admin") == 0 && Password.CompareTo("admin") == 0)
         {
-            return RedirectToAction("Index", "Admin");
+            return RedirectToAction("AdminDashboard", "Admin");
         }
         else
         {
