@@ -17,5 +17,7 @@ namespace HomeOwner.Models
         public string? address { get; set; }
         public string? contact_no { get; set; }
 
+        public DateOnly? date_created { get; set; }
+
     }
 }
