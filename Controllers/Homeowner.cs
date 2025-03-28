@@ -25,33 +25,37 @@ namespace HomeOwner.Controllers
            ViewBag.fullname = HttpContext.Session.GetString("firstname")+ " " + HttpContext.Session.GetString("lastname");
             
         }
-        public IActionResult UpdateProfile(User model)
+        public  void UpdateProfile(User model)
         {
             try
             {
                 // Find the user in the database
-                var existingUser = _context.User.FirstOrDefault(u => u.Id == model.Id);
+                var existingUser =  _context.User.FirstOrDefault(u => u.username == model.username);
 
                 if (existingUser == null)
                 {
-                    return NotFound(); // Return 404 if user is not found
+                  
                 }
 
                 // Update only the modified fields
-                existingUser.Username = model.Username;
-                existingUser.Email = model.Email;
-                existingUser.Password = model.Password; // Consider hashing this before saving!
+         
+                existingUser.firstname = model?.firstname;
+                existingUser.lastname = model?.lastname;
+                existingUser.email = model?.email;
+                existingUser.address = model?.address;
+                existingUser.contact_no = model?.contact_no;
+           
 
                 _context.User.Update(existingUser);
                 _context.SaveChanges();
 
                 ViewBag.Message = "Profile updated successfully!";
-                return View(existingUser);
+               
             }
             catch (Exception ex)
             {
                 ViewBag.Error = "An error occurred while updating the profile.";
-                return View();
+               
             }
         }
 
