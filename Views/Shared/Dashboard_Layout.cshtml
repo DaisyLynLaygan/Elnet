@@ -9,11 +9,10 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - HomeOwner</title>
-    <link rel="stylesheet" href="~/css/dashboardhomeowners.css" />
+    <link rel="stylesheet" href="~/css/homeowners/dashboardhomeowners.css"/>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
 </head>
 <body>
-
 <nav class="navbar">
     <!-- Logo -->
     <a href="#" class="logo">
@@ -27,7 +26,7 @@
         <li class="nav-item">
             <a asp-controller="Homeowner" asp-action="Feedback" class="nav-link">Feedback</a>
         </li>        
-        <li class="nav-item">
+        <li class="nav-item has-dropdown">
             <a href="#" class="nav-link">Billing <span>▼</span></a>
             <div class="dropdown-content">
                 <a asp-controller="Homeowner" asp-action="Payment" class="dropdown-link">Make Payment</a>
@@ -70,54 +69,6 @@
     </main>
 </div>
 
-<!-- Footer -->
-<footer class="footer">
-    <div class="footer-container">
-        <div class="footer-column">
-            <h4>About Us</h4>
-            <p>HomeSphere is a premium home design and real estate platform focused on creating beautiful living spaces.</p>
-            <div class="footer-social">
-                <a href="#" class="social-icon">FB</a>
-                <a href="#" class="social-icon">IG</a>
-                <a href="#" class="social-icon">TW</a>
-                <a href="#" class="social-icon">LI</a>
-            </div>
-        </div>
-        
-        <div class="footer-column">
-            <h4>Quick Links</h4>
-            <ul class="footer-links">
-                <li><a href="#">Home</a></li>
-                <li><a href="#">Services</a></li>
-                <li><a href="#">Projects</a></li>
-                <li><a href="#">Blog</a></li>
-                <li><a href="#">About</a></li>
-            </ul>
-        </div>
-        
-        <div class="footer-column">
-            <h4>Contact Info</h4>
-            <ul class="footer-links">
-                <li>Email: info@homesphere.com</li>
-                <li>Phone: (123) 456-7890</li>
-                <li>Address: 123 Design St, Suite 101</li>
-            </ul>
-        </div>
-        
-        <div class="footer-column">
-            <h4>Subscribe to our newsletter</h4>
-            <p>Get the latest updates and offers delivered directly to your inbox.</p>
-            <div class="newsletter-form">
-                <input type="email" placeholder="Your email address">
-                <button type="submit">Subscribe</button>
-            </div>
-        </div>
-    </div>
-    
-    <div class="footer-bottom">
-        <p>© 2025 HomeSphere Inc. All rights reserved.</p>
-    </div>
-</footer>
 
 <script src="~/lib/jquery/dist/jquery.min.js"></script>
 <script src="https://unpkg.com/swiper/swiper-bundle.min.js"></script>
@@ -135,31 +86,6 @@ function toggleMenu() {
     hamburger.classList.toggle('active');
 }
 
-// Mobile dropdown toggle
-const navLinks = document.querySelectorAll('.nav-link');
-
-navLinks.forEach(link => {
-    if (link.nextElementSibling && link.nextElementSibling.classList.contains('dropdown-content')) {
-        link.addEventListener('click', (e) => {
-            if (window.innerWidth <= 900) {
-                e.preventDefault();
-                link.nextElementSibling.classList.toggle('show');
-            }
-        });
-    }
-});
-
-// Close mobile menu and dropdowns when clicking outside
-document.addEventListener('click', (e) => {
-    if (!e.target.closest('.navbar')) {
-        document.querySelector('.nav-menu').classList.remove('active');
-        document.querySelector('.hamburger').classList.remove('active');
-        document.querySelectorAll('.dropdown-content').forEach(dropdown => {
-            dropdown.classList.remove('show');
-        });
-    }
-});
-
 // Profile dropdown toggle
 function toggleProfileDropdown() {
     const userProfile = document.querySelector('.user-profile');
@@ -174,29 +100,61 @@ document.addEventListener('click', function (event) {
     }
 });
 
+// Mobile dropdown toggle for billing
+document.addEventListener('DOMContentLoaded', function() {
+    const billingLink = document.querySelector('.has-dropdown .nav-link');
+    const dropdownContent = document.querySelector('.has-dropdown .dropdown-content');
+    
+    if (window.innerWidth <= 900) {
+        billingLink.addEventListener('click', function(e) {
+            e.preventDefault();
+            dropdownContent.classList.toggle('show');
+        });
+    }
+    
+    // Update event listener on window resize
+    window.addEventListener('resize', function() {
+        if (window.innerWidth <= 900) {
+            billingLink.addEventListener('click', function(e) {
+                e.preventDefault();
+                dropdownContent.classList.toggle('show');
+            });
+        } else {
+            // Clone the element and replace it to remove event listeners
+            const newBillingLink = billingLink.cloneNode(true);
+            billingLink.parentNode.replaceChild(newBillingLink, billingLink);
+        }
+    });
+});
+
 // Highlight active navigation link based on URL
 document.addEventListener('DOMContentLoaded', function () {
-    const navLinks = document.querySelectorAll('.nav-menu > .nav-item > .nav-link'); // Only top-level links
-    const currentUrl = window.location.pathname; // Get the current pathname only
+    const navLinks = document.querySelectorAll('.nav-menu > .nav-item > .nav-link');
+    const currentUrl = window.location.pathname;
 
-    // Highlight the active link based on the current URL
     navLinks.forEach(link => {
-        const linkHref = link.getAttribute('href'); // Get the href attribute directly
+        const linkHref = link.getAttribute('href');
 
         if (linkHref === currentUrl) {
             link.classList.add('active');
         }
     });
 
-    // Add click event to all navigation links
     navLinks.forEach(link => {
         link.addEventListener('click', () => {
-            // Remove active class from all links
             navLinks.forEach(link => link.classList.remove('active'));
-
-            // Add active class to the clicked link
             link.classList.add('active');
         });
+    });
+});
+
+// Close mobile menu when clicking on a link
+document.querySelectorAll('.nav-link:not(.has-dropdown .nav-link), .dropdown-link').forEach(link => {
+    link.addEventListener('click', () => {
+        if (window.innerWidth <= 900) {
+            document.querySelector('.nav-menu').classList.remove('active');
+            document.querySelector('.hamburger').classList.remove('active');
+        }
     });
 });
 

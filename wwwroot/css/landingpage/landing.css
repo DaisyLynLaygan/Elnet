@@ -259,7 +259,6 @@ body {
     color: #555;
     margin-bottom: 0;
     display: -webkit-box;
-    -webkit-line-clamp: 4; /* Limit to 4 lines */
     -webkit-box-orient: vertical;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -508,7 +507,6 @@ body {
 /* Services Section */
 .services-section {
     padding: 100px 0;
-    background-color: var(--light-gray);
 }
 
 .service-card {
@@ -563,7 +561,6 @@ body {
 /* Facilities Section */
 .facilities-section {
     padding: 100px 0;
-    background-color: white;
 }
 
 .facility-slide {
@@ -625,7 +622,6 @@ body {
 /* Community Section */
 .community-section {
     padding: 100px 0;
-    background-color: var(--light-gray);
 }
 
 .community-features {

@@ -119,6 +119,7 @@ body {
 
 .sign-in-btn:hover {
     background-color: rgba(107, 68, 35, 0.1);
+    color: #000;
 }
 
 .sign-up-btn {
@@ -129,6 +130,7 @@ body {
 
 .sign-up-btn:hover {
     background-color: var(--dark-brown);
+    color: #c6c4c4;
 }
 
 /* Mobile Menu Button */
@@ -147,7 +149,7 @@ body {
         display: none;
         flex-direction: column;
         position: absolute;
-        top: 70px;
+        top: 50px;
         left: 0;
         width: 100%;
         background-color: var(--cream);
