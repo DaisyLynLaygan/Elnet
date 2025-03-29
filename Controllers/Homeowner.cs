@@ -28,7 +28,8 @@ namespace HomeOwner.Controllers
 
                 if (existingUser == null)
                 {
-                  
+                    ViewBag.Error = "Invalid user data.";
+                    return;
                 }
 
                 // Update only the modified fields

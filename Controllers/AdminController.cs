@@ -1,16 +1,56 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using HomeOwner.Data;
+using HomeOwner.Models;
+using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 
 namespace HomeOwner.Controllers
 {
     public class AdminController : Controller
     {
-        public IActionResult AdminDashboard()
+        private readonly HomeOwnerContext _context;
+        public AdminController(HomeOwnerContext db)
         {
+            _context = db;
+        }
+
+        public IActionResult Dashboard()
+        {
+            var userJson = HttpContext.Session.GetString("CurrentUser");
+
+            if (string.IsNullOrEmpty(userJson))
+            {
+                return RedirectToAction("Index", "Home"); // Redirect if no user is logged in
+            }
+
+            var user = JsonConvert.DeserializeObject<User>(userJson);
+
+            if (user == null)
+            {
+                return RedirectToAction("Index", "Home"); // Redirect if deserialization fails
+            }
+
+            ViewBag.CurrentUser = user;
             return View();
         }
+
         public IActionResult AdminLogin()
         {
             return View();
         }
+        public IActionResult Announcements() => View("AdminAnnouncements");
+
+        public IActionResult Documents() => View("AdminDocuments");
+
+        public IActionResult Reservations() => View("AdminReservations");
+
+        public IActionResult Polls() => View("AdminPolls");
+
+        public IActionResult Events() => View("AdminEvents");
+
+        public IActionResult Users() => View("AdminUsers");
+
+        public IActionResult Feedback() => View("AdminFeedback");
+
+        public IActionResult ServiceRequests() => View("AdminServiceRequests");
     }
 }

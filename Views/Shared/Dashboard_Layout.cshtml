@@ -49,7 +49,7 @@
 
         <!-- User Profile with Dropdown -->
         <div class="user-profile" onclick="toggleProfileDropdown()">
-            <span>@user.firstname @user.lastname</span>
+                <span style="text-transform: capitalize;">@user?.firstname @user?.lastname</span>
             <img src="~/images/user-default-picture.jpg" alt="User profile" />
             <!-- Dropdown Menu -->
             <div class="profile-dropdown">
