@@ -46,25 +46,36 @@ public class HomeController : Controller
 
     public async Task<IActionResult> LoginTask(string? Username, string Password)
     {
-        if (Username?.CompareTo("admin") == 0 && Password.CompareTo("admin") == 0)
+        if (Username == null || string.IsNullOrWhiteSpace(Password))
         {
-            return RedirectToAction("AdminDashboard", "Admin");
+            TempData["invalidLogin"] = "Username and password are required.";
+            return RedirectToAction("Index", "Home");
         }
-        else
-        {
-            var user = _context.User.FirstOrDefault(m => m.username == Username && m.user_password == Password);
-            if (user == null)
-            {
-                TempData["invalidLogin"] = "Incorrect username and password.";
-                return RedirectToAction("Index", "Home");
-            }
-            else
-            {
 
-                HttpContext.Session.SetObject("CurrentUser", user);
-                return RedirectToAction("Dashboard", "Homeowner");
-            }
+        var user = _context.User.FirstOrDefault(m => m.username == Username && m.user_password == Password);
+
+        if (user == null)
+        {
+            TempData["invalidLogin"] = "Incorrect username or password.";
+            return RedirectToAction("Index", "Home");
         }
+
+        // Store user session
+        HttpContext.Session.SetObject("CurrentUser", user);
+
+        // Redirect based on role
+        if (user.role == "Admin")
+        {
+            return RedirectToAction("Dashboard", "Admin");
+        }
+        else if (user.role == "Homeowner")
+        {
+            return RedirectToAction("Dashboard", "Homeowner");
+        }
+
+        // Default fallback in case if the first condition doesn't work
+        TempData["invalidLogin"] = "Unauthorized access.";
+        return RedirectToAction("Index", "Home");
     }
 
     [HttpGet]
