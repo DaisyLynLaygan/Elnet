@@ -44,7 +44,7 @@ public class HomeController : Controller
         return View();
     }
 
-    public async Task<IActionResult> LoginTask(string? Username, string Password)
+    public IActionResult LoginTask(string? Username, string Password)
     {
         if (Username == null || string.IsNullOrWhiteSpace(Password))
         {
@@ -54,28 +54,40 @@ public class HomeController : Controller
 
         var user = _context.User.FirstOrDefault(m => m.username == Username && m.user_password == Password);
 
-        if (user == null)
+
+
+        if (Username.CompareTo("admin") == 0 && Password.CompareTo("admin") == 0)
+        {
+            var admin = new Admin
+            {
+                name = "admin",
+                role = "Admin"
+            };
+
+
+            HttpContext.Session.SetObject("CurrentUser", admin);
+            return RedirectToAction("Dashboard", "Admin");
+        }
+        else if (user?.role == "Homeowner")
+        {
+
+            HttpContext.Session.SetObject("CurrentUser", user);
+            return RedirectToAction("Dashboard", "Homeowner");
+         
+        }
+        else
         {
             TempData["invalidLogin"] = "Incorrect username or password.";
             return RedirectToAction("Index", "Home");
         }
+        
+        
+        //Since walay admin database, mag static login lang ta, ayaw lang sa ninyu gub a hehe
 
-        // Store user session
-        HttpContext.Session.SetObject("CurrentUser", user);
 
-        // Redirect based on role
-        if (user.role == "Admin")
-        {
-            return RedirectToAction("Dashboard", "Admin");
-        }
-        else if (user.role == "Homeowner")
-        {
-            return RedirectToAction("Dashboard", "Homeowner");
-        }
+       
+      
 
-        // Default fallback in case if the first condition doesn't work
-        TempData["invalidLogin"] = "Unauthorized access.";
-        return RedirectToAction("Index", "Home");
     }
 
     [HttpGet]
@@ -103,7 +115,8 @@ public class HomeController : Controller
                     contact_no = model.contact_no,
                     firstname = model.firstname,
                     lastname = model.lastname,
-                    date_created = DateOnly.FromDateTime(DateTime.Now)
+                    date_created = DateOnly.FromDateTime(DateTime.Now),
+                    role= "Homeowner"//Kalimot mo add ani, ma null nis database
                 };
 
 
@@ -137,4 +150,12 @@ public class HomeController : Controller
             // Redirect to the Index page
             return RedirectToAction("Index");
         }
+}
+
+
+class Admin
+{
+    public String? name { get;set; }
+    public String? role { get; set; }
+
 }
