@@ -270,266 +270,69 @@
 
 
 <!-- Edit Profile Modal -->
-<link rel="stylesheet" href="~/css/userprofile.css" />
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-
-<div class="user-profile-container">
-    <div class="profile-header">
-        <div class="cover-photo">
-            <img src="~/images/frontview.jpg" alt="Cover Photo">
-            <div class="profile-actions">
-                <button class="btn-edit-cover"><i class="fas fa-camera"></i> Change Cover</button>
+<div class="modal" id="editProfileModal">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Edit Profile</h3>
+                <button type="button" class="close-modal">&times;</button>
             </div>
-        </div>
-        <div class="profile-info">
-            <div class="avatar-container">
-                <img src="~/images/user-default-picture.jpg" alt="Profile Picture" class="profile-avatar" id="profileAvatar">
-                <button class="btn-edit-avatar"><i class="fas fa-camera"></i></button>
-                <input type="file" id="avatarUpload" accept="image/*" style="display: none;">
-            </div>
-            <div class="profile-details">
-                <h1>@user.firstname @user.lastname</h1>
-                <p class="profile-title">Homeowner</p>
-                <div class="profile-stats">
-                    <div class="stat-item">
-                        <span class="stat-number">5</span>
-                        <span class="stat-label">Properties</span>
-                    </div>
-                    <div class="stat-item">
-                        <span class="stat-number">12</span>
-                        <span class="stat-label">Bookings</span>
-                    </div>
-                    <div class="stat-item">
-                        <span class="stat-number">3</span>
-                        <span class="stat-label">Years</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="profile-content">
-        <div class="profile-sidebar">
-            <div class="sidebar-section about-section">
-                <h3><i class="fas fa-user-circle"></i> About</h3>
-                <div class="about-content">
-                    <p><i class="fas fa-envelope"></i> @user.email</p>
-                    <p><i class="fas fa-phone"></i> @user.contact_no</p>
-                    <p><i class="fas fa-map-marker-alt"></i> @user.address</p>
-                    <p><i class="fas fa-calendar-alt"></i> Joined @user.date_created</p>
-                </div>
-                <button class="btn-edit-profile"><i class="fas fa-pencil-alt"></i> Edit Profile</button>
-            </div>
-
-            <div class="sidebar-section verification-section">
-                <h3><i class="fas fa-shield-alt"></i> Verification</h3>
-                <div class="verification-item verified">
-                    <i class="fas fa-check-circle"></i>
-                    <span>Email Verified</span>
-                </div>
-                <div class="verification-item pending">
-                    <i class="fas fa-hourglass-half"></i>
-                    <span>Phone Verification Pending</span>
-                </div>
-                <div class="verification-item not-verified">
-                    <i class="fas fa-times-circle"></i>
-                    <span>ID Not Verified</span>
-                </div>
-            </div>
-        </div>
-
-        <div class="profile-main">
-            <div class="profile-tabs">
-                <button class="tab-btn active" data-tab="overview">Overview</button>
-                <button class="tab-btn" data-tab="properties">Properties</button>
-                <button class="tab-btn" data-tab="thumbnails">Thumbnails</button>
-                <button class="tab-btn" data-tab="settings">Settings</button>
-            </div>
-
-            <div class="tab-content active" id="overview">
-                <!-- Overview content -->
-                <div class="card welcome-card">
-                    <div class="card-body">
-                        <h2>Welcome Back, @user.firstname @user.lastname</h2>
-                        <p>Here's what's happening with your properties today.</p>
-                        <div class="welcome-stats">
-                            <div class="stat-card">
-                                <i class="fas fa-home"></i>
-                                <div>
-                                    <h3>5</h3>
-                                    <p>Properties</p>
-                                </div>
-                            </div>
-                            <div class="stat-card">
-                                <i class="fas fa-calendar-check"></i>
-                                <div>
-                                    <h3>2</h3>
-                                    <p>Upcoming Bookings</p>
-                                </div>
-                            </div>
-                            <div class="stat-card">
-                                <i class="fas fa-bell"></i>
-                                <div>
-                                    <h3>3</h3>
-                                    <p>Notifications</p>
-                                </div>
-                            </div>
+            <div class="modal-body">
+                <form class="edit-profile-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>First Name</label>
+                            <input type="text" value="@user.firstname" id="firstName">
+                        </div>
+                        <div class="form-group">
+                            <label>Last Name</label>
+                            <input type="text" value="@user.lastname" id="lastName">
                         </div>
                     </div>
-                </div>
-
-                <div class="card recent-activity">
-                    <div class="card-header">
-                        <h3>Recent Activity</h3>
+                    
+                    <div class="form-group">
+                        <label>Email Address</label>
+                        <input type="email" value="@user.email" id="email">
                     </div>
-                    <div class="card-body">
-                        <div class="activity-item">
-                            <div class="activity-icon">
-                                <i class="fas fa-calendar-plus"></i>
-                            </div>
-                            <div class="activity-content">
-                                <p>Booked cleaning service for <strong>Luxury Villa</strong></p>
-                                <small>Today, 10:30 AM</small>
-                            </div>
-                        </div>
-                        <div class="activity-item">
-                            <div class="activity-icon">
-                                <i class="fas fa-home"></i>
-                            </div>
-                            <div class="activity-content">
-                                <p>Added new property: <strong>Beach House</strong></p>
-                                <small>Yesterday, 3:45 PM</small>
-                            </div>
-                        </div>
-                        <div class="activity-item">
-                            <div class="activity-icon">
-                                <i class="fas fa-credit-card"></i>
-                            </div>
-                            <div class="activity-content">
-                                <p>Payment received for <strong>Garden Maintenance</strong></p>
-                                <small>May 15, 2023</small>
-                            </div>
+                    
+                    <div class="form-group">
+                        <label>Phone Number</label>
+                        <input type="tel" value="@user.contact_no" id="phone">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Address</label>
+                        <textarea id="address" rows="3">@user.address</textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Profile Picture</label>
+                        <div class="avatar-upload">
+                            <img src="~/images/user-default-picture.jpg" alt="Current Avatar" id="modalAvatarPreview">
+                            <button type="button" class="btn-upload-avatar">
+                                <i class="fas fa-camera"></i> Change Photo
+                            </button>
+                            <input type="file" id="modalAvatarUpload" accept="image/*" style="display: none;">
                         </div>
                     </div>
-                </div>
-            </div>
-
-            <div class="tab-content" id="properties">
-                <!-- Properties content -->
-                <div class="card">
-                    <div class="card-header">
-                        <h3>Your Properties</h3>
-                        <button class="btn-add-property"><i class="fas fa-plus"></i> Add Property</button>
+                    
+                    <div class="form-group">
+                        <label>Change Password</label>
+                        <input type="password" placeholder="Current Password" id="currentPassword">
+                        <input type="password" placeholder="New Password" id="newPassword">
+                        <input type="password" placeholder="Confirm New Password" id="confirmPassword">
                     </div>
-                    <div class="card-body">
-                        <div class="property-list">
-                            <div class="property-card">
-                                <div class="property-thumbnail">
-                                    <img src="~/images/frontview.jpg" alt="Luxury Villa">
-                                    <div class="thumbnail-actions">
-                                        <button class="btn-change-thumbnail" data-property="1"><i class="fas fa-camera"></i> Change</button>
-                                        <input type="file" class="thumbnail-upload" data-property="1" accept="image/*" style="display: none;">
-                                    </div>
-                                </div>
-                                <div class="property-info">
-                                    <h4>Luxury Villa</h4>
-                                    <p>Beverly Hills, CA</p>
-                                    <div class="property-stats">
-                                        <span><i class="fas fa-bed"></i> 5</span>
-                                        <span><i class="fas fa-bath"></i> 4</span>
-                                        <span><i class="fas fa-ruler-combined"></i> 4,200 sq.ft.</span>
-                                    </div>
-                                    <div class="property-actions">
-                                        <button class="btn-view"><i class="fas fa-eye"></i> View</button>
-                                        <button class="btn-edit"><i class="fas fa-pencil-alt"></i> Edit</button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                    
+                    <div class="form-actions">
+                        <button type="button" class="btn-cancel">Cancel</button>
+                        <button type="submit" class="btn-save">Save Changes</button>
                     </div>
-                </div>
-            </div>
-
-            <div class="tab-content" id="thumbnails">
-                <!-- Thumbnails content -->
-                <div class="card">
-                    <div class="card-header">
-                        <h3>Property Thumbnails</h3>
-                        <button class="btn-upload-thumbnails"><i class="fas fa-plus"></i> Upload Thumbnails</button>
-                        <input type="file" id="thumbnailUpload" accept="image/*" multiple style="display: none;">
-                    </div>
-                    <div class="card-body">
-                        <div class="thumbnail-gallery">
-                            <div class="thumbnail-item">
-                                <img src="~/images/frontview.jpg" alt="Front View">
-                                <div class="thumbnail-actions">
-                                    <button class="btn-edit-thumbnail"><i class="fas fa-edit"></i></button>
-                                    <button class="btn-delete-thumbnail"><i class="fas fa-trash"></i></button>
-                                </div>
-                            </div>
-                            <div class="thumbnail-item">
-                                <img src="~/images/livingroom.jpg" alt="Living Room">
-                                <div class="thumbnail-actions">
-                                    <button class="btn-edit-thumbnail"><i class="fas fa-edit"></i></button>
-                                    <button class="btn-delete-thumbnail"><i class="fas fa-trash"></i></button>
-                                </div>
-                            </div>
-                            <div class="thumbnail-item">
-                                <img src="~/images/kitchen.jpg" alt="Kitchen">
-                                <div class="thumbnail-actions">
-                                    <button class="btn-edit-thumbnail"><i class="fas fa-edit"></i></button>
-                                    <button class="btn-delete-thumbnail"><i class="fas fa-trash"></i></button>
-                                </div>
-                            </div>
-                            <div class="thumbnail-item">
-                                <img src="~/images/backyard.jpg" alt="Backyard">
-                                <div class="thumbnail-actions">
-                                    <button class="btn-edit-thumbnail"><i class="fas fa-edit"></i></button>
-                                    <button class="btn-delete-thumbnail"><i class="fas fa-trash"></i></button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="tab-content" id="settings">
-                <!-- Settings content -->
-                <div class="card">
-                    <div class="card-header">
-                        <h3>Account Settings</h3>
-                    </div>
-                    <div class="card-body">
-                        <form class="settings-form">
-                            <div class="form-group">
-                                <label>Username</label>
-                                <input type="text" value="johnsmith" readonly>
-                            </div>
-                            <div class="form-group">
-                                <label>Email Address</label>
-                                <input type="email" value="john.smith@example.com">
-                            </div>
-                            <div class="form-group">
-                                <label>Phone Number</label>
-                                <input type="tel" value="+1 (555) 123-4567">
-                            </div>
-                            <div class="form-group">
-                                <label>Address</label>
-                                <input type="text" value="123 Main St, Beverly Hills, CA 90210">
-                            </div>
-                            <div class="form-group">
-                                <label>Change Password</label>
-                                <input type="password" placeholder="New Password">
-                                <input type="password" placeholder="Confirm New Password">
-                            </div>
-                            <button type="submit" class="btn-save">Save Changes</button>
-                        </form>
-                    </div>
-                </div>
+                </form>
             </div>
         </div>
     </div>
 </div>
+
 
 <!-- Change Cover Photo Modal -->
 <div class="modal" id="changeCoverModal">

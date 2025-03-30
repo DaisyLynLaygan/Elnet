@@ -33,12 +33,27 @@ namespace HomeOwner.Controllers
             return View();
         }
 
-        public IActionResult AdminLogin()
+        
+        public IActionResult Announcements()
         {
-            return View();
-        }
-        public IActionResult Announcements() => View("AdminAnnouncements");
+            var userJson = HttpContext.Session.GetString("CurrentUser");
+            
+            if (string.IsNullOrEmpty(userJson))
+            {
+                return RedirectToAction("Index", "Home");
+            }
 
+            var user = JsonConvert.DeserializeObject<User>(userJson);
+
+            if (user == null)
+            {
+                return RedirectToAction("Index", "Home");
+            }
+
+            ViewBag.CurrentUser = user;
+            return View("AdminAnnouncements");
+        }
+    
         public IActionResult Documents() => View("AdminDocuments");
 
         public IActionResult Reservations() => View("AdminReservations");
