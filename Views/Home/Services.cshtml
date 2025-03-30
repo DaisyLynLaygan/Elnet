@@ -1,0 +1,333 @@
+@{
+    ViewData["Title"] = "Our Services";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<link rel="stylesheet" href="~/css/landingpage/services.css" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+
+<!-- Hero Section -->
+<section class="hero-section">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6 order-lg-1 order-2" data-aos="fade-right">
+                <h1 class="display-4 fw-bold mb-4">HomeSphere <span class="text-accent">Services</span></h1>
+                <p class="lead mb-4">Premium home maintenance solutions tailored to your needs. Our certified professionals deliver exceptional service with every visit.</p>
+                <div class="d-flex gap-3">
+                    <a href="#services" class="btn btn-primary btn-lg px-4">
+                        <i class="fas fa-search me-2"></i>Explore Services
+                    </a>
+                    <a asp-controller="Home" asp-area="" asp-action="Login" class="btn btn-outline-primary btn-lg px-4">
+                        <i class="fas fa-sign-in-alt me-2"></i>Sign In
+                    </a>
+                </div>
+            </div>
+            <div class="col-lg-6 order-lg-2 order-1 mb-4 mb-lg-0" data-aos="fade-left">
+                <div class="img-container">
+                    <img src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80" 
+                         alt="Beautiful home" class="img-fluid">
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="py-5">
+    <div class="container">
+        <div class="row g-4">
+            <div class="col-md-4" data-aos="fade-up">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-user-shield"></i>
+                    </div>
+                    <h3>Certified Professionals</h3>
+                    <p>All technicians are licensed, background-checked, and trained to our high standards.</p>
+                </div>
+            </div>
+            
+            <div class="col-md-4" data-aos="fade-up" data-aos-delay="100">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-calendar"></i>
+                    </div>
+                    <h3>Flexible Scheduling</h3>
+                    <p>Book services at your convenience with our 24/7 online scheduling system.</p>
+                </div>
+            </div>
+            
+            <div class="col-md-4" data-aos="fade-up" data-aos-delay="200">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-medal"></i>
+                    </div>
+                    <h3>Quality Guarantee</h3>
+                    <p>We stand behind our work with a 100% satisfaction guarantee on all services.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Services Section -->
+<section class="py-5" id="services">
+    <div class="container">
+        <div class="text-center mb-5" data-aos="fade-up">
+            <h2 class="display-5 fw-bold">Our Maintenance Services</h2>
+            <div class="divider"></div>
+            <p class="lead">Professional care for every corner of your home</p>
+        </div>
+        
+        <div class="row g-4">
+            <!-- Service 1 -->
+            <div class="col-md-6 col-lg-4" data-aos="fade-up">
+                <div class="service-card">
+                    <div class="service-icon">
+                        <i class="fas fa-broom"></i>
+                    </div>
+                    <h3 class="service-title">Premium Cleaning</h3>
+                    <p class="service-text">Comprehensive cleaning including dusting, vacuuming, mopping, and bathroom sanitation for immaculate living spaces.</p>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="service-price">From $120/service</span>
+                        <a asp-controller="Home" asp-action="Create" class="btn btn-sm btn-primary">
+                            <i class="fas fa-arrow-right me-1"></i> Book Now
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Service 2 -->
+            <div class="col-md-6 col-lg-4" data-aos="fade-up" data-aos-delay="100">
+                <div class="service-card">
+                    <div class="service-icon">
+                        <i class="fas fa-leaf"></i>
+                    </div>
+                    <h3 class="service-title">Garden Care</h3>
+                    <p class="service-text">Complete lawn mowing, hedge trimming, weeding, and plant maintenance to enhance your outdoor spaces.</p>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="service-price">From $150/service</span>
+                        <a asp-controller="Home" asp-action="Create" class="btn btn-sm btn-primary">
+                            <i class="fas fa-arrow-right me-1"></i> Book Now
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Service 3 -->
+            <div class="col-md-6 col-lg-4" data-aos="fade-up" data-aos-delay="200">
+                <div class="service-card">
+                    <div class="service-icon">
+                        <i class="fas fa-tools"></i>
+                    </div>
+                    <h3 class="service-title">Handyman Services</h3>
+                    <p class="service-text">Expert repairs for plumbing, electrical, carpentry, and general home improvement needs.</p>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="service-price">From $85/hour</span>
+                        <a asp-controller="Home" asp-action="Create" class="btn btn-sm btn-primary">
+                            <i class="fas fa-arrow-right me-1"></i> Book Now
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Service 4 -->
+            <div class="col-md-6 col-lg-4" data-aos="fade-up">
+                <div class="service-card">
+                    <div class="service-icon">
+                        <i class="fas fa-fire-extinguisher"></i>
+                    </div>
+                    <h3 class="service-title">Safety Inspection</h3>
+                    <p class="service-text">Thorough safety evaluation including smoke detectors, fire extinguishers, and security systems.</p>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="service-price">From $200/inspection</span>
+                        <a asp-controller="Home" asp-action="Create" class="btn btn-sm btn-primary">
+                            <i class="fas fa-arrow-right me-1"></i> Book Now
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Service 5 -->
+            <div class="col-md-6 col-lg-4" data-aos="fade-up" data-aos-delay="100">
+                <div class="service-card">
+                    <div class="service-icon">
+                        <i class="fas fa-broom"></i>
+                    </div>
+                    <h3 class="service-title">Deep Cleaning</h3>
+                    <p class="service-text">Intensive cleaning of carpets, windows, appliances, and hard-to-reach areas for a fresh home.</p>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="service-price">From $250/service</span>
+                        <a asp-controller="Home" asp-action="Create" class="btn btn-sm btn-primary">
+                            <i class="fas fa-arrow-right me-1"></i> Book Now
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Service 6 -->
+            <div class="col-md-6 col-lg-4" data-aos="fade-up" data-aos-delay="200">
+                <div class="service-card">
+                    <div class="service-icon">
+                        <i class="fas fa-fan"></i>
+                    </div>
+                    <h3 class="service-title">HVAC Maintenance</h3>
+                    <p class="service-text">Complete heating and cooling system inspection, cleaning, and performance optimization.</p>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="service-price">From $175/service</span>
+                        <a asp-controller="Home" asp-action="Create" class="btn btn-sm btn-primary">
+                            <i class="fas fa-arrow-right me-1"></i> Book Now
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA Section -->
+<section class="container">
+    <div class="cta-section" data-aos="fade-up">
+        <div class="text-center">
+            <h2 class="display-5 fw-bold mb-4">Ready to Simplify Your Home Maintenance?</h2>
+            <p class="lead mb-5">Join our community of satisfied homeowners today</p>
+            <div class="d-flex gap-3 justify-content-center">
+                <a asp-controller="Home" asp-action="Create" class="btn btn-light btn-lg px-4">
+                    <i class="fas fa-calendar-check me-2"></i>Book a Service
+                </a>
+                <a asp-controller="Home" asp-area="" asp-action="Login" class="btn btn-outline-light btn-lg px-4">
+                    <i class="fas fa-sign-in-alt me-2"></i>Sign In
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Testimonials Section -->
+<section class="py-5">
+    <div class="container">
+        <div class="text-center mb-5" data-aos="fade-up">
+            <h2 class="display-5 fw-bold">Trusted by Homeowners</h2>
+            <div class="divider"></div>
+            <p class="lead">What our clients say about our services</p>
+        </div>
+        
+        <div class="row g-4">
+            <div class="col-md-4" data-aos="fade-up">
+                <div class="testimonial-card">
+                    <div class="rating mb-3">
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <p class="mb-4">"HomeSphere transformed my home with their cleaning service. The team was professional and left every surface sparkling."</p>
+                    <div class="d-flex align-items-center">
+                        <img src="https://randomuser.me/api/portraits/women/32.jpg" alt="Sarah J." class="rounded-circle me-3" width="50">
+                        <div>
+                            <h6 class="mb-0">Sarah J.</h6>
+                            <small class="text-muted">Homeowner since 2021</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4" data-aos="fade-up" data-aos-delay="100">
+                <div class="testimonial-card">
+                    <div class="rating mb-3">
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <p class="mb-4">"The garden team is exceptional. My yard has never looked better, and they're always punctual."</p>
+                    <div class="d-flex align-items-center">
+                        <img src="https://randomuser.me/api/portraits/men/45.jpg" alt="Michael T." class="rounded-circle me-3" width="50">
+                        <div>
+                            <h6 class="mb-0">Michael T.</h6>
+                            <small class="text-muted">Homeowner since 2020</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4" data-aos="fade-up" data-aos-delay="200">
+                <div class="testimonial-card">
+                    <div class="rating mb-3">
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <p class="mb-4">"I rely on HomeSphere for all maintenance needs. Reliable, professional, and excellent value."</p>
+                    <div class="d-flex align-items-center">
+                        <img src="https://randomuser.me/api/portraits/women/68.jpg" alt="Lisa M." class="rounded-circle me-3" width="50">
+                        <div>
+                            <h6 class="mb-0">Lisa M.</h6>
+                            <small class="text-muted">Homeowner since 2019</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- FAQ Section -->
+<section class="py-5">
+    <div class="container">
+        <div class="text-center mb-5" data-aos="fade-up">
+            <h2 class="display-5 fw-bold">Frequently Asked Questions</h2>
+            <div class="divider"></div>
+        </div>
+        
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="accordion" id="faqAccordion">
+                    <div class="accordion-item border-0 mb-3" data-aos="fade-up">
+                        <h3 class="accordion-header" id="headingOne">
+                            <button class="accordion-button collapsed rounded-3" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
+                                <i class="fas fa-question-circle me-2 text-accent"></i> How do I book a service?
+                            </button>
+                        </h3>
+                        <div id="collapseOne" class="accordion-collapse collapse" aria-labelledby="headingOne" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                Click any "Book Now" button to select a service. You'll need to <a asp-controller="Home" asp-area="" asp-action="Login">sign in</a> or <a asp-controller="Home" asp-action="Create">create an account</a> to complete your booking.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="accordion-item border-0 mb-3" data-aos="fade-up" data-aos-delay="100">
+                        <h3 class="accordion-header" id="headingTwo">
+                            <button class="accordion-button collapsed rounded-3" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+                                <i class="fas fa-shield-alt me-2 text-accent"></i> Are providers insured?
+                            </button>
+                        </h3>
+                        <div id="collapseTwo" class="accordion-collapse collapse" aria-labelledby="headingTwo" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                Absolutely. All HomeSphere professionals are fully licensed, bonded, and insured for your complete peace of mind.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="accordion-item border-0 mb-3" data-aos="fade-up" data-aos-delay="200">
+                        <h3 class="accordion-header" id="headingThree">
+                            <button class="accordion-button collapsed rounded-3" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+                                <i class="fas fa-calendar-times me-2 text-accent"></i> Can I reschedule or cancel?
+                            </button>
+                        </h3>
+                        <div id="collapseThree" class="accordion-collapse collapse" aria-labelledby="headingThree" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                Yes, you can reschedule or cancel appointments up to 24 hours in advance through your account dashboard with no penalty.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

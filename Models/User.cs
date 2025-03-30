@@ -15,6 +15,7 @@ namespace HomeOwner.Models
         [EmailAddress]
         public string? email { get; set; }
         public string? address { get; set; }
+        public string? role { get; set; }
         public string? contact_no { get; set; }
 
         public DateOnly? date_created { get; set; }

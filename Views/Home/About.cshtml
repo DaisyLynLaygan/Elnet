@@ -1,0 +1,148 @@
+@{
+    ViewData["Title"] = "About HomeSphere";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<link rel="stylesheet" href="~/css/landingpage/about.css" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+<!-- Add Swiper CSS -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@9/swiper-bundle.min.css" />
+
+<!-- Hero Section -->
+<section class="hero-about">
+    <div class="container">
+        <h1 class="display-3 fw-bold mb-4">About HomeSphere</h1>
+        <p class="lead mb-5">Making home maintenance simple and reliable</p>
+    </div>
+</section>
+
+<!-- About Section -->
+<section class="py-5">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6 mb-5 mb-lg-0">
+                <img src="https://images.unsplash.com/photo-1600880292203-757bb62b4baf?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80" 
+                     alt="Our team" class="img-fluid rounded-4 shadow-lg">
+            </div>
+            <div class="col-lg-6">
+                <h2 class="section-title">Our Story</h2>
+                <p class="lead">Founded in 2015, HomeSphere began with a simple mission: to make home maintenance effortless for busy homeowners.</p>
+                <p>What started as a small team of passionate professionals has grown into a trusted network of skilled technicians serving thousands of homes across the region. We take pride in our commitment to quality, reliability, and exceptional customer service.</p>
+                <p>Our core values guide everything we do:</p>
+                <ul class="list-unstyled">
+                    <li class="mb-2"><i class="fas fa-check-circle text-accent me-2"></i> Integrity in every interaction</li>
+                    <li class="mb-2"><i class="fas fa-check-circle text-accent me-2"></i> Excellence in service delivery</li>
+                    <li class="mb-2"><i class="fas fa-check-circle text-accent me-2"></i> Respect for your home and time</li>
+                    <li class="mb-2"><i class="fas fa-check-circle text-accent me-2"></i> Continuous improvement</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Team Section -->
+<section class="team-section py-5 bg-light">
+    <div class="container">
+        <div class="team-title text-center mb-5">
+            <h2 class="display-4 fw-bold">Meet the Developers</h2>
+            <p class="lead">The talented individuals who built HomeSphere</p>
+        </div>
+        
+        <!-- Swiper -->
+        <div class="swiper teamSwiper">
+            <div class="swiper-wrapper">
+                <!-- Team Member 1 -->
+                <div class="swiper-slide">
+                    <div class="team-member">
+                        <img src="~/images/user-default-picture.jpg" alt="Froillan Kim B. Edem" class="team-img">
+                        <h3>Froillan Kim B. Edem</h3>
+                        <p class="team-role">Project Manager</p>
+                        <p>Oversees the entire project and ensures smooth coordination between team members.</p>
+                    </div>
+                </div>
+                
+                <!-- Team Member 2 -->
+                <div class="swiper-slide">
+                    <div class="team-member">
+                        <img src="~/images/user-default-picture.jpg" alt="Jane Lopez" class="team-img">
+                        <h3>Jane Lopez</h3>
+                        <p class="team-role">Front End Developer</p>
+                        <p>Designs and implements the user interface with responsive layouts.</p>
+                    </div>
+                </div>
+                
+                <!-- Team Member 3 -->
+                <div class="swiper-slide">
+                    <div class="team-member">
+                        <img src="~/images/user-default-picture.jpg" alt="Maverick Villarta" class="team-img">
+                        <h3>Maverick Villarta</h3>
+                        <p class="team-role">Back End Developer</p>
+                        <p>Develops server-side logic and ensures system stability.</p>
+                    </div>
+                </div>
+                
+                <!-- Team Member 4 -->
+                <div class="swiper-slide">
+                    <div class="team-member">
+                        <img src="~/images/user-default-picture.jpg" alt="Daisy Lyn Laygan" class="team-img">
+                        <h3>Daisy Lyn Laygan</h3>
+                        <p class="team-role">Back End Developer</p>
+                        <p>Works on API development and system integrations.</p>
+                    </div>
+                </div>
+                
+                <!-- Team Member 5 -->
+                <div class="swiper-slide">
+                    <div class="team-member">
+                        <img src="~/images/user-default-picture.jpg" alt="Henryken Magsayo" class="team-img">
+                        <h3>Henryken Magsayo</h3>
+                        <p class="team-role">Database Designer</p>
+                        <p>Designs and maintains the database architecture and queries.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="swiper-pagination"></div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA Section -->
+<section class="cta-section py-5 bg-brown text-white">
+    <div class="container">
+        <div class="text-center">
+            <h2 class="cta-title display-4 fw-bold mb-3">Ready to experience the HomeSphere difference?</h2>
+            <p class="cta-subtitle lead mb-4">Join our family of satisfied homeowners today.</p>
+            <div class="cta-buttons d-flex justify-content-center gap-3">
+                <a asp-controller="Home" asp-action="Create" class="btn btn-light btn-lg px-4">
+                    <i class="fas fa-calendar-check me-2"></i>Book a Service
+                </a>
+                <a asp-controller="Home" asp-area="" asp-action="Login" class="btn btn-outline-light btn-lg px-4">
+                    <i class="fas fa-sign-in-alt me-2"></i>Sign In
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Add Swiper JS -->
+<script src="https://cdn.jsdelivr.net/npm/swiper@9/swiper-bundle.min.js"></script>
+<script>
+    // Initialize Swiper
+    var swiper = new Swiper(".teamSwiper", {
+        slidesPerView: 1,
+        spaceBetween: 30,
+        pagination: {
+            el: ".swiper-pagination",
+            clickable: true,
+        },
+        breakpoints: {
+            640: {
+                slidesPerView: 2,
+                spaceBetween: 20,
+            },
+            992: {
+                slidesPerView: 3,
+                spaceBetween: 30,
+            }
+        }
+    });
+</script>

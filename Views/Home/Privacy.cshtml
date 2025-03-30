@@ -1,6 +1,79 @@
 ﻿@{
     ViewData["Title"] = "Privacy Policy";
+    Layout = "~/Views/Shared/_Layout.cshtml";
 }
-<h1>@ViewData["Title"]</h1>
+<link rel="stylesheet" href="~/css/landingpage/privacy.css" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 
-<p>Use this page to detail your site's privacy policy.</p>
+<!-- Hero Section -->
+<section class="privacy-hero">
+    <div class="container">
+        <h1 class="display-3 fw-bold">Privacy Policy</h1>
+        <p class="lead">Last Updated: @DateTime.Now.ToString("MMMM dd, yyyy")</p>
+    </div>
+</section>
+
+<!-- Policy Content -->
+<section class="privacy-content py-5">
+    <div class="container">
+        <div class="privacy-card">
+            <div class="privacy-section">
+                <h2><i class="fas fa-shield-alt text-accent me-2"></i> Information We Collect</h2>
+                <p>We collect basic information when you use our HomeSphere service, including:</p>
+                <ul>
+                    <li>Contact information you provide (name, email, phone number)</li>
+                    <li>Service preferences and booking details</li>
+                    <li>Technical information about your device and browser</li>
+                </ul>
+            </div>
+
+            <div class="privacy-section">
+                <h2><i class="fas fa-lock text-accent me-2"></i> How We Use Your Information</h2>
+                <p>Your information helps us:</p>
+                <ul>
+                    <li>Provide and improve our services</li>
+                    <li>Process your service requests</li>
+                    <li>Communicate with you about your bookings</li>
+                    <li>Ensure the security of our platform</li>
+                </ul>
+            </div>
+
+            <div class="privacy-section">
+                <h2><i class="fas fa-share-square text-accent me-2"></i> Information Sharing</h2>
+                <p>We do not sell your personal information. We may share it only:</p>
+                <ul>
+                    <li>With service providers necessary to fulfill your requests</li>
+                    <li>When required by law or to protect our rights</li>
+                </ul>
+            </div>
+
+            <div class="privacy-section">
+                <h2><i class="fas fa-cookie text-accent me-2"></i> Cookies & Tracking</h2>
+                <p>We use cookies to:</p>
+                <ul>
+                    <li>Remember your preferences</li>
+                    <li>Analyze site traffic</li>
+                    <li>Improve user experience</li>
+                </ul>
+                <p>You can disable cookies in your browser settings.</p>
+            </div>
+
+            <div class="privacy-section">
+                <h2><i class="fas fa-user-edit text-accent me-2"></i> Your Rights</h2>
+                <p>You have the right to:</p>
+                <ul>
+                    <li>Access your personal data</li>
+                    <li>Request corrections</li>
+                    <li>Delete your account</li>
+                    <li>Opt-out of marketing communications</li>
+                </ul>
+            </div>
+
+            <div class="privacy-section">
+                <h2><i class="fas fa-question-circle text-accent me-2"></i> Contact Us</h2>
+                <p>For privacy-related questions, contact us at:</p>
+                <p><i class="fas fa-envelope me-2"></i> privacy@homesphere.example.com</p>
+            </div>
+        </div>
+    </div>
+</section>
