@@ -22,131 +22,133 @@
     <!-- Mobile Overlay -->
     <div class="mobile-overlay"></div>
     
- <!-- Sidebar Navigation -->
-<aside class="sidebar">
-    <div class="sidebar-header">
-        <a asp-controller="Admin" asp-action="Dashboard" class="logo">
-            <img src="~/images/logo.png" alt="Company Logo">
-            <span class="logo-text">Home<span>Sphere</span></span>
-        </a>
-        <button class="toggle-sidebar">
-            <i class="fas fa-chevron-left"></i>
-        </button>
-    </div>
-    
-    <ul class="nav-menu">
-        @{
-            var currentAction = ViewContext.RouteData.Values["Action"]?.ToString();
-            var currentController = ViewContext.RouteData.Values["Controller"]?.ToString();
-        }
-        
-        <!-- Dashboard -->
-        <li class="nav-item">
-            <a asp-controller="Admin" asp-action="Dashboard" 
-               class="nav-link @(currentAction == "Dashboard" ? "active" : "")">
-                <i class="fas fa-tachometer-alt nav-icon"></i>
-                <span class="nav-text">Dashboard</span>
-            </a>
-        </li>
-        
-        <!-- Announcements -->
-        <li class="nav-item">
-            <a asp-controller="Admin" asp-action="Announcements" 
-               class="nav-link @(currentAction == "Announcements" ? "active" : "")">
-                <i class="fas fa-bullhorn nav-icon"></i>
-                <span class="nav-text">Announcements</span>
-            </a>
-        </li>
-        
-        <!-- Documents -->
-        <li class="nav-item">
-            <a asp-controller="Admin" asp-action="Documents" 
-               class="nav-link @(currentAction == "Documents" ? "active" : "")">
-                <i class="fas fa-file-alt nav-icon"></i>
-                <span class="nav-text">Documents</span>
-            </a>
-        </li>
-        
-        <!-- Reservations -->
-        <li class="nav-item">
-            <a asp-controller="Admin" asp-action="Reservations" 
-               class="nav-link @(currentAction == "Reservations" ? "active" : "")">
-                <i class="fas fa-calendar-check nav-icon"></i>
-                <span class="nav-text">Reservations</span>
-            </a>
-        </li>
-        
-        <!-- Polls -->
-        <li class="nav-item">
-            <a asp-controller="Admin" asp-action="Polls" 
-               class="nav-link @(currentAction == "Polls" ? "active" : "")">
-                <i class="fas fa-poll nav-icon"></i>
-                <span class="nav-text">Poll Surveys</span>
-            </a>
-        </li>
-        
-        <!-- Events -->
-        <li class="nav-item">
-            <a asp-controller="Admin" asp-action="Events" 
-               class="nav-link @(currentAction == "Events" ? "active" : "")">
-                <i class="fas fa-calendar-alt nav-icon"></i>
-                <span class="nav-text">Events</span>
-            </a>
-        </li>
-        
-        <!-- User Management Section -->
-        <li class="nav-item @(new[] {"Users", "Feedback"}.Contains(currentAction) ? "open" : "")">
-            <div class="nav-link @(new[] {"Users", "Feedback"}.Contains(currentAction) ? "active" : "")">
-                <i class="fas fa-users nav-icon"></i>
-                <span class="nav-text">User Management</span>
-                <i class="fas fa-chevron-right dropdown-arrow"></i>
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <a asp-controller="Admin" asp-action="Dashboard" class="logo">
+                    <img src="~/images/logo.png" alt="Company Logo">
+                    <span class="logo-text">Home<span>Sphere</span></span>
+                </a>
+                <button class="toggle-sidebar">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
             </div>
-            <ul class="submenu">
-                <li class="submenu-item">
-                    <a asp-controller="Admin" asp-action="Users" 
-                       class="submenu-link @(currentAction == "Users" ? "active" : "")">
-                        <i class="fas fa-user-cog submenu-icon"></i>
-                        <span>Manage Users</span>
+            
+            <ul class="nav-menu">
+                @{
+                    var currentAction = ViewContext.RouteData.Values["Action"]?.ToString();
+                    var currentController = ViewContext.RouteData.Values["Controller"]?.ToString();
+                }
+                
+                <!-- Dashboard -->
+                <li class="nav-item">
+                    <a asp-controller="Admin" asp-action="Dashboard" 
+                    class="nav-link @(currentAction == "Dashboard" ? "active" : "")">
+                        <i class="fas fa-tachometer-alt nav-icon"></i>
+                        <span class="nav-text">Dashboard</span>
                     </a>
                 </li>
-                <li class="submenu-item">
-                    <a asp-controller="Admin" asp-action="Feedback" 
-                       class="submenu-link @(currentAction == "Feedback" ? "active" : "")">
-                        <i class="fas fa-comment-alt submenu-icon"></i>
-                        <span>User Feedback</span>
+                
+                <!-- Announcements -->
+                <li class="nav-item">
+                    <a asp-controller="Admin" asp-action="Announcements" 
+                    class="nav-link @(currentAction == "Announcements" ? "active" : "")">
+                        <i class="fas fa-bullhorn nav-icon"></i>
+                        <span class="nav-text">Announcements</span>
+                    </a>
+                </li>
+                
+                <!-- Documents -->
+                <li class="nav-item">
+                    <a asp-controller="Admin" asp-action="Documents" 
+                    class="nav-link @(currentAction == "Documents" ? "active" : "")">
+                        <i class="fas fa-file-alt nav-icon"></i>
+                        <span class="nav-text">Documents</span>
+                    </a>
+                </li>
+                
+                <!-- Reservations -->
+                <li class="nav-item">
+                    <a asp-controller="Admin" asp-action="Reservations" 
+                    class="nav-link @(currentAction == "Reservations" ? "active" : "")">
+                        <i class="fas fa-calendar-check nav-icon"></i>
+                        <span class="nav-text">Reservations</span>
+                    </a>
+                </li>
+                
+                <!-- Polls -->
+                <li class="nav-item">
+                    <a asp-controller="Admin" asp-action="Polls" 
+                    class="nav-link @(currentAction == "Polls" ? "active" : "")">
+                        <i class="fas fa-poll nav-icon"></i>
+                        <span class="nav-text">Poll Surveys</span>
+                    </a>
+                </li>
+                
+                <!-- Events -->
+                <li class="nav-item">
+                    <a asp-controller="Admin" asp-action="Events" 
+                    class="nav-link @(currentAction == "Events" ? "active" : "")">
+                        <i class="fas fa-calendar-alt nav-icon"></i>
+                        <span class="nav-text">Events</span>
+                    </a>
+                </li>
+                
+                <!-- User Management Section -->
+                <li class="nav-item @(new[] {"Users", "Feedback"}.Contains(currentAction) ? "open" : "")">
+                    <div class="nav-link @(new[] {"Users", "Feedback"}.Contains(currentAction) ? "active" : "")">
+                        <i class="fas fa-users nav-icon"></i>
+                        <span class="nav-text">User Management</span>
+                        <i class="fas fa-chevron-right dropdown-arrow"></i>
+                    </div>
+                    <ul class="submenu">
+                        <li class="submenu-item">
+                            <a asp-controller="Admin" asp-action="Users" 
+                            class="submenu-link @(currentAction == "Users" ? "active" : "")">
+                                <i class="fas fa-user-cog submenu-icon"></i>
+                                <span>Manage Users</span>
+                            </a>
+                        </li>
+                        <li class="submenu-item">
+                            <a asp-controller="Admin" asp-action="Feedback" 
+                            class="submenu-link @(currentAction == "Feedback" ? "active" : "")">
+                                <i class="fas fa-comment-alt submenu-icon"></i>
+                                <span>User Feedback</span>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+                
+                <!-- Services Section -->
+                <li class="nav-item @(currentAction == "ServiceRequests" ? "open" : "")">
+                    <div class="nav-link @(currentAction == "ServiceRequests" ? "active" : "")">
+                        <i class="fas fa-tools nav-icon"></i>
+                        <span class="nav-text">Services</span>
+                        <i class="fas fa-chevron-right dropdown-arrow"></i>
+                    </div>
+                    <ul class="submenu">
+                        <li class="submenu-item">
+                            <a asp-controller="Admin" asp-action="ServiceRequests" 
+                            class="submenu-link @(currentAction == "ServiceRequests" ? "active" : "")">
+                                <i class="fas fa-clipboard-list submenu-icon"></i>
+                                <span>Service Requests</span>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+                
+                <!-- Settings -->
+                <li class="nav-item">
+                    <a asp-controller="Admin" asp-action="Settings" 
+                    class="nav-link @(currentAction == "Settings" ? "active" : "")">
+                        <i class="fas fa-cog nav-icon"></i>
+                        <span class="nav-text">Settings</span>
                     </a>
                 </li>
             </ul>
-        </li>
-        
-        <!-- Services Section -->
-        <li class="nav-item @(currentAction == "ServiceRequests" ? "open" : "")">
-            <div class="nav-link @(currentAction == "ServiceRequests" ? "active" : "")">
-                <i class="fas fa-tools nav-icon"></i>
-                <span class="nav-text">Services</span>
-                <i class="fas fa-chevron-right dropdown-arrow"></i>
-            </div>
-            <ul class="submenu">
-                <li class="submenu-item">
-                    <a asp-controller="Admin" asp-action="ServiceRequests" 
-                       class="submenu-link @(currentAction == "ServiceRequests" ? "active" : "")">
-                        <i class="fas fa-clipboard-list submenu-icon"></i>
-                        <span>Service Requests</span>
-                    </a>
-                </li>
-            </ul>
-        </li>
-        
-        <!-- Settings -->
-        <li class="nav-item">
-            <a asp-controller="Admin" asp-action="Settings" 
-               class="nav-link @(currentAction == "Settings" ? "active" : "")">
-                <i class="fas fa-cog nav-icon"></i>
-                <span class="nav-text">Settings</span>
-            </a>
-        </li>
-    </ul>
-</aside>
+            
+        </aside>
+
     <!-- Main Content -->
     <div class="main-content">
         <!-- Top Navigation -->

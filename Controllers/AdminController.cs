@@ -30,6 +30,7 @@ namespace HomeOwner.Controllers
             }
 
             ViewBag.CurrentUser = user;
+            ViewBag.ActiveMenu = "Dashboard";
             return View();
         }
 
@@ -51,7 +52,10 @@ namespace HomeOwner.Controllers
             }
 
             ViewBag.CurrentUser = user;
-            return View("AdminAnnouncements");
+            ViewBag.ActiveMenu = "Announcements";
+            return View("AdminAnnouncements"); // if you want to keep the current view name
+            return View();
+
         }
     
         public IActionResult Documents() => View("AdminDocuments");
