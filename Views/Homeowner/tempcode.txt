@@ -1,335 +1,276 @@
-@page
-@{
-    Layout = "~/Views/Shared/Dashboard_Nav.cshtml";
+/* Modal Styles */
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1100;
+    display: none;
+    overflow-y: auto;
 }
 
-<link rel="stylesheet" href="~/css/community.css" />
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+.modal.show {
+    display: block;
+}
 
-<div class="community-wrapper">
-    <div class="community-container">
+.modal-dialog {
+    max-width: 800px;
+    margin: 1.75rem auto;
+    position: relative;
+    width: auto;
+}
 
-            <div class="sidebar-section">
-                <div class="sidebar-item active">
-                    <i class="fas fa-home"></i>
-                    <span>My Home</span>
-                </div>
-                <div class="sidebar-item">
-                    <i class="fas fa-users"></i>
-                    <span>Neighbors</span>
-                </div>
-                <div class="sidebar-item">
-                    <i class="fas fa-comments"></i>
-                    <span>Community Forum</span>
-                    <span class="badge">5</span>
-                </div>
-                <div class="sidebar-item">
-                    <i class="far fa-calendar-alt"></i>
-                    <span>Local Events</span>
-                </div>
-            </div>
+.modal-dialog-centered {
+    display: flex;
+    align-items: center;
+    min-height: calc(100% - 3.5rem);
+}
 
-        <!-- Middle Content (60%) -->
-        <div class="community-newsfeed">
-            <!-- Create Post -->
-            <div class="create-post">
-                <div class="create-post-header">
-                    <img src="~/images/user-default-picture.jpg" alt="Profile">
-                    <input type="text" placeholder="Share with neighbors..." class="post-input">
-                </div>
-                <div class="post-actions">
-                    <button class="post-action" id="addPhotoBtn">
-                        <i class="fas fa-image" style="color: #45bd62;"></i> Photo
-                    </button>
-                    <input type="file" id="photoUpload" accept="image/*" multiple style="display: none;">
-                    <button class="post-action">
-                        <i class="fas fa-calendar" style="color: #f7b928;"></i> Event
-                    </button>
-                    <button class="post-submit" id="submitPostBtn">Post</button>
-                </div>
-                <div class="photo-preview-container" id="photoPreviewContainer"></div>
-            </div>
+.modal-content {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    background-color: var(--white);
+    background-clip: padding-box;
+    border: 1px solid rgba(0, 0, 0, 0.2);
+    border-radius: var(--border-radius);
+    outline: 0;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
 
-            <!-- Neighborhood Posts -->
-            <div class="neighborhood-post">
-                <div class="post-header">
-                    <img src="~/images/user-default-picture.jpg" alt="User">
-                    <div class="post-user-info">
-                        <strong>Sarah Johnson</strong>
-                        <div class="post-meta">
-                            <span>Yesterday · Oak Street</span>
-                        </div>
-                    </div>
-                    <button class="post-options">
-                        <i class="fas fa-ellipsis-h"></i>
-                    </button>
-                </div>
-                <div class="post-content">
-                    Does anyone have recommendations for a good plumber? Our kitchen sink is leaking badly.
-                </div>
-                <div class="post-image">
-                    <img src="@GetRandomPropertyImage()" alt="Leaking sink">
-                </div>
-                <div class="post-stats">
-                    <span class="reactions">
-                        <i class="fas fa-thumbs-up"></i> 12
-                    </span>
-                    <span class="comments" data-post-id="1">
-                        5 comments
-                    </span>
-                </div>
-                <div class="post-interactions">
-                    <button class="interaction-button">
-                        <i class="far fa-thumbs-up"></i> <span>Helpful</span>
-                    </button>
-                    <button class="interaction-button comment-btn" data-post-id="1">
-                        <i class="far fa-comment"></i> <span>Comment</span>
-                    </button>
-                    <button class="interaction-button">
-                        <i class="fas fa-share"></i> <span>Share</span>
-                    </button>
-                </div>
-            </div>
+.modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid var(--medium-gray);
+}
 
-            <!-- ... (other posts) ... -->
-        </div>
+.modal-title {
+    margin: 0;
+    line-height: 1.5;
+    color: var(--primary-dark);
+    font-size: 1.25rem;
+}
 
-       <!-- Right Sidebar (20%) -->
-        <div class="community-announcements">
-            <div class="announcements-header">
-                <h3><i class="fas fa-bullhorn"></i> Announcements</h3>
-            </div>
-            
-            <div class="announcement-item important">
-                <i class="fas fa-exclamation-circle" style="color: #f02849;"></i>
-                <div class="announcement-content">
-                    <strong>Water Maintenance</strong>
-                    <span>June 15, 8am-4pm</span>
-                </div>
-            </div>
-            
-            <div class="announcement-item">
-                <i class="fas fa-trash" style="color: #45bd62;"></i>
-                <div class="announcement-content">
-                    <strong>Trash Schedule</strong>
-                    <span>No pickup on Monday</span>
-                </div>
-            </div>
+.close {
+    float: right;
+    font-size: 1.5rem;
+    font-weight: 700;
+    line-height: 1;
+    color: #000;
+    text-shadow: 0 1px 0 #fff;
+    opacity: 0.5;
+    background: transparent;
+    border: 0;
+    cursor: pointer;
+    padding: 0;
+    margin: 0;
+}
 
-            <div class="announcements-header">
-                <h3><i class="fas fa-calendar-alt"></i> Upcoming Events</h3>
-            </div>
-            
-            <div class="event-item">
-                <div class="event-date">
-                    <span class="day">15</span>
-                    <span class="month">JUN</span>
-                </div>
-                <div class="event-details">
-                    <strong>Block Party</strong>
-                    <span>Main Street, 12-5pm</span>
-                </div>
-            </div>
-            
-            <div class="event-item">
-                <div class="event-date">
-                    <span class="day">22</span>
-                    <span class="month">JUN</span>
-                </div>
-                <div class="event-details">
-                    <strong>Yard Sale</strong>
-                    <span>Oak Street, 8am-2pm</span>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+.close:hover {
+    opacity: 0.75;
+}
 
-<!-- Comment Modal -->
-<div class="modal" id="commentModal">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>Comments</h3>
-                <button type="button" class="close-modal">&times;</button>
-            </div>
-            <div class="modal-body">
-                <div class="comments-container" id="commentsContainer">
-                    <!-- Comments will be loaded here -->
-                </div>
-                <div class="add-comment">
-                    <img src="~/images/user-default-picture.jpg" alt="User">
-                    <input type="text" placeholder="Write a comment..." id="commentInput">
-                    <button class="btn-post-comment">Post</button>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+.modal-body {
+    position: relative;
+    flex: 1 1 auto;
+    padding: 1.5rem;
+    overflow-y: auto;
+    max-height: calc(100vh - 200px);
+}
 
-@functions {
-    private string GetRandomPropertyImage()
-    {
-        var random = new Random();
-        var images = new List<string> { 
-            "/images/rental1.png", 
-            "/images/rental2.png",
-            "/images/rental3.png",
-            "/images/rental4.png"
-        };
-        return images[random.Next(images.Count)];
+.modal-footer {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding: 1rem 1.5rem;
+    border-top: 1px solid var(--medium-gray);
+}
+
+
+.form-group {
+    margin-bottom: 1.25rem;
+}
+
+.form-control {
+    width: 100%;
+    padding: 0.5rem 1rem;
+    border: 1px solid var(--medium-gray);
+    border-radius: var(--border-radius);
+    transition: all var(--transition-speed) ease;
+    font-size: 1rem;
+}
+
+.form-control:focus {
+    border-color: var(--primary-light);
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(109, 76, 65, 0.1);
+}
+
+textarea.form-control {
+    min-height: 120px;
+    resize: vertical;
+}
+
+.form-check {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.form-check-input {
+    width: 18px;
+    height: 18px;
+}
+
+/* View Announcement Modal Specific */
+.announcement-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+    color: var(--text-gray);
+    font-size: 0.9rem;
+    margin-bottom: 1.5rem;
+}
+
+.meta-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.announcement-content {
+    line-height: 1.6;
+}
+
+.announcement-content p {
+    margin-bottom: 1rem;
+}
+
+.announcement-content ul {
+    margin-bottom: 1rem;
+    padding-left: 1.5rem;
+}
+
+.badge {
+    display: inline-block;
+    padding: 0.25em 0.4em;
+    font-size: 75%;
+    font-weight: 700;
+    line-height: 1;
+    text-align: center;
+    white-space: nowrap;
+    vertical-align: baseline;
+    border-radius: 0.25rem;
+}
+
+.badge-primary {
+    color: #fff;
+    background-color: var(--primary);
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    /* Make the table behave like a block element for better mobile support */
+    .announcements-table-container {
+        overflow-x: auto;  /* Enable horizontal scrolling */
+        -webkit-overflow-scrolling: touch;
+        padding-bottom: 1rem;  /* Ensure space for the scrollbar */
+    }
+
+    .announcements-table {
+        display: block;  /* Make table a block element */
+        width: 100%;  /* Ensure it takes up the full width */
+    }
+
+    .announcements-table thead {
+        display: block;  /* Ensure the header stays fixed while scrolling */
+        width: 100%;
+    }
+
+    .announcements-table tbody {
+        display: block;  /* Allow the body to scroll horizontally */
+        width: 100%;
+        overflow-x: auto;  /* Enable horizontal scroll for the body */
+    }
+
+    .announcements-table tr {
+        display: block;  /* Display rows as block elements */
+        width: 100%;
+        overflow: hidden; /* Ensure content within rows doesn't overflow */
+        white-space: nowrap;  /* Prevent wrapping within rows */
+    }
+
+    .announcements-table th,
+    .announcements-table td {
+        display: block;  /* Make each cell behave as a block element */
+        padding: 0.5rem;  /* Add some space to cells */
+        width: 100%;  /* Ensure each cell takes full width */
+        box-sizing: border-box;  /* Prevent content from spilling over */
+        overflow: hidden;
+        text-overflow: ellipsis;  /* Truncate text with ellipsis */
+    }
+
+    .announcements-table td {
+        white-space: nowrap;  /* Prevent text from wrapping in cells */
+    }
+
+    .announcements-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .announcements-actions {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .search-input {
+        width: 200px;
+    }
+
+    .modal-body {
+        padding: 1rem;
+    }
+
+    .modal-header,
+    .modal-footer {
+        padding: 1rem;
     }
 }
 
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Comment Modal Functionality
-    const commentModal = document.getElementById('commentModal');
-    const commentBtns = document.querySelectorAll('.comment-btn');
-    const closeModalBtn = document.querySelector('#commentModal .close-modal');
-    const commentsContainer = document.getElementById('commentsContainer');
-    const commentInput = document.getElementById('commentInput');
-    const postCommentBtn = document.querySelector('.btn-post-comment');
-    
-    // Sample comments data
-    const sampleComments = {
-        1: [
-            { id: 1, user: 'Mike Thompson', avatar: '/images/user-default-picture.jpg', text: 'I recommend John from Thompson Plumbing. He fixed our leak last month.', time: '2 hours ago' },
-            { id: 2, user: 'Lisa Wong', avatar: '/images/user-default-picture.jpg', text: 'Avoid City Plumbing - they overcharge!', time: '1 hour ago' },
-            { id: 3, user: 'David Miller', avatar: '/images/user-default-picture.jpg', text: 'We used Ace Plumbing - reasonable rates and quick service.', time: '45 minutes ago' },
-            { id: 4, user: 'Emma Johnson', avatar: '/images/user-default-picture.jpg', text: 'I have a contact for a great independent plumber. Will DM you.', time: '30 minutes ago' },
-            { id: 5, user: 'Robert Chen', avatar: '/images/user-default-picture.jpg', text: 'PlumbRight did good work for us last year.', time: '15 minutes ago' }
-        ]
-    };
-    
-    // Open comment modal
-    commentBtns.forEach(btn => {
-        btn.addEventListener('click', function() {
-            const postId = this.getAttribute('data-post-id');
-            loadComments(postId);
-            commentModal.classList.add('show');
-            document.body.style.overflow = 'hidden';
-        });
-    });
-    
-    // Close modal
-    closeModalBtn.addEventListener('click', function() {
-        commentModal.classList.remove('show');
-        document.body.style.overflow = '';
-    });
-    
-    // Load comments for a post
-    function loadComments(postId) {
-        commentsContainer.innerHTML = '';
-        const comments = sampleComments[postId] || [];
-        
-        if (comments.length === 0) {
-            commentsContainer.innerHTML = '<p class="no-comments">No comments yet. Be the first to comment!</p>';
-            return;
-        }
-        
-        comments.forEach(comment => {
-            const commentEl = document.createElement('div');
-            commentEl.className = 'comment';
-            commentEl.innerHTML = `
-                <img src="${comment.avatar}" alt="${comment.user}">
-                <div class="comment-content">
-                    <div class="comment-header">
-                        <strong>${comment.user}</strong>
-                        <span>${comment.time}</span>
-                    </div>
-                    <p>${comment.text}</p>
-                </div>
-            `;
-            commentsContainer.appendChild(commentEl);
-        });
+@media (max-width: 576px) {
+    .search-input {
+        width: 100%;
     }
-    
-    // Post a new comment
-    postCommentBtn.addEventListener('click', function() {
-        const commentText = commentInput.value.trim();
-        if (commentText) {
-            const newComment = {
-                id: Date.now(),
-                user: 'You',
-                avatar: '/images/user-default-picture.jpg',
-                text: commentText,
-                time: 'Just now'
-            };
-            
-            const commentEl = document.createElement('div');
-            commentEl.className = 'comment';
-            commentEl.innerHTML = `
-                <img src="${newComment.avatar}" alt="${newComment.user}">
-                <div class="comment-content">
-                    <div class="comment-header">
-                        <strong>${newComment.user}</strong>
-                        <span>${newComment.time}</span>
-                    </div>
-                    <p>${newComment.text}</p>
-                </div>
-            `;
-            
-            commentsContainer.appendChild(commentEl);
-            commentInput.value = '';
-            
-            // Scroll to bottom
-            commentsContainer.scrollTop = commentsContainer.scrollHeight;
-        }
-    });
-    
-    // Create Post Functionality
-    const addPhotoBtn = document.getElementById('addPhotoBtn');
-    const photoUpload = document.getElementById('photoUpload');
-    const photoPreviewContainer = document.getElementById('photoPreviewContainer');
-    const submitPostBtn = document.getElementById('submitPostBtn');
-    
-    // Add photo button click
-    addPhotoBtn.addEventListener('click', function() {
-        photoUpload.click();
-    });
-    
-    // Handle photo selection
-    photoUpload.addEventListener('change', function(e) {
-        photoPreviewContainer.innerHTML = '';
-        
-        if (e.target.files && e.target.files.length > 0) {
-            Array.from(e.target.files).forEach(file => {
-                if (file.type.match('image.*')) {
-                    const reader = new FileReader();
-                    reader.onload = function(event) {
-                        const previewItem = document.createElement('div');
-                        previewItem.className = 'photo-preview-item';
-                        previewItem.innerHTML = `
-                            <img src="${event.target.result}" alt="Preview">
-                            <button class="remove-photo">&times;</button>
-                        `;
-                        photoPreviewContainer.appendChild(previewItem);
-                        
-                        // Remove photo button
-                        previewItem.querySelector('.remove-photo').addEventListener('click', function() {
-                            previewItem.remove();
-                        });
-                    };
-                    reader.readAsDataURL(file);
-                }
-            });
-        }
-    });
-    
-    // Submit post button
-    submitPostBtn.addEventListener('click', function() {
-        const postText = document.querySelector('.post-input').value.trim();
-        const hasPhotos = photoPreviewContainer.children.length > 0;
-        
-        if (postText || hasPhotos) {
-            // In a real app, this would send to backend
-            alert('Post submitted! (This is a UI demo only)');
-            document.querySelector('.post-input').value = '';
-            photoPreviewContainer.innerHTML = '';
-        } else {
-            alert('Please add some text or photos to your post');
-        }
-    });
-});
-</script>
+
+    .modal-dialog {
+        margin: 0.5rem auto;
+    }
+
+    .modal-content {
+        border-radius: 0;
+    }
+
+    .announcement-meta {
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .form-group {
+        margin-bottom: 1rem;
+    }
+
+    .btn {
+        padding: 0.5rem;
+    }
+}
+
+/* Modal open state for body */
+.modal-open {
+    overflow: hidden;
+}

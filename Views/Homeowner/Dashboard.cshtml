@@ -1,4 +1,8 @@
-﻿@{
+﻿@model HomeOwner.Models.User
+@{
+    var user = ViewBag.CurrentUser as User; 
+}
+@{
     Layout = "~/Views/Shared/Dashboard_Layout.cshtml";
 }
 
@@ -11,7 +15,7 @@
     
     <div class="hero-content">
         <div class="property-card">
-            <span class="property-badge">John Smith Property</span> <!-- I Butang ngari ang ngalan Sa User -->
+            <span class="property-badge">@user.firstname @user.lastname Property</span> <!-- I Butang ngari ang ngalan Sa User -->
             <h1 class="property-title">Luxury Villa in Beverly Hills</h1>
             
             <div class="property-highlights">

@@ -87,16 +87,13 @@
 /* Table Container - Always scrollable */
 .announcements-table-container {
     width: 100%;
-    overflow-x: auto;
     margin-bottom: 1.5rem;
-    -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
 }
 
 /* Table Styles */
 .announcements-table {
     width: 100%;
     border-collapse: collapse;
-    min-width: 800px; /* Minimum width to prevent squeezing */
 }
 
 .announcements-table th,
@@ -402,6 +399,32 @@ textarea.form-control {
 
 /* Responsive Adjustments */
 @media (max-width: 768px) {
+    .announcements-table th {
+        display: none;  /* Hide the table headers on smaller screens */
+    }
+
+    .announcements-table td {
+        display: block;  /* Make each table cell a block element */
+        width: 100%;  /* Ensure cells take full width */
+        position: relative;
+        padding-left: 40%;  /* Space for the data-cell label */
+    }
+
+    .announcements-table td:before {
+        content: attr(data-cell);  /* Add the data-cell value before the actual data */
+        position: absolute;
+        left: 0;
+        top: 0;
+        font-weight: bold;
+        color: var(--primary-dark);
+    }
+
+    /* Ensure each row looks like a card with a clear separation */
+    .announcements-table tr {
+        display: block;
+        margin-bottom: 1.5rem;
+    }
+
     .announcements-header {
         flex-direction: column;
         align-items: flex-start;
