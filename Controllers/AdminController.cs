@@ -8,25 +8,33 @@ namespace HomeOwner.Controllers
     public class AdminController : Controller
     {
         private readonly HomeOwnerContext _context;
+        
         public AdminController(HomeOwnerContext db)
         {
             _context = db;
         }
 
-        public IActionResult Dashboard()
+        // Private method to check if user is logged in and return user
+        private User GetCurrentUser()
         {
             var userJson = HttpContext.Session.GetString("CurrentUser");
 
             if (string.IsNullOrEmpty(userJson))
             {
-                return RedirectToAction("Index", "Home"); // Redirect if no user is logged in
+                return null;
             }
 
             var user = JsonConvert.DeserializeObject<User>(userJson);
+            return user;
+        }
+
+        public IActionResult Dashboard()
+        {
+            var user = GetCurrentUser();
 
             if (user == null)
             {
-                return RedirectToAction("Index", "Home"); // Redirect if deserialization fails
+                return RedirectToAction("Index", "Home"); // Redirect if no user is logged in or deserialization fails
             }
 
             ViewBag.CurrentUser = user;
@@ -34,17 +42,9 @@ namespace HomeOwner.Controllers
             return View();
         }
 
-        
         public IActionResult Announcements()
         {
-            var userJson = HttpContext.Session.GetString("CurrentUser");
-            
-            if (string.IsNullOrEmpty(userJson))
-            {
-                return RedirectToAction("Index", "Home");
-            }
-
-            var user = JsonConvert.DeserializeObject<User>(userJson);
+            var user = GetCurrentUser();
 
             if (user == null)
             {
@@ -53,23 +53,105 @@ namespace HomeOwner.Controllers
 
             ViewBag.CurrentUser = user;
             ViewBag.ActiveMenu = "Announcements";
-            return View("AdminAnnouncements"); // if you want to keep the current view name
-            return View();
-
+            return View("AdminAnnouncements"); // Use this if you want to keep the current view name
         }
-    
-        public IActionResult Documents() => View("AdminDocuments");
 
-        public IActionResult Reservations() => View("AdminReservations");
+        public IActionResult Documents()
+        {
+            var user = GetCurrentUser();
 
-        public IActionResult Polls() => View("AdminPolls");
+            if (user == null)
+            {
+                return RedirectToAction("Index", "Home");
+            }
 
-        public IActionResult Events() => View("AdminEvents");
+            ViewBag.CurrentUser = user;
+            ViewBag.ActiveMenu = "Documents";
+            return View("AdminDocuments");
+        }
 
-        public IActionResult Users() => View("AdminUsers");
+        public IActionResult Reservations()
+        {
+            var user = GetCurrentUser();
 
-        public IActionResult Feedback() => View("AdminFeedback");
+            if (user == null)
+            {
+                return RedirectToAction("Index", "Home");
+            }
 
-        public IActionResult ServiceRequests() => View("AdminServiceRequests");
+            ViewBag.CurrentUser = user;
+            ViewBag.ActiveMenu = "Reservations";
+            return View("AdminReservations");
+        }
+
+        public IActionResult Polls()
+        {
+            var user = GetCurrentUser();
+
+            if (user == null)
+            {
+                return RedirectToAction("Index", "Home");
+            }
+
+            ViewBag.CurrentUser = user;
+            ViewBag.ActiveMenu = "Polls";
+            return View("AdminPolls");
+        }
+
+        public IActionResult Events()
+        {
+            var user = GetCurrentUser();
+
+            if (user == null)
+            {
+                return RedirectToAction("Index", "Home");
+            }
+
+            ViewBag.CurrentUser = user;
+            ViewBag.ActiveMenu = "Events";
+            return View("AdminEvents");
+        }
+
+        public IActionResult Users()
+        {
+            var user = GetCurrentUser();
+
+            if (user == null)
+            {
+                return RedirectToAction("Index", "Home");
+            }
+
+            ViewBag.CurrentUser = user;
+            ViewBag.ActiveMenu = "Users";
+            return View("AdminUsers");
+        }
+
+        public IActionResult Feedback()
+        {
+            var user = GetCurrentUser();
+
+            if (user == null)
+            {
+                return RedirectToAction("Index", "Home");
+            }
+
+            ViewBag.CurrentUser = user;
+            ViewBag.ActiveMenu = "Feedback";
+            return View("AdminFeedback");
+        }
+
+        public IActionResult ServiceRequests()
+        {
+            var user = GetCurrentUser();
+
+            if (user == null)
+            {
+                return RedirectToAction("Index", "Home");
+            }
+
+            ViewBag.CurrentUser = user;
+            ViewBag.ActiveMenu = "ServiceRequests";
+            return View("AdminServiceRequests");
+        }
     }
 }

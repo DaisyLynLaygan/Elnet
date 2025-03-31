@@ -1,7 +1,7 @@
 @{
     Layout = "~/Views/Shared/Admin_Layout.cshtml";
     ViewData["Title"] = "Announcements";
-    ViewData["Subtitle"] = "Community Management Overview";
+    ViewData["Subtitle"] = "Admin Announcement";
 }
 
 <link rel="stylesheet" href="~/css/admin/announcement.css" />
@@ -38,14 +38,14 @@
                 </thead>
                 <tbody>
                     <!-- Sample Announcement 1 -->
-                    <tr>
-                        <td>Community Meeting</td>
-                        <td class="truncate">Monthly HOA meeting scheduled for next Tuesday at 7 PM in the clubhouse. Agenda items include budget review, landscaping proposals, and community event planning.</td>
-                        <td>John Smith</td>
-                        <td>May 15, 2023</td>
-                        <td>May 30, 2023</td>
-                        <td><span class="status-badge active">Active</span></td>
-                        <td class="actions">
+                    <tr data-id="1">
+                        <td data-cell="Title">Community Meeting</td>
+                        <td class="truncate" data-cell="Content">Monthly HOA meeting scheduled for next Tuesday at 7 PM in the clubhouse. Agenda items include budget review, landscaping proposals, and community event planning.</td>
+                        <td data-cell="Author">John Smith</td>
+                        <td data-date="2023-05-15" data-cell="Posted">May 15, 2023</td>
+                        <td data-date="2023-05-30" data-cell="Expires">May 30, 2023</td>
+                        <td data-cell="Status"><span class="status-badge active">Active</span></td>
+                        <td class="actions" data-cell="Actions">
                             <button class="btn-icon edit" title="Edit"><i class="fas fa-edit"></i></button>
                             <button class="btn-icon delete" title="Delete"><i class="fas fa-trash-alt"></i></button>
                             <button class="btn-icon view" title="View"><i class="fas fa-eye"></i></button>
@@ -53,14 +53,14 @@
                     </tr>
                     
                     <!-- Sample Announcement 2 -->
-                    <tr>
-                        <td>Pool Maintenance</td>
-                        <td class="truncate">The community pool will be closed for maintenance from June 1-5. During this time, the pool area will be inaccessible for safety reasons.</td>
-                        <td>Sarah Johnson</td>
-                        <td>May 10, 2023</td>
-                        <td>June 5, 2023</td>
-                        <td><span class="status-badge active">Active</span></td>
-                        <td class="actions">
+                    <tr data-id="2">
+                        <td data-cell="Title">Pool Maintenance</td>
+                        <td class="truncate" data-cell="Content">The community pool will be closed for maintenance from June 1-5. During this time, the pool area will be inaccessible for safety reasons.</td>
+                        <td data-cell="Author">Sarah Johnson</td>
+                        <td data-date="2023-05-10" data-cell="Posted">May 10, 2023</td>
+                        <td data-date="2023-06-05" data-cell="Expires">June 5, 2023</td>
+                        <td data-cell="Status"><span class="status-badge active">Active</span></td>
+                        <td class="actions" data-cell="Actions">
                             <button class="btn-icon edit" title="Edit"><i class="fas fa-edit"></i></button>
                             <button class="btn-icon delete" title="Delete"><i class="fas fa-trash-alt"></i></button>
                             <button class="btn-icon view" title="View"><i class="fas fa-eye"></i></button>
@@ -68,14 +68,14 @@
                     </tr>
                     
                     <!-- Sample Announcement 3 -->
-                    <tr>
-                        <td>Parking Rules</td>
-                        <td class="truncate">Reminder: Overnight street parking is not permitted. Violators will be towed at the owner's expense. Please use designated parking areas.</td>
-                        <td>Michael Brown</td>
-                        <td>April 28, 2023</td>
-                        <td>Ongoing</td>
-                        <td><span class="status-badge expired">Expired</span></td>
-                        <td class="actions">
+                    <tr data-id="3">
+                        <td data-cell="Title">Parking Rules</td>
+                        <td class="truncate" data-cell="Content">Reminder: Overnight street parking is not permitted. Violators will be towed at the owner's expense. Please use designated parking areas.</td>
+                        <td data-cell="Author">Michael Brown</td>
+                        <td data-date="2023-04-28" data-cell="Posted">April 28, 2023</td>
+                        <td data-cell="Expires">Ongoing</td>
+                        <td data-cell="Status"><span class="status-badge expired">Expired</span></td>
+                        <td class="actions" data-cell="Actions">
                             <button class="btn-icon edit" title="Edit"><i class="fas fa-edit"></i></button>
                             <button class="btn-icon delete" title="Delete"><i class="fas fa-trash-alt"></i></button>
                             <button class="btn-icon view" title="View"><i class="fas fa-eye"></i></button>
@@ -106,6 +106,7 @@
             </div>
             <div class="modal-body">
                 <form id="announcementForm">
+                    <input type="hidden" id="announcementId" value="">
                     <div class="form-group">
                         <label for="announcementTitle">Title</label>
                         <input type="text" class="form-control" id="announcementTitle" placeholder="Enter announcement title" required>
@@ -148,7 +149,6 @@
                 </form>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" id="cancelCreateAnnouncement">Cancel</button>
                 <button type="button" class="btn btn-primary" id="saveAnnouncement">Publish Announcement</button>
             </div>
         </div>

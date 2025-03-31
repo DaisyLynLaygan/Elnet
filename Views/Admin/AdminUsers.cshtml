@@ -1,0 +1,719 @@
+@{
+    Layout = "~/Views/Shared/Admin_Layout.cshtml";
+    ViewData["Title"] = "Users";
+    ViewData["Subtitle"] = "Manage User Accounts";
+}
+
+<link rel="stylesheet" href="~/css/admin/users.css" />
+
+<div class="user-management-container">
+    <!-- Header Section -->
+    <div class="user-header">
+        <h1>@ViewData["Title"]</h1>
+        <p class="subtitle">@ViewData["Subtitle"]</p>
+        
+        <div class="header-actions">
+            <div class="search-box">
+                <input type="text" placeholder="Search users..." class="search-input">
+                <i class="fas fa-search search-icon"></i>
+            </div>
+            <button class="btn btn-primary" id="addUserBtn">
+                <i class="fas fa-plus"></i> Add New User
+            </button>
+        </div>
+    </div>
+    
+    <!-- User Type Tabs -->
+    <div class="user-tabs">
+        <div class="tab active" data-tab="all">All Users</div>
+        <div class="tab" data-tab="homeowner">Homeowners</div>
+        <div class="tab" data-tab="staff">Staff</div>
+        <div class="tab" data-tab="admin">Admins</div>
+    </div>
+    
+    <!-- Users Table -->
+    <div class="user-table-container">
+        <table class="user-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Type</th>
+                    <th>Status</th>
+                    <th>Last Active</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="userTableBody">
+                <!-- Homeowner Example -->
+                <tr data-type="homeowner">
+                    <td data-label="Name">
+                        <div class="user-info">
+                            <div class="avatar" style="background-color: #FFAB91;">JD</div>
+                            <div class="user-details">
+                                <span class="name">John Doe</span>
+                                <span class="phone">(555) 123-4567</span>
+                            </div>
+                        </div>
+                    </td>
+                    <td data-label="Email">john.doe@example.com</td>
+                    <td data-label="Type">
+                        <span class="badge homeowner">Homeowner</span>
+                    </td>
+                    <td data-label="Status">
+                        <span class="status active">Active</span>
+                    </td>
+                    <td data-label="Last Active">2 hours ago</td>
+                    <td data-label="Actions">
+                        <div class="action-buttons">
+                            <button class="btn-icon edit" title="Edit" data-user-id="1">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn-icon view" title="View" data-user-id="1">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <button class="btn-icon delete" title="Delete" data-user-id="1">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                
+                <!-- Staff Example -->
+                <tr data-type="staff">
+                    <td data-label="Name">
+                        <div class="user-info">
+                            <div class="avatar" style="background-color: #80DEEA;">SM</div>
+                            <div class="user-details">
+                                <span class="name">Sarah Miller</span>
+                                <span class="phone">(555) 987-6543</span>
+                            </div>
+                        </div>
+                    </td>
+                    <td data-label="Email">sarah.m@example.com</td>
+                    <td data-label="Type">
+                        <span class="badge staff">Staff</span>
+                    </td>
+                    <td data-label="Status">
+                        <span class="status active">Active</span>
+                    </td>
+                    <td data-label="Last Active">Today</td>
+                    <td data-label="Actions">
+                        <div class="action-buttons">
+                            <button class="btn-icon edit" title="Edit" data-user-id="2">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn-icon view" title="View" data-user-id="2">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <button class="btn-icon delete" title="Delete" data-user-id="2">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                
+                <!-- Admin Example -->
+                <tr data-type="admin">
+                    <td data-label="Name">
+                        <div class="user-info">
+                            <div class="avatar" style="background-color: #CE93D8;">AR</div>
+                            <div class="user-details">
+                                <span class="name">Admin Roy</span>
+                                <span class="phone">(555) 456-7890</span>
+                            </div>
+                        </div>
+                    </td>
+                    <td data-label="Email">admin.roy@example.com</td>
+                    <td data-label="Type">
+                        <span class="badge admin">Admin</span>
+                    </td>
+                    <td data-label="Status">
+                        <span class="status inactive">Inactive</span>
+                    </td>
+                    <td data-label="Last Active">3 days ago</td>
+                    <td data-label="Actions">
+                        <div class="action-buttons">
+                            <button class="btn-icon edit" title="Edit" data-user-id="3">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn-icon view" title="View" data-user-id="3">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <button class="btn-icon delete" title="Delete" data-user-id="3">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                
+                <!-- Additional users for pagination demo -->
+                <tr data-type="homeowner">
+                    <td data-label="Name">
+                        <div class="user-info">
+                            <div class="avatar" style="background-color: #A5D6A7;">MJ</div>
+                            <div class="user-details">
+                                <span class="name">Mike Johnson</span>
+                                <span class="phone">(555) 111-2222</span>
+                            </div>
+                        </div>
+                    </td>
+                    <td data-label="Email">mike.j@example.com</td>
+                    <td data-label="Type">
+                        <span class="badge homeowner">Homeowner</span>
+                    </td>
+                    <td data-label="Status">
+                        <span class="status active">Active</span>
+                    </td>
+                    <td data-label="Last Active">1 day ago</td>
+                    <td data-label="Actions">
+                        <div class="action-buttons">
+                            <button class="btn-icon edit" title="Edit" data-user-id="4">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn-icon view" title="View" data-user-id="4">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <button class="btn-icon delete" title="Delete" data-user-id="4">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                
+                <tr data-type="staff">
+                    <td data-label="Name">
+                        <div class="user-info">
+                            <div class="avatar" style="background-color: #FFF59D;">TW</div>
+                            <div class="user-details">
+                                <span class="name">Tom Wilson</span>
+                                <span class="phone">(555) 333-4444</span>
+                            </div>
+                        </div>
+                    </td>
+                    <td data-label="Email">tom.w@example.com</td>
+                    <td data-label="Type">
+                        <span class="badge staff">Staff</span>
+                    </td>
+                    <td data-label="Status">
+                        <span class="status active">Active</span>
+                    </td>
+                    <td data-label="Last Active">5 hours ago</td>
+                    <td data-label="Actions">
+                        <div class="action-buttons">
+                            <button class="btn-icon edit" title="Edit" data-user-id="5">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn-icon view" title="View" data-user-id="5">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <button class="btn-icon delete" title="Delete" data-user-id="5">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                
+                <tr data-type="admin">
+                    <td data-label="Name">
+                        <div class="user-info">
+                            <div class="avatar" style="background-color: #BCAAA4;">EB</div>
+                            <div class="user-details">
+                                <span class="name">Emma Brown</span>
+                                <span class="phone">(555) 555-6666</span>
+                            </div>
+                        </div>
+                    </td>
+                    <td data-label="Email">emma.b@example.com</td>
+                    <td data-label="Type">
+                        <span class="badge admin">Admin</span>
+                    </td>
+                    <td data-label="Status">
+                        <span class="status active">Active</span>
+                    </td>
+                    <td data-label="Last Active">Yesterday</td>
+                    <td data-label="Actions">
+                        <div class="action-buttons">
+                            <button class="btn-icon edit" title="Edit" data-user-id="6">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn-icon view" title="View" data-user-id="6">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <button class="btn-icon delete" title="Delete" data-user-id="6">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        
+        <!-- Pagination -->
+        <div class="pagination">
+            <button class="pagination-btn" id="prevPage" disabled>
+                <i class="fas fa-chevron-left"></i>
+            </button>
+            <button class="pagination-btn active" data-page="1">1</button>
+            <button class="pagination-btn" data-page="2">2</button>
+            <button class="pagination-btn" id="nextPage">
+                <i class="fas fa-chevron-right"></i>
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- View User Modal -->
+<div class="modal-overlay" id="viewModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 class="modal-title">User Details</h3>
+            <button class="modal-close">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="user-info-modal">
+                <div class="avatar-lg" id="viewAvatar">JD</div>
+                <div class="user-details-modal">
+                    <h4 id="viewName">John Doe</h4>
+                    <p id="viewEmail">john.doe@example.com</p>
+                </div>
+            </div>
+            
+            <div class="user-details-grid">
+                <div class="detail-item">
+                    <span class="detail-label">Phone</span>
+                    <span class="detail-value" id="viewPhone">(555) 123-4567</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">User Type</span>
+                    <span class="detail-value" id="viewType">Homeowner</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Status</span>
+                    <span class="detail-value" id="viewStatus">Active</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Last Active</span>
+                    <span class="detail-value" id="viewLastActive">2 hours ago</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Registered</span>
+                    <span class="detail-value" id="viewRegistered">Jan 15, 2023</span>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary modal-close-btn">Close</button>
+        </div>
+    </div>
+</div>
+
+<!-- Edit User Modal -->
+<div class="modal-overlay" id="editModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 class="modal-title">Edit User</h3>
+            <button class="modal-close">&times;</button>
+        </div>
+        <div class="modal-body">
+            <form id="editUserForm">
+                <input type="hidden" id="editUserId">
+                
+                <div class="form-group">
+                    <label class="form-label" for="editFirstName">First Name</label>
+                    <input type="text" class="form-control" id="editFirstName" required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="editLastName">Last Name</label>
+                    <input type="text" class="form-control" id="editLastName" required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="editEmail">Email</label>
+                    <input type="email" class="form-control" id="editEmail" required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="editPhone">Phone</label>
+                    <input type="tel" class="form-control" id="editPhone">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">User Role</label>
+                    <div class="select-role">
+                        <div class="role-option">
+                            <input type="radio" id="editRoleHomeowner" name="userRole" value="homeowner">
+                            <label for="editRoleHomeowner">Homeowner</label>
+                        </div>
+                        <div class="role-option">
+                            <input type="radio" id="editRoleStaff" name="userRole" value="staff">
+                            <label for="editRoleStaff">Staff</label>
+                        </div>
+                        <div class="role-option">
+                            <input type="radio" id="editRoleAdmin" name="userRole" value="admin">
+                            <label for="editRoleAdmin">Admin</label>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Status</label>
+                    <div class="select-role">
+                        <div class="role-option">
+                            <input type="radio" id="editStatusActive" name="userStatus" value="active" checked>
+                            <label for="editStatusActive">Active</label>
+                        </div>
+                        <div class="role-option">
+                            <input type="radio" id="editStatusInactive" name="userStatus" value="inactive">
+                            <label for="editStatusInactive">Inactive</label>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary modal-close-btn">Cancel</button>
+            <button class="btn btn-primary" id="saveChangesBtn">Save Changes</button>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal-overlay" id="deleteModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 class="modal-title">Confirm Deletion</h3>
+            <button class="modal-close">&times;</button>
+        </div>
+        <div class="modal-body">
+            <p>Are you sure you want to delete <strong id="deleteUserName">John Doe</strong>? This action cannot be undone.</p>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary modal-close-btn">Cancel</button>
+            <button class="btn btn-danger" id="confirmDeleteBtn">Delete User</button>
+        </div>
+    </div>
+</div>
+
+<!-- Add User Modal -->
+<div class="modal-overlay" id="addUserModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 class="modal-title">Add New User</h3>
+            <button class="modal-close">&times;</button>
+        </div>
+        <div class="modal-body">
+            <form id="addUserForm">
+                <div class="form-group">
+                    <label class="form-label" for="addFirstName">First Name</label>
+                    <input type="text" class="form-control" id="addFirstName" required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="addLastName">Last Name</label>
+                    <input type="text" class="form-control" id="addLastName" required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="addEmail">Email</label>
+                    <input type="email" class="form-control" id="addEmail" required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="addPhone">Phone</label>
+                    <input type="tel" class="form-control" id="addPhone">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">User Role</label>
+                    <div class="select-role">
+                        <div class="role-option">
+                            <input type="radio" id="addRoleHomeowner" name="addUserRole" value="homeowner" checked>
+                            <label for="addRoleHomeowner">Homeowner</label>
+                        </div>
+                        <div class="role-option">
+                            <input type="radio" id="addRoleStaff" name="addUserRole" value="staff">
+                            <label for="addRoleStaff">Staff</label>
+                        </div>
+                        <div class="role-option">
+                            <input type="radio" id="addRoleAdmin" name="addUserRole" value="admin">
+                            <label for="addRoleAdmin">Admin</label>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="addPassword">Password</label>
+                    <input type="password" class="form-control" id="addPassword" required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="addConfirmPassword">Confirm Password</label>
+                    <input type="password" class="form-control" id="addConfirmPassword" required>
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary modal-close-btn">Cancel</button>
+            <button class="btn btn-primary" id="createUserBtn">Create User</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Constants
+        const USERS_PER_PAGE = 5;
+        
+        // Modal functionality
+        const modals = {
+            view: document.getElementById('viewModal'),
+            edit: document.getElementById('editModal'),
+            delete: document.getElementById('deleteModal'),
+            add: document.getElementById('addUserModal')
+        };
+        
+        // State variables
+        let currentPage = 1;
+        let currentFilter = 'all';
+        let allUsers = Array.from(document.querySelectorAll('#userTableBody tr'));
+        
+        // Open modal functions
+        function openModal(modal) {
+            document.body.style.overflow = 'hidden';
+            modal.classList.add('active');
+        }
+        
+        function closeModal(modal) {
+            document.body.style.overflow = '';
+            modal.classList.remove('active');
+        }
+        
+        // Close modals when clicking X or close button
+        document.querySelectorAll('.modal-close, .modal-close-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const modal = this.closest('.modal-overlay');
+                closeModal(modal);
+            });
+        });
+        
+        // Close modal when clicking outside content
+        document.querySelectorAll('.modal-overlay').forEach(modal => {
+            modal.addEventListener('click', function(e) {
+                if (e.target === this) {
+                    closeModal(modal);
+                }
+            });
+        });
+        
+        // View user functionality
+        document.querySelectorAll('.btn-icon.view').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const userId = this.getAttribute('data-user-id');
+                // In a real app, you would fetch user data here
+                // For demo, we'll use the data from the table row
+                const row = this.closest('tr');
+                
+                document.getElementById('viewName').textContent = row.querySelector('.name').textContent;
+                document.getElementById('viewEmail').textContent = row.cells[1].textContent;
+                document.getElementById('viewPhone').textContent = row.querySelector('.phone').textContent;
+                document.getElementById('viewType').textContent = row.cells[2].textContent.trim();
+                document.getElementById('viewStatus').textContent = row.cells[3].textContent.trim();
+                document.getElementById('viewLastActive').textContent = row.cells[4].textContent;
+                document.getElementById('viewAvatar').textContent = 
+                    row.querySelector('.name').textContent.split(' ').map(n => n[0]).join('');
+                
+                openModal(modals.view);
+            });
+        });
+        
+        // Edit user functionality
+        document.querySelectorAll('.btn-icon.edit').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const userId = this.getAttribute('data-user-id');
+                // In a real app, you would fetch user data here
+                // For demo, we'll use the data from the table row
+                const row = this.closest('tr');
+                const nameParts = row.querySelector('.name').textContent.split(' ');
+                
+                document.getElementById('editUserId').value = userId;
+                document.getElementById('editFirstName').value = nameParts[0];
+                document.getElementById('editLastName').value = nameParts.slice(1).join(' ');
+                document.getElementById('editEmail').value = row.cells[1].textContent;
+                document.getElementById('editPhone').value = row.querySelector('.phone').textContent.replace(/\D/g, '');
+                
+                // Set role
+                const role = row.cells[2].textContent.trim().toLowerCase();
+                document.getElementById(`editRole${role.charAt(0).toUpperCase() + role.slice(1)}`).checked = true;
+                
+                // Set status
+                const status = row.cells[3].textContent.trim().toLowerCase();
+                document.getElementById(`editStatus${status.charAt(0).toUpperCase() + status.slice(1)}`).checked = true;
+                
+                openModal(modals.edit);
+            });
+        });
+        
+        // Delete user functionality
+        document.querySelectorAll('.btn-icon.delete').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const userId = this.getAttribute('data-user-id');
+                const userName = this.closest('tr').querySelector('.name').textContent;
+                
+                document.getElementById('deleteUserName').textContent = userName;
+                document.getElementById('confirmDeleteBtn').setAttribute('data-user-id', userId);
+                
+                openModal(modals.delete);
+            });
+        });
+        
+        // Add new user button
+        document.getElementById('addUserBtn').addEventListener('click', function() {
+            document.getElementById('addUserForm').reset();
+            openModal(modals.add);
+        });
+        
+        // Save changes button
+        document.getElementById('saveChangesBtn').addEventListener('click', function() {
+            // In a real app, you would save changes to the server here
+            alert('Changes saved! (This is a demo)');
+            closeModal(modals.edit);
+        });
+        
+        // Confirm delete button
+        document.getElementById('confirmDeleteBtn').addEventListener('click', function() {
+            const userId = this.getAttribute('data-user-id');
+            // In a real app, you would delete the user on the server here
+            alert(`User ${userId} deleted! (This is a demo)`);
+            closeModal(modals.delete);
+        });
+        
+        // Create user button
+        document.getElementById('createUserBtn').addEventListener('click', function() {
+            const form = document.getElementById('addUserForm');
+            if (form.checkValidity()) {
+                if (document.getElementById('addPassword').value !== document.getElementById('addConfirmPassword').value) {
+                    alert('Passwords do not match!');
+                    return;
+                }
+                
+                // In a real app, you would create the user on the server here
+                alert('User created! (This is a demo)');
+                closeModal(modals.add);
+            } else {
+                form.reportValidity();
+            }
+        });
+        
+        // Filter and pagination functions
+        function filterUsers(type) {
+            currentFilter = type;
+            currentPage = 1; // Reset to first page when filter changes
+            updateUserTable();
+            updatePagination();
+        }
+        
+        function updateUserTable() {
+            const userTableBody = document.getElementById('userTableBody');
+            const filteredUsers = currentFilter === 'all' 
+                ? allUsers 
+                : allUsers.filter(user => user.getAttribute('data-type') === currentFilter);
+            
+            // Clear the table
+            userTableBody.innerHTML = '';
+            
+            // Calculate pagination
+            const startIndex = (currentPage - 1) * USERS_PER_PAGE;
+            const endIndex = startIndex + USERS_PER_PAGE;
+            const usersToShow = filteredUsers.slice(startIndex, endIndex);
+            
+            // Add filtered and paginated users to the table
+            usersToShow.forEach(user => {
+                userTableBody.appendChild(user);
+            });
+            
+            // Show empty message if no users
+            if (filteredUsers.length === 0) {
+                const emptyRow = document.createElement('tr');
+                emptyRow.innerHTML = `<td colspan="6" class="empty-message">No users found</td>`;
+                userTableBody.appendChild(emptyRow);
+            }
+        }
+        
+        function updatePagination() {
+            const paginationContainer = document.querySelector('.pagination');
+            const filteredUsers = currentFilter === 'all' 
+                ? allUsers 
+                : allUsers.filter(user => user.getAttribute('data-type') === currentFilter);
+            
+            const totalPages = Math.ceil(filteredUsers.length / USERS_PER_PAGE);
+            
+            // Clear existing pagination buttons (except prev/next)
+            const existingPageButtons = document.querySelectorAll('.pagination-btn[data-page]');
+            existingPageButtons.forEach(btn => btn.remove());
+            
+            // Add page buttons
+            const prevBtn = document.getElementById('prevPage');
+            const nextBtn = document.getElementById('nextPage');
+            
+            // Update prev/next buttons
+            prevBtn.disabled = currentPage === 1;
+            nextBtn.disabled = currentPage === totalPages || totalPages === 0;
+            
+            // Add page number buttons
+            for (let i = 1; i <= totalPages; i++) {
+                const pageBtn = document.createElement('button');
+                pageBtn.className = `pagination-btn ${i === currentPage ? 'active' : ''}`;
+                pageBtn.textContent = i;
+                pageBtn.dataset.page = i;
+                
+                pageBtn.addEventListener('click', function() {
+                    currentPage = parseInt(this.dataset.page);
+                    updateUserTable();
+                    updatePagination();
+                });
+                
+                nextBtn.before(pageBtn);
+            }
+        }
+        
+        // Tab functionality
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', function() {
+                document.querySelector('.tab.active').classList.remove('active');
+                this.classList.add('active');
+                
+                const filterType = this.dataset.tab;
+                filterUsers(filterType);
+            });
+        });
+        
+        // Pagination button handlers
+        document.getElementById('prevPage').addEventListener('click', function() {
+            if (currentPage > 1) {
+                currentPage--;
+                updateUserTable();
+                updatePagination();
+            }
+        });
+        
+        document.getElementById('nextPage').addEventListener('click', function() {
+            const filteredUsers = currentFilter === 'all' 
+                ? allUsers 
+                : allUsers.filter(user => user.getAttribute('data-type') === currentFilter);
+            
+            const totalPages = Math.ceil(filteredUsers.length / USERS_PER_PAGE);
+            
+            if (currentPage < totalPages) {
+                currentPage++;
+                updateUserTable();
+                updatePagination();
+            }
+        });
+        
+        // Initialize the table
+        updateUserTable();
+        updatePagination();
+    });
+</script>
