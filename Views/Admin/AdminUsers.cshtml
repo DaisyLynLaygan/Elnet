@@ -4,6 +4,12 @@
     ViewData["Subtitle"] = "Manage User Accounts";
 }
 
+@model HomeOwner.Models.ViewModel;
+
+@{
+    var users = Model.Users as List<User>;
+}
+
 <link rel="stylesheet" href="~/css/admin/users.css" />
 
 <div class="user-management-container">
@@ -11,7 +17,7 @@
     <div class="user-header">
         <h1>@ViewData["Title"]</h1>
         <p class="subtitle">@ViewData["Subtitle"]</p>
-        
+
         <div class="header-actions">
             <div class="search-box">
                 <input type="text" placeholder="Search users..." class="search-input">
@@ -22,7 +28,7 @@
             </button>
         </div>
     </div>
-    
+
     <!-- User Type Tabs -->
     <div class="user-tabs">
         <div class="tab active" data-tab="all">All Users</div>
@@ -30,7 +36,7 @@
         <div class="tab" data-tab="staff">Staff</div>
         <div class="tab" data-tab="admin">Admins</div>
     </div>
-    
+
     <!-- Users Table -->
     <div class="user-table-container">
         <table class="user-table">
@@ -45,207 +51,47 @@
                 </tr>
             </thead>
             <tbody id="userTableBody">
+
                 <!-- Homeowner Example -->
-                <tr data-type="homeowner">
-                    <td data-label="Name">
-                        <div class="user-info">
-                            <div class="avatar" style="background-color: #FFAB91;">JD</div>
-                            <div class="user-details">
-                                <span class="name">John Doe</span>
-                                <span class="phone">(555) 123-4567</span>
+
+                @foreach (var user in users)
+                {
+
+                    <tr data-type=@user.role.ToLower()>
+                        <td data-label="Name">
+                            <div class="user-info">
+                                <div class="avatar" style="background-color: #FFAB91;">JD</div>
+                                <div class="user-details">
+                                    <span class="name">@user.firstname @user.lastname</span>
+                                    <span class="phone">@user.contact_no</span>
+                                </div>
                             </div>
-                        </div>
-                    </td>
-                    <td data-label="Email">john.doe@example.com</td>
-                    <td data-label="Type">
-                        <span class="badge homeowner">Homeowner</span>
-                    </td>
-                    <td data-label="Status">
-                        <span class="status active">Active</span>
-                    </td>
-                    <td data-label="Last Active">2 hours ago</td>
-                    <td data-label="Actions">
-                        <div class="action-buttons">
-                            <button class="btn-icon edit" title="Edit" data-user-id="1">
-                                <i class="fas fa-edit"></i>
-                            </button>
-                            <button class="btn-icon view" title="View" data-user-id="1">
-                                <i class="fas fa-eye"></i>
-                            </button>
-                            <button class="btn-icon delete" title="Delete" data-user-id="1">
-                                <i class="fas fa-trash-alt"></i>
-                            </button>
-                        </div>
-                    </td>
-                </tr>
-                
-                <!-- Staff Example -->
-                <tr data-type="staff">
-                    <td data-label="Name">
-                        <div class="user-info">
-                            <div class="avatar" style="background-color: #80DEEA;">SM</div>
-                            <div class="user-details">
-                                <span class="name">Sarah Miller</span>
-                                <span class="phone">(555) 987-6543</span>
+                        </td>
+                        <td data-label="Email">@user.email</td>
+                        <td data-label="Type">
+                            <span class="badge @user.role.ToLower()">@user.role</span>
+                        </td>
+                        <td data-label="Status">
+                            <span class="status active">Active</span>
+                        </td>
+                        <td data-label="Last Active">2 hours ago</td>
+                        <td data-label="Actions">
+                            <div class="action-buttons">
+                                <button class="btn-icon edit" title="Edit" data-user-id=@user.user_id>
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn-icon view" title="View" data-user-id=@user.user_id>
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <button class="btn-icon delete" title="Delete" data-user-id=@user.user_id>
+                                    <i class="fas fa-trash-alt"></i>
+                                </button>
                             </div>
-                        </div>
-                    </td>
-                    <td data-label="Email">sarah.m@example.com</td>
-                    <td data-label="Type">
-                        <span class="badge staff">Staff</span>
-                    </td>
-                    <td data-label="Status">
-                        <span class="status active">Active</span>
-                    </td>
-                    <td data-label="Last Active">Today</td>
-                    <td data-label="Actions">
-                        <div class="action-buttons">
-                            <button class="btn-icon edit" title="Edit" data-user-id="2">
-                                <i class="fas fa-edit"></i>
-                            </button>
-                            <button class="btn-icon view" title="View" data-user-id="2">
-                                <i class="fas fa-eye"></i>
-                            </button>
-                            <button class="btn-icon delete" title="Delete" data-user-id="2">
-                                <i class="fas fa-trash-alt"></i>
-                            </button>
-                        </div>
-                    </td>
-                </tr>
-                
-                <!-- Admin Example -->
-                <tr data-type="admin">
-                    <td data-label="Name">
-                        <div class="user-info">
-                            <div class="avatar" style="background-color: #CE93D8;">AR</div>
-                            <div class="user-details">
-                                <span class="name">Admin Roy</span>
-                                <span class="phone">(555) 456-7890</span>
-                            </div>
-                        </div>
-                    </td>
-                    <td data-label="Email">admin.roy@example.com</td>
-                    <td data-label="Type">
-                        <span class="badge admin">Admin</span>
-                    </td>
-                    <td data-label="Status">
-                        <span class="status inactive">Inactive</span>
-                    </td>
-                    <td data-label="Last Active">3 days ago</td>
-                    <td data-label="Actions">
-                        <div class="action-buttons">
-                            <button class="btn-icon edit" title="Edit" data-user-id="3">
-                                <i class="fas fa-edit"></i>
-                            </button>
-                            <button class="btn-icon view" title="View" data-user-id="3">
-                                <i class="fas fa-eye"></i>
-                            </button>
-                            <button class="btn-icon delete" title="Delete" data-user-id="3">
-                                <i class="fas fa-trash-alt"></i>
-                            </button>
-                        </div>
-                    </td>
-                </tr>
-                
-                <!-- Additional users for pagination demo -->
-                <tr data-type="homeowner">
-                    <td data-label="Name">
-                        <div class="user-info">
-                            <div class="avatar" style="background-color: #A5D6A7;">MJ</div>
-                            <div class="user-details">
-                                <span class="name">Mike Johnson</span>
-                                <span class="phone">(555) 111-2222</span>
-                            </div>
-                        </div>
-                    </td>
-                    <td data-label="Email">mike.j@example.com</td>
-                    <td data-label="Type">
-                        <span class="badge homeowner">Homeowner</span>
-                    </td>
-                    <td data-label="Status">
-                        <span class="status active">Active</span>
-                    </td>
-                    <td data-label="Last Active">1 day ago</td>
-                    <td data-label="Actions">
-                        <div class="action-buttons">
-                            <button class="btn-icon edit" title="Edit" data-user-id="4">
-                                <i class="fas fa-edit"></i>
-                            </button>
-                            <button class="btn-icon view" title="View" data-user-id="4">
-                                <i class="fas fa-eye"></i>
-                            </button>
-                            <button class="btn-icon delete" title="Delete" data-user-id="4">
-                                <i class="fas fa-trash-alt"></i>
-                            </button>
-                        </div>
-                    </td>
-                </tr>
-                
-                <tr data-type="staff">
-                    <td data-label="Name">
-                        <div class="user-info">
-                            <div class="avatar" style="background-color: #FFF59D;">TW</div>
-                            <div class="user-details">
-                                <span class="name">Tom Wilson</span>
-                                <span class="phone">(555) 333-4444</span>
-                            </div>
-                        </div>
-                    </td>
-                    <td data-label="Email">tom.w@example.com</td>
-                    <td data-label="Type">
-                        <span class="badge staff">Staff</span>
-                    </td>
-                    <td data-label="Status">
-                        <span class="status active">Active</span>
-                    </td>
-                    <td data-label="Last Active">5 hours ago</td>
-                    <td data-label="Actions">
-                        <div class="action-buttons">
-                            <button class="btn-icon edit" title="Edit" data-user-id="5">
-                                <i class="fas fa-edit"></i>
-                            </button>
-                            <button class="btn-icon view" title="View" data-user-id="5">
-                                <i class="fas fa-eye"></i>
-                            </button>
-                            <button class="btn-icon delete" title="Delete" data-user-id="5">
-                                <i class="fas fa-trash-alt"></i>
-                            </button>
-                        </div>
-                    </td>
-                </tr>
-                
-                <tr data-type="admin">
-                    <td data-label="Name">
-                        <div class="user-info">
-                            <div class="avatar" style="background-color: #BCAAA4;">EB</div>
-                            <div class="user-details">
-                                <span class="name">Emma Brown</span>
-                                <span class="phone">(555) 555-6666</span>
-                            </div>
-                        </div>
-                    </td>
-                    <td data-label="Email">emma.b@example.com</td>
-                    <td data-label="Type">
-                        <span class="badge admin">Admin</span>
-                    </td>
-                    <td data-label="Status">
-                        <span class="status active">Active</span>
-                    </td>
-                    <td data-label="Last Active">Yesterday</td>
-                    <td data-label="Actions">
-                        <div class="action-buttons">
-                            <button class="btn-icon edit" title="Edit" data-user-id="6">
-                                <i class="fas fa-edit"></i>
-                            </button>
-                            <button class="btn-icon view" title="View" data-user-id="6">
-                                <i class="fas fa-eye"></i>
-                            </button>
-                            <button class="btn-icon delete" title="Delete" data-user-id="6">
-                                <i class="fas fa-trash-alt"></i>
-                            </button>
-                        </div>
-                    </td>
-                </tr>
+                        </td>
+                    </tr>
+                }
+
+             
             </tbody>
         </table>
         
@@ -396,7 +242,10 @@
     </div>
 </div>
 
+
+
 <!-- Add User Modal -->
+<form asp-action="addUserModal" asp-controller="Admin" id="addUserForm">
 <div class="modal-overlay" id="addUserModal">
     <div class="modal-content">
         <div class="modal-header">
@@ -404,63 +253,67 @@
             <button class="modal-close">&times;</button>
         </div>
         <div class="modal-body">
-            <form id="addUserForm">
                 <div class="form-group">
-                    <label class="form-label" for="addFirstName">First Name</label>
-                    <input type="text" class="form-control" id="addFirstName" required>
+                    <label class="form-label" asp-for="newUser.username">Username</label>
+                    <input asp-for="newUser.username" type="text" class="form-control" id="username" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" asp-for="newUser.firstname">First Name</label>
+                    <input asp-for="newUser.firstname" type="text" class="form-control" id="firstname" required>
                 </div>
                 
                 <div class="form-group">
-                    <label class="form-label" for="addLastName">Last Name</label>
-                    <input type="text" class="form-control" id="addLastName" required>
+                    <label class="form-label" asp-for="newUser.lastname">Last Name</label>
+                    <input asp-for="newUser.lastname" type="text" class="form-control" id="lastname" required>
                 </div>
                 
                 <div class="form-group">
-                    <label class="form-label" for="addEmail">Email</label>
-                    <input type="email" class="form-control" id="addEmail" required>
+                    <label class="form-label" asp-for="newUser.email">Email</label>
+                    <input asp-for="newUser.email" type="email" class="form-control" id="email" required>
                 </div>
                 
                 <div class="form-group">
-                    <label class="form-label" for="addPhone">Phone</label>
-                    <input type="tel" class="form-control" id="addPhone">
+                    <label class="form-label" asp-for="newUser.contact_no">Phone</label>
+                    <input asp-for="newUser.contact_no" type="tel" class="form-control" id="contact_no">
                 </div>
                 
                 <div class="form-group">
-                    <label class="form-label">User Role</label>
+                    <label asp-for="newUser.role" class="form-label">User Role</label>
                     <div class="select-role">
                         <div class="role-option">
-                            <input type="radio" id="addRoleHomeowner" name="addUserRole" value="homeowner" checked>
+                            <input type="radio" id="addRoleHomeowner" asp-for="newUser.role" name="newUser.role" value="homeowner" checked>
                             <label for="addRoleHomeowner">Homeowner</label>
                         </div>
                         <div class="role-option">
-                            <input type="radio" id="addRoleStaff" name="addUserRole" value="staff">
+                            <input type="radio" id="addRoleStaff" asp-for="newUser.role" name="newUser.role" value="staff">
                             <label for="addRoleStaff">Staff</label>
                         </div>
                         <div class="role-option">
-                            <input type="radio" id="addRoleAdmin" name="addUserRole" value="admin">
+                            <input type="radio" id="addRoleAdmin" asp-for="newUser.role" name="newUser.role" value="admin">
                             <label for="addRoleAdmin">Admin</label>
                         </div>
                     </div>
                 </div>
+
                 
                 <div class="form-group">
-                    <label class="form-label" for="addPassword">Password</label>
-                    <input type="password" class="form-control" id="addPassword" required>
+                    <label class="form-label" asp-for="newUser.user_password">Password</label>
+                    <input asp-for="newUser.user_password" type="password" class="form-control" id="addPassword" required>
                 </div>
                 
                 <div class="form-group">
                     <label class="form-label" for="addConfirmPassword">Confirm Password</label>
                     <input type="password" class="form-control" id="addConfirmPassword" required>
                 </div>
-            </form>
+         
         </div>
         <div class="modal-footer">
             <button class="btn btn-secondary modal-close-btn">Cancel</button>
-            <button class="btn btn-primary" id="createUserBtn">Create User</button>
+            <button class="btn btn-primary" id="createUserBtn" type="submit">Create User</button>
         </div>
     </div>
 </div>
-
+   </form>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         // Constants

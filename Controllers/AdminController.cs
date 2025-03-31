@@ -5,7 +5,7 @@ using Newtonsoft.Json;
 
 namespace HomeOwner.Controllers
 {
-    public class AdminController : Controller
+    public class AdminController : BaseController
     {
         private readonly HomeOwnerContext _context;
         
@@ -14,142 +14,134 @@ namespace HomeOwner.Controllers
             _context = db;
         }
 
-        // Private method to check if user is logged in and return user
-        private User GetCurrentUser()
-        {
-            var userJson = HttpContext.Session.GetString("CurrentUser");
 
-            if (string.IsNullOrEmpty(userJson))
+        //Get all users
+        public ViewModel GetUser()
+        {
+            var viewModel = new ViewModel();
+
+            try
             {
-                return null;
+                var users = _context.User.ToList();
+                viewModel.Users = users;
+                viewModel.newUser = new User(); 
+            }
+            catch (Exception ex)
+            {
+                viewModel.ErrorMessage = ex.Message;
             }
 
-            var user = JsonConvert.DeserializeObject<User>(userJson);
-            return user;
+            return viewModel; 
         }
+
+
+
+
+        //Add New User via Modal 
+
+        public IActionResult addUserModal(ViewModel model)
+        {
+            
+            try
+            {
+                var user = new User
+                {
+                    username = model.newUser.username,
+                    user_password = model.newUser.user_password,
+                    email = model.newUser.email,
+                    address = model.newUser.address,
+                    contact_no = model.newUser.contact_no,
+                    firstname = model.newUser.firstname,
+                    lastname = model.newUser.lastname,
+                    date_created = DateOnly.FromDateTime(DateTime.Now),
+                    role = model.newUser.role,
+                };
+
+
+                // Save the user to the database
+                _context.User.Add(user);
+                _context.SaveChanges();
+                TempData["Message"] = "User added successfully!";
+                return RedirectToAction("AdminUsers");
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = "An error occurred while adding the user.";
+                return RedirectToAction("AdminUsers");
+            }
+        }
+
+
+
+
+
+
 
         public IActionResult Dashboard()
         {
-            var user = GetCurrentUser();
 
-            if (user == null)
-            {
-                return RedirectToAction("Index", "Home"); // Redirect if no user is logged in or deserialization fails
-            }
+            ViewContents();
 
-            ViewBag.CurrentUser = user;
             ViewBag.ActiveMenu = "Dashboard";
             return View();
         }
 
         public IActionResult Announcements()
         {
-            var user = GetCurrentUser();
-
-            if (user == null)
-            {
-                return RedirectToAction("Index", "Home");
-            }
-
-            ViewBag.CurrentUser = user;
+            ViewContents();
             ViewBag.ActiveMenu = "Announcements";
             return View("AdminAnnouncements"); // Use this if you want to keep the current view name
         }
 
         public IActionResult Documents()
         {
-            var user = GetCurrentUser();
-
-            if (user == null)
-            {
-                return RedirectToAction("Index", "Home");
-            }
-
-            ViewBag.CurrentUser = user;
+            ViewContents();
             ViewBag.ActiveMenu = "Documents";
             return View("AdminDocuments");
         }
 
         public IActionResult Reservations()
         {
-            var user = GetCurrentUser();
-
-            if (user == null)
-            {
-                return RedirectToAction("Index", "Home");
-            }
-
-            ViewBag.CurrentUser = user;
+            ViewContents();
             ViewBag.ActiveMenu = "Reservations";
             return View("AdminReservations");
         }
 
         public IActionResult Polls()
         {
-            var user = GetCurrentUser();
-
-            if (user == null)
-            {
-                return RedirectToAction("Index", "Home");
-            }
-
-            ViewBag.CurrentUser = user;
+            ViewContents();
             ViewBag.ActiveMenu = "Polls";
             return View("AdminPolls");
         }
 
         public IActionResult Events()
         {
-            var user = GetCurrentUser();
-
-            if (user == null)
-            {
-                return RedirectToAction("Index", "Home");
-            }
-
-            ViewBag.CurrentUser = user;
+            ViewContents();
             ViewBag.ActiveMenu = "Events";
             return View("AdminEvents");
         }
 
-        public IActionResult Users()
+
+      
+
+        public  IActionResult  AdminUsers()
         {
-            var user = GetCurrentUser();
+            ViewContents();
 
-            if (user == null)
-            {
-                return RedirectToAction("Index", "Home");
-            }
-
-            ViewBag.CurrentUser = user;
             ViewBag.ActiveMenu = "Users";
-            return View("AdminUsers");
+            return View(GetUser());
         }
 
         public IActionResult Feedback()
         {
-            var user = GetCurrentUser();
-
-            if (user == null)
-            {
-                return RedirectToAction("Index", "Home");
-            }
-
-            ViewBag.CurrentUser = user;
+            ViewContents();
             ViewBag.ActiveMenu = "Feedback";
             return View("AdminFeedback");
         }
 
         public IActionResult ServiceRequests()
         {
-            var user = GetCurrentUser();
-
-            if (user == null)
-            {
-                return RedirectToAction("Index", "Home");
-            }
-
-            ViewBag.CurrentUser = user;
+            ViewContents();
             ViewBag.ActiveMenu = "ServiceRequests";
             return View("AdminServiceRequests");
         }
