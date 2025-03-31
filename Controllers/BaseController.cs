@@ -10,5 +10,16 @@ namespace HomeOwner.Controllers
             get => HttpContext.Session.GetObject<User>("CurrentUser");
             set => HttpContext.Session.SetObject("CurrentUser", value);
         }
+        protected void ViewContents()
+        {
+            ViewBag.CurrentUser = CurrentUser;
+
+            if (CurrentUser == null)
+            {
+                RedirectToAction("Index", "Home");
+            }
+
+        }
+
     }
 }
