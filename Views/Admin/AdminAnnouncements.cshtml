@@ -1,0 +1,192 @@
+@{
+    Layout = "~/Views/Shared/Admin_Layout.cshtml";
+    ViewData["Title"] = "Announcements";
+    ViewData["Subtitle"] = "Community Management Overview";
+}
+
+<link rel="stylesheet" href="~/css/admin/announcement.css" />
+
+<div class="dashboard-content">
+    <div class="announcements-container">
+        <!-- Header with create button and search -->
+        <div class="announcements-header">
+            <h2 class="section-title">Announcements</h2>
+            <div class="announcements-actions">
+                <div class="search-box">
+                    <input type="text" placeholder="Search announcements..." class="search-input">
+                    <i class="fas fa-search search-icon"></i>
+                </div>
+                <button class="btn btn-primary" id="createAnnouncementBtn">
+                    <i class="fas fa-plus"></i> Create New
+                </button>
+            </div>
+        </div>
+
+        <!-- Announcements Table -->
+        <div class="announcements-table-container">
+            <table class="announcements-table">
+                <thead>
+                    <tr>
+                        <th>Title</th>
+                        <th>Content</th>
+                        <th>Author</th>
+                        <th>Date Posted</th>
+                        <th>Expires</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Sample Announcement 1 -->
+                    <tr>
+                        <td>Community Meeting</td>
+                        <td class="truncate">Monthly HOA meeting scheduled for next Tuesday at 7 PM in the clubhouse. Agenda items include budget review, landscaping proposals, and community event planning.</td>
+                        <td>John Smith</td>
+                        <td>May 15, 2023</td>
+                        <td>May 30, 2023</td>
+                        <td><span class="status-badge active">Active</span></td>
+                        <td class="actions">
+                            <button class="btn-icon edit" title="Edit"><i class="fas fa-edit"></i></button>
+                            <button class="btn-icon delete" title="Delete"><i class="fas fa-trash-alt"></i></button>
+                            <button class="btn-icon view" title="View"><i class="fas fa-eye"></i></button>
+                        </td>
+                    </tr>
+                    
+                    <!-- Sample Announcement 2 -->
+                    <tr>
+                        <td>Pool Maintenance</td>
+                        <td class="truncate">The community pool will be closed for maintenance from June 1-5. During this time, the pool area will be inaccessible for safety reasons.</td>
+                        <td>Sarah Johnson</td>
+                        <td>May 10, 2023</td>
+                        <td>June 5, 2023</td>
+                        <td><span class="status-badge active">Active</span></td>
+                        <td class="actions">
+                            <button class="btn-icon edit" title="Edit"><i class="fas fa-edit"></i></button>
+                            <button class="btn-icon delete" title="Delete"><i class="fas fa-trash-alt"></i></button>
+                            <button class="btn-icon view" title="View"><i class="fas fa-eye"></i></button>
+                        </td>
+                    </tr>
+                    
+                    <!-- Sample Announcement 3 -->
+                    <tr>
+                        <td>Parking Rules</td>
+                        <td class="truncate">Reminder: Overnight street parking is not permitted. Violators will be towed at the owner's expense. Please use designated parking areas.</td>
+                        <td>Michael Brown</td>
+                        <td>April 28, 2023</td>
+                        <td>Ongoing</td>
+                        <td><span class="status-badge expired">Expired</span></td>
+                        <td class="actions">
+                            <button class="btn-icon edit" title="Edit"><i class="fas fa-edit"></i></button>
+                            <button class="btn-icon delete" title="Delete"><i class="fas fa-trash-alt"></i></button>
+                            <button class="btn-icon view" title="View"><i class="fas fa-eye"></i></button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        <div class="pagination">
+            <button class="page-btn disabled"><i class="fas fa-chevron-left"></i></button>
+            <button class="page-btn active">1</button>
+            <button class="page-btn">2</button>
+            <button class="page-btn">3</button>
+            <button class="page-btn"><i class="fas fa-chevron-right"></i></button>
+        </div>
+    </div>
+</div>
+
+<!-- Create/Edit Announcement Modal -->
+<div class="modal" id="createAnnouncementModal">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Create New Announcement</h5>
+                <button type="button" class="close" id="closeCreateModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="announcementForm">
+                    <div class="form-group">
+                        <label for="announcementTitle">Title</label>
+                        <input type="text" class="form-control" id="announcementTitle" placeholder="Enter announcement title" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="announcementContent">Content</label>
+                        <textarea class="form-control" id="announcementContent" rows="5" placeholder="Enter announcement content" required></textarea>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="announcementStartDate">Start Date</label>
+                                <input type="date" class="form-control" id="announcementStartDate" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="announcementEndDate">End Date</label>
+                                <input type="date" class="form-control" id="announcementEndDate">
+                                <small class="form-text text-muted">Leave blank for ongoing announcements</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="announcementPriority">Priority</label>
+                        <select class="form-control" id="announcementPriority">
+                            <option value="normal">Normal</option>
+                            <option value="high">High</option>
+                            <option value="urgent">Urgent</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="sendNotification">
+                            <label class="form-check-label" for="sendNotification">
+                                Send email notification to residents
+                            </label>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" id="cancelCreateAnnouncement">Cancel</button>
+                <button type="button" class="btn btn-primary" id="saveAnnouncement">Publish Announcement</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- View Announcement Modal -->
+<div class="modal" id="viewAnnouncementModal">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Announcement Details</h5>
+                <button type="button" class="close" id="closeViewModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <h4 id="viewAnnouncementTitle" class="mb-3">Community Meeting</h4>
+                <div class="announcement-meta mb-4">
+                    <span class="meta-item"><i class="fas fa-user"></i> <span id="viewAnnouncementAuthor">John Smith</span></span>
+                    <span class="meta-item"><i class="fas fa-calendar-alt"></i> Posted: <span id="viewAnnouncementDate">May 15, 2023</span></span>
+                    <span class="meta-item"><i class="fas fa-clock"></i> Expires: <span id="viewAnnouncementExpiry">May 30, 2023</span></span>
+                    <span class="meta-item"><i class="fas fa-bell"></i> Priority: <span id="viewAnnouncementPriority" class="badge badge-primary">Normal</span></span>
+                </div>
+                <div class="announcement-content" id="viewAnnouncementContent">
+                    <p>Monthly HOA meeting scheduled for next Tuesday at 7 PM in the clubhouse. Agenda items include:</p>
+                    <ul>
+                        <li>Budget review for Q2</li>
+                        <li>Landscaping proposals</li>
+                        <li>Community event planning</li>
+                        <li>Open forum for resident concerns</li>
+                    </ul>
+                    <p>All residents are encouraged to attend. Light refreshments will be served.</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" id="closeViewModalBtn">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="~/js/admin/announcements.js"></script>

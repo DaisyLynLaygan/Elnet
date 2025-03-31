@@ -30,15 +30,34 @@ namespace HomeOwner.Controllers
             }
 
             ViewBag.CurrentUser = user;
+            ViewBag.ActiveMenu = "Dashboard";
             return View();
         }
 
-        public IActionResult AdminLogin()
+        
+        public IActionResult Announcements()
         {
-            return View();
-        }
-        public IActionResult Announcements() => View("AdminAnnouncements");
+            var userJson = HttpContext.Session.GetString("CurrentUser");
+            
+            if (string.IsNullOrEmpty(userJson))
+            {
+                return RedirectToAction("Index", "Home");
+            }
 
+            var user = JsonConvert.DeserializeObject<User>(userJson);
+
+            if (user == null)
+            {
+                return RedirectToAction("Index", "Home");
+            }
+
+            ViewBag.CurrentUser = user;
+            ViewBag.ActiveMenu = "Announcements";
+            return View("AdminAnnouncements"); // if you want to keep the current view name
+            return View();
+
+        }
+    
         public IActionResult Documents() => View("AdminDocuments");
 
         public IActionResult Reservations() => View("AdminReservations");

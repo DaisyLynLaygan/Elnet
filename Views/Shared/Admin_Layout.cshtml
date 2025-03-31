@@ -1,5 +1,4 @@
-@model HomeOwner.Models.User
-
+@using HomeOwner.Models
 @{
     var user = ViewBag.CurrentUser as User;
 }
@@ -10,341 +9,283 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Admin Dashboard - HomeSphere</title>
-    <link rel="stylesheet" href="~/css/admin/dashboardadmin.css" />
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link rel="stylesheet" href="~/css/admin/admin_layout.css" />
+    @RenderSection("Styles", required: false)
 </head>
 <body>
-    <style>
-        /* Color Scheme */
-        :root {
-            --primary-brown: #4A3F35;
-            --secondary-brown: #6B5D4D;
-            --accent-brown: #A9927D;
-            --light-beige: #F4F1EA;
-            --dark-brown: #2E2720;
-            --accent: #D4A373;
-        }
-
-        /* Global Styles */
-        body {
-            background-color: var(--light-beige);
-            font-family: 'Segoe UI', system-ui, sans-serif;
-        }
-
-        /* Navbar */
-        .navbar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 8px 20px;
-            background-color: var(--light-beige);
-            color: white;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-
-        .logo {
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            font-size: 1.4rem;
-            font-weight: 600;
-            color: var(--primary-brown);
-        }
-
-            .logo img {
-                width: 65px;
-                height: 60px;
-                border-radius: 8px;
-            }
-
-            .logo span {
-                color: var(--accent);
-            }
-
-        /* Navigation Menu */
-        .nav-menu {
-            display: flex;
-            list-style: none;
-            align-items: center;
-            font-size: 16.5px;
-        }
-
-        .nav-item {
-            position: relative;
-            display: flex;
-            align-items: center;
-        }
-
-            .nav-item a {
-                color: #3E3E3E;
-                text-decoration: none;
-                border-radius: 8px;
-                transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-                font-weight: 500;
-                display: flex;
-                flex-wrap: wrap; /* Allows text to break into multiple lines */
-                justify-content: center;
-                align-items: center;
-                text-align: center;
-                max-width: 150px; /* Adjust this to control when words wrap */
-                white-space: normal; /* Allows text wrapping */
-                word-break: break-word; /* Ensures words break properly */
-                position: relative;
-            }
-
-                .nav-item a::before {
-                    content: '';
-                    position: absolute;
-                    bottom: -5px;
-                    left: 50%;
-                    width: 0;
-                    height: 2px;
-                    background: var(--accent-brown);
-                    transform: translateX(-50%);
-                    transition: width 0.3s ease;
-                }
-
-                .nav-item a:hover {
-                    background-color: rgba(169, 146, 125, 0.1);
-                    transform: translateY(-2px);
-                }
-
-                    .nav-item a:hover::before {
-                        width: 80%;
-                    }
-
-            /* Add bullets between navigation items */
-            .nav-item:not(:last-child)::after {
-                content: "•"; /* Unicode bullet */
-                color: var(--accent-brown);
-                font-size: 18px;
-                font-weight: bold;
-                margin-left: 10px;
-                margin-right: 10px;
-            }
-
-        /* User Profile - Enhanced */
-        .user-profile {
-            color: #3E3E3E;
-            position: relative;
-            display: flex;
-            align-items: center;
-            gap: 16px;
-            cursor: pointer;
-            padding: 8px 16px;
-            border-radius: 8px;
-            transition: all 0.3s ease;
-            background: rgba(255, 255, 255, 0.1);
-        }
-
-            .user-profile:hover {
-                background-color: rgba(169, 146, 125, 0.15);
-            }
-
-            .user-profile img {
-                width: 40px;
-                height: 40px;
-                border-radius: 50%;
-                border: 2px solid var(--light-beige);
-                transition: transform 0.3s ease;
-            }
-
-            .user-profile:hover img {
-                transform: scale(1.05);
-            }
-
-        /* Profile Dropdown - Enhanced */
-        .profile-dropdown {
-            position: absolute;
-            right: 0;
-            top: 120%;
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.12);
-            opacity: 0;
-            visibility: hidden;
-            transform: translateY(-10px);
-            transition: all 0.3s ease;
-            padding: 8px 0;
-            min-width: 200px;
-        }
-
-            .profile-dropdown.show {
-                opacity: 1;
-                visibility: visible;
-                transform: translateY(0);
-            }
-
-        .dropdown-link {
-            color: var(--dark-brown);
-            padding: 12px 20px;
-            text-decoration: none;
-            display: block;
-            transition: all 0.2s ease;
-            position: relative;
-        }
-
-            .dropdown-link:hover {
-                background: rgba(169, 146, 125, 0.08);
-                padding-left: 28px;
-            }
-
-            .dropdown-link::before {
-                content: '';
-                position: absolute;
-                left: 15px;
-                top: 50%;
-                transform: translateY(-50%);
-                width: 6px;
-                height: 6px;
-                background: var(--accent-brown);
-                border-radius: 50%;
-                opacity: 0;
-                transition: opacity 0.3s ease;
-            }
-
-            .dropdown-link:hover::before {
-                opacity: 1;
-            }
-
-        /* Dashboard Widgets */
-        .dashboard-widgets {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 25px;
-        }
-
-        .widget {
-            background-color: white;
-            padding: 25px;
-            border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-            transition: transform 0.3s ease;
-            border-left: 4px solid var(--accent-brown);
-        }
-
-            .widget:hover {
-                transform: translateY(-5px);
-            }
-
-            .widget h3 {
-                color: var(--dark-brown);
-                font-size: 1.3rem;
-                margin-bottom: 12px;
-                font-weight: 600;
-            }
-
-            .widget p {
-                color: #666;
-                line-height: 1.6;
-                margin-bottom: 20px;
-            }
-
-            .widget .btn {
-                display: inline-block;
-                padding: 10px 25px;
-                background-color: var(--accent-brown);
-                color: white;
-                text-decoration: none;
-                border-radius: 6px;
-                font-weight: 500;
-                transition: all 0.3s ease;
-            }
-
-                .widget .btn:hover {
-                    background-color: var(--secondary-brown);
-                    box-shadow: 0 3px 8px rgba(0,0,0,0.1);
-                }
-    </style>
-    <nav class="navbar">
-        <a style="text-decoration: none" class="logo" asp-controller="Admin" asp-action="Dashboard">
-            <img src="~/images/logo.png" alt="Company Logo">
-            Home<span>Sphere</span>
-        </a>
-        <ul class="nav-menu">
-            <li class="nav-item"><a asp-controller="Admin" asp-action="Dashboard" class="nav-link">Dashboard</a></li>
-            <li class="nav-item"><a asp-controller="Admin" asp-action="Announcements" class="nav-link">Announcements</a></li>
-            <li class="nav-item"><a asp-controller="Admin" asp-action="Documents" class="nav-link">Documents</a></li>
-            <li class="nav-item"><a asp-controller="Admin" asp-action="Reservations" class="nav-link">Facility Reservations</a></li>
-            <li class="nav-item"><a asp-controller="Admin" asp-action="Polls" class="nav-link">Poll Surveys</a></li>
-            <li class="nav-item"><a asp-controller="Admin" asp-action="Events" class="nav-link">Events</a></li>
-            <li class="nav-item"><a asp-controller="Admin" asp-action="Users" class="nav-link">Manage Users</a></li>
-            <li class="nav-item"><a asp-controller="Admin" asp-action="Feedback" class="nav-link">User Feedback</a></li>
-            <li class="nav-item"><a asp-controller="Admin" asp-action="ServiceRequests" class="nav-link">Service Requests</a></li>
-        </ul>
-        <div class="user-profile" onclick="toggleProfileDropdown()">
-            <span style="text-transform: capitalize;">@user?.firstname @user?.lastname</span>
-            <img src="~/images/admin-avatar.png" alt="Admin profile" />
-            <div class="profile-dropdown">
-                <a asp-controller="Admin" asp-action="Settings" class="dropdown-link">Settings</a>
-                <form asp-controller="Home" asp-action="LogOut" method="post" class="dropdown-link-form">
-                    <button type="submit" class="dropdown-link">Log Out</button>
-                </form>
+    <!-- Mobile Menu Button -->
+    <button class="mobile-menu-btn">
+        <i class="fas fa-bars"></i>
+    </button>
+    
+    <!-- Mobile Overlay -->
+    <div class="mobile-overlay"></div>
+    
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <a asp-controller="Admin" asp-action="Dashboard" class="logo">
+                    <img src="~/images/logo.png" alt="Company Logo">
+                    <span class="logo-text">Home<span>Sphere</span></span>
+                </a>
+                <button class="toggle-sidebar">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
             </div>
-        </div>
-    </nav>
-    <main>
-        <section class="admin-dashboard">
-            <h1 style="text-transform: capitalize;">Welcome, @user?.firstname @user?.lastname</h1>
-            <p>Manage your community efficiently.</p>
-            <div class="dashboard-widgets">
-                <div class="widget">
-                    <h3>Announcements</h3>
-                    <p>Post important updates.</p>
-                    <a asp-controller="Admin" asp-action="Announcements" class="btn">Manage</a>
-                </div>
-                <div class="widget">
-                    <h3>Documents</h3>
-                    <p>Upload and share documents.</p>
-                    <a asp-controller="Admin" asp-action="Documents" class="btn">Manage</a>
-                </div>
-                <div class="widget">
-                    <h3>Facility Reservations</h3>
-                    <p>Approve or reject requests.</p>
-                    <a asp-controller="Admin" asp-action="Reservations" class="btn">Manage</a>
-                </div>
-                <div class="widget">
-                    <h3>Poll Surveys</h3>
-                    <p>Create surveys for residents.</p>
-                    <a asp-controller="Admin" asp-action="Polls" class="btn">Manage</a>
-                </div>
-                <div class="widget">
-                    <h3>Events</h3>
-                    <p>Schedule and manage events.</p>
-                    <a asp-controller="Admin" asp-action="Events" class="btn">Manage</a>
-                </div>
-                <div class="widget">
-                    <h3>Manage Users</h3>
-                    <p>Add, update, or delete users.</p>
-                    <a asp-controller="Admin" asp-action="Users" class="btn">Manage</a>
-                </div>
-                <div class="widget">
-                    <h3>User Feedback</h3>
-                    <p>View submitted feedback.</p>
-                    <a asp-controller="Admin" asp-action="Feedback" class="btn">Manage</a>
-                </div>
-                <div class="widget">
-                    <h3>Service Requests</h3>
-                    <p>Manage homeowner service requests.</p>
-                    <a asp-controller="Admin" asp-action="ServiceRequests" class="btn">Manage</a>
+            
+            <ul class="nav-menu">
+                @{
+                    var currentAction = ViewContext.RouteData.Values["Action"]?.ToString();
+                    var currentController = ViewContext.RouteData.Values["Controller"]?.ToString();
+                }
+                
+                <!-- Dashboard -->
+                <li class="nav-item">
+                    <a asp-controller="Admin" asp-action="Dashboard" 
+                    class="nav-link @(currentAction == "Dashboard" ? "active" : "")">
+                        <i class="fas fa-tachometer-alt nav-icon"></i>
+                        <span class="nav-text">Dashboard</span>
+                    </a>
+                </li>
+                
+                <!-- Announcements -->
+                <li class="nav-item">
+                    <a asp-controller="Admin" asp-action="Announcements" 
+                    class="nav-link @(currentAction == "Announcements" ? "active" : "")">
+                        <i class="fas fa-bullhorn nav-icon"></i>
+                        <span class="nav-text">Announcements</span>
+                    </a>
+                </li>
+                
+                <!-- Documents -->
+                <li class="nav-item">
+                    <a asp-controller="Admin" asp-action="Documents" 
+                    class="nav-link @(currentAction == "Documents" ? "active" : "")">
+                        <i class="fas fa-file-alt nav-icon"></i>
+                        <span class="nav-text">Documents</span>
+                    </a>
+                </li>
+                
+                <!-- Reservations -->
+                <li class="nav-item">
+                    <a asp-controller="Admin" asp-action="Reservations" 
+                    class="nav-link @(currentAction == "Reservations" ? "active" : "")">
+                        <i class="fas fa-calendar-check nav-icon"></i>
+                        <span class="nav-text">Reservations</span>
+                    </a>
+                </li>
+                
+                <!-- Polls -->
+                <li class="nav-item">
+                    <a asp-controller="Admin" asp-action="Polls" 
+                    class="nav-link @(currentAction == "Polls" ? "active" : "")">
+                        <i class="fas fa-poll nav-icon"></i>
+                        <span class="nav-text">Poll Surveys</span>
+                    </a>
+                </li>
+                
+                <!-- Events -->
+                <li class="nav-item">
+                    <a asp-controller="Admin" asp-action="Events" 
+                    class="nav-link @(currentAction == "Events" ? "active" : "")">
+                        <i class="fas fa-calendar-alt nav-icon"></i>
+                        <span class="nav-text">Events</span>
+                    </a>
+                </li>
+                
+                <!-- User Management Section -->
+                <li class="nav-item @(new[] {"Users", "Feedback"}.Contains(currentAction) ? "open" : "")">
+                    <div class="nav-link @(new[] {"Users", "Feedback"}.Contains(currentAction) ? "active" : "")">
+                        <i class="fas fa-users nav-icon"></i>
+                        <span class="nav-text">User Management</span>
+                        <i class="fas fa-chevron-right dropdown-arrow"></i>
+                    </div>
+                    <ul class="submenu">
+                        <li class="submenu-item">
+                            <a asp-controller="Admin" asp-action="Users" 
+                            class="submenu-link @(currentAction == "Users" ? "active" : "")">
+                                <i class="fas fa-user-cog submenu-icon"></i>
+                                <span>Manage Users</span>
+                            </a>
+                        </li>
+                        <li class="submenu-item">
+                            <a asp-controller="Admin" asp-action="Feedback" 
+                            class="submenu-link @(currentAction == "Feedback" ? "active" : "")">
+                                <i class="fas fa-comment-alt submenu-icon"></i>
+                                <span>User Feedback</span>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+                
+                <!-- Services Section -->
+                <li class="nav-item @(currentAction == "ServiceRequests" ? "open" : "")">
+                    <div class="nav-link @(currentAction == "ServiceRequests" ? "active" : "")">
+                        <i class="fas fa-tools nav-icon"></i>
+                        <span class="nav-text">Services</span>
+                        <i class="fas fa-chevron-right dropdown-arrow"></i>
+                    </div>
+                    <ul class="submenu">
+                        <li class="submenu-item">
+                            <a asp-controller="Admin" asp-action="ServiceRequests" 
+                            class="submenu-link @(currentAction == "ServiceRequests" ? "active" : "")">
+                                <i class="fas fa-clipboard-list submenu-icon"></i>
+                                <span>Service Requests</span>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+                
+                <!-- Settings -->
+                <li class="nav-item">
+                    <a asp-controller="Admin" asp-action="Settings" 
+                    class="nav-link @(currentAction == "Settings" ? "active" : "")">
+                        <i class="fas fa-cog nav-icon"></i>
+                        <span class="nav-text">Settings</span>
+                    </a>
+                </li>
+            </ul>
+            
+        </aside>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Top Navigation -->
+        <nav class="top-nav">
+            <div class="d-flex align-items-center">
+                <div class="page-title">
+                    <h1 class="capitalize">@ViewData["Title"]</h1>
+                    <p>@ViewData["Subtitle"]</p>
                 </div>
             </div>
-        </section>
+            
+            <div class="user-profile">
+                <div class="profile-info">
+                    <p class="profile-name capitalize">@user?.firstname @user?.lastname</p>
+                    <p class="profile-role">Administrator</p>
+                </div>
+                <img src="~/images/adminlogo.png" alt="Admin profile" class="profile-img" />
+                <div class="profile-dropdown">
+                    <a asp-controller="Admin" asp-action="Settings" class="dropdown-item">
+                        <i class="fas fa-cog"></i> Settings
+                    </a>
+                    <div class="dropdown-divider"></div>
+                    <form asp-controller="Home" asp-action="LogOut" method="post" class="dropdown-item-form">
+                        <button type="submit" class="dropdown-item" style="background: none; border: none; width: 100%; text-align: left;">
+                            <i class="fas fa-sign-out-alt"></i> Log Out
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </nav>
+        
+        <!-- Main Content Area -->
         @RenderBody()
-    </main>
-    <script>
-        function toggleProfileDropdown() {
-            const dropdown = document.querySelector('.profile-dropdown');
-            dropdown.classList.toggle('show');
+    </div>
+    <script src="~/js/admin/admin_layout.js"></script>
 
-            // Close dropdown when clicking outside
-            document.addEventListener('click', function closeDropdown(e) {
-                if (!e.target.closest('.user-profile')) {
-                    dropdown.classList.remove('show');
-                    document.removeEventListener('click', closeDropdown);
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Toggle sidebar
+    const toggleSidebar = document.querySelector('.toggle-sidebar');
+    if (toggleSidebar) {
+        toggleSidebar.addEventListener('click', function() {
+            const sidebar = document.querySelector('.sidebar');
+            sidebar.classList.toggle('collapsed');
+            
+            // Toggle icon between chevron left and right
+            const icon = this.querySelector('i');
+            if (sidebar.classList.contains('collapsed')) {
+                icon.classList.remove('fa-chevron-left');
+                icon.classList.add('fa-chevron-right');
+            } else {
+                icon.classList.remove('fa-chevron-right');
+                icon.classList.add('fa-chevron-left');
+            }
+        });
+    }
+    
+    // Rest of your existing code...
+    // Toggle mobile sidebar
+    document.querySelector('.mobile-menu-btn').addEventListener('click', function() {
+        document.querySelector('.sidebar').classList.add('show');
+        document.querySelector('.mobile-overlay').classList.add('show');
+        document.body.style.overflow = 'hidden';
+    });
+    
+    // Close mobile sidebar when clicking outside
+    document.querySelector('.mobile-overlay').addEventListener('click', function() {
+        document.querySelector('.sidebar').classList.remove('show');
+        this.classList.remove('show');
+        document.body.style.overflow = '';
+    });
+    
+    // Toggle dropdown menus
+    const navItems = document.querySelectorAll('.nav-item');
+    navItems.forEach(item => {
+        if (item.querySelector('.submenu')) {
+            const navLink = item.querySelector('.nav-link');
+            
+            // Handle click on nav link (for mobile)
+            navLink.addEventListener('click', function(e) {
+                if (window.innerWidth < 992) {
+                    e.preventDefault();
+                    item.classList.toggle('open');
+                }
+            });
+            
+            // Handle hover (for desktop)
+            item.addEventListener('mouseenter', function() {
+                if (window.innerWidth >= 992) {
+                    item.classList.add('open');
+                }
+            });
+            
+            item.addEventListener('mouseleave', function() {
+                if (window.innerWidth >= 992) {
+                    item.classList.remove('open');
                 }
             });
         }
+    });
+    
+    // Toggle profile dropdown
+    document.querySelector('.user-profile').addEventListener('click', function(e) {
+        e.stopPropagation();
+        const dropdown = document.querySelector('.profile-dropdown');
+        dropdown.classList.toggle('show');
+    });
+    
+    // Close dropdown when clicking outside
+    document.addEventListener('click', function() {
+        document.querySelector('.profile-dropdown').classList.remove('show');
+    });
+    
+    // Handle window resize
+    function handleResize() {
+        const sidebar = document.querySelector('.sidebar');
+        const overlay = document.querySelector('.mobile-overlay');
+        
+        if (window.innerWidth >= 992) {
+            sidebar.classList.remove('show');
+            overlay.classList.remove('show');
+            document.body.style.overflow = '';
+        }
+    }
+    
+    window.addEventListener('resize', handleResize);
+    
+    // Initialize
+    document.addEventListener('DOMContentLoaded', function() {
+        // Close mobile sidebar by default
+        if (window.innerWidth < 992) {
+            document.querySelector('.sidebar').classList.remove('show');
+            document.querySelector('.mobile-overlay').classList.remove('show');
+        }
+    });
+});
     </script>
 </body>
 </html>

@@ -66,22 +66,22 @@ namespace HomeOwner.Controllers
         }
         public IActionResult Feedback()
         {
-            
+            ViewContents();
             return View();
         }
         public IActionResult Community()
         {
-           
+           ViewContents();
             return View();
         }
         public IActionResult Payment()
         {
-           
+           ViewContents();
             return View();
         }
         public IActionResult History()
         {
-            
+            ViewContents();
             return View();
         }
         public IActionResult UserProfile()

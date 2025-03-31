@@ -1,6 +1,198 @@
 ﻿@{
     Layout = "~/Views/Shared/Admin_Layout.cshtml";
+    ViewData["Title"] = "Admin Dashboard";
+    ViewData["Subtitle"] = "Community Management Overview";
 }
-<section class="admin-section">
+
+<link rel="stylesheet" href="~/css/admin/dashboard.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.css" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+
+<div class="dashboard-container">
+    <!-- Stats Overview -->
+    <div class="stats-section">
+        <div class="section-header">
+            <h2>Community Overview</h2>
+            <div class="period-selector">
+                <div class="custom-select">
+                    <select class="period-select">
+                        <option value="7d">Last 7 Days</option>
+                        <option value="30d" selected>Last 30 Days</option>
+                        <option value="90d">Last 90 Days</option>
+                    </select>
+                    <div class="select-arrow">
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="stats-grid">
+            <!-- Online Users -->
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div class="stat-content">
+                    <h3>Currently Online</h3>
+                    <div class="stat-value">1,248</div>
+                    <div class="stat-change positive">+12% from last month</div>
+                </div>
+            </div>
+            
+            <!-- Staff Members -->
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-user-tie"></i>
+                </div>
+                <div class="stat-content">
+                    <h3>Total Staff Members</h3>
+                    <div class="stat-value">42</div>
+                    <div class="stat-change positive">+2 new hires</div>
+                </div>
+            </div>
+            
+            <!-- Total Homeowners -->
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-home"></i>
+                </div>
+                <div class="stat-content">
+                    <h3>Total Homeowners</h3>
+                    <div class="stat-value">856</div>
+                    <div class="stat-change">98% occupancy</div>
+                </div>
+            </div>
+        </div>
+    </div>
     
-</section>
+    <!-- Charts Section -->
+    <div class="charts-section">
+        <div class="chart-row">
+            <!-- Service Requests Chart -->
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h3>Service Requests</h3>
+                    <div class="custom-select">
+                        <select class="chart-period" id="serviceRequestPeriod">
+                            <option value="week" selected>This Week</option>
+                            <option value="month">This Month</option>
+                            <option value="year">This Year</option>
+                        </select>
+                        <div class="select-arrow">
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="serviceRequestsChart"></canvas>
+                </div>
+            </div>
+            
+            <!-- Facility Ratings Chart -->
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h3>Facility Ratings</h3>
+                    <div class="custom-select">
+                        <select class="chart-period">
+                            <option value="current" selected>Current</option>
+                            <option value="trend">Trend</option>
+                        </select>
+                        <div class="select-arrow">
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="facilityRatingsChart"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Polls Progress -->
+        <div class="chart-card">
+            <div class="chart-header">
+                <h3>Monthly Survey Participation</h3>
+                <div class="month-indicator">
+                    <span id="currentMonth">March 2023</span>
+                </div>
+            </div>
+            <div class="polls-progress">
+                <div class="polls-stats">
+                    <div class="total-polls">
+                        <div class="stat-label">Total Homeowners</div>
+                        <div class="stat-value">856</div>
+                    </div>
+                    <div class="completed-polls">
+                        <div class="stat-label">Completed Surveys</div>
+                        <div class="stat-value">617 <span class="positive">(72%)</span></div>
+                    </div>
+                    <div class="remaining-polls">
+                        <div class="stat-label">Remaining</div>
+                        <div class="stat-value">239 <span class="negative">(28%)</span></div>
+                    </div>
+                </div>
+                <div class="progress-meter">
+                    <div class="meter-labels">
+                        <span>0%</span>
+                        <span>100%</span>
+                    </div>
+                    <div class="meter-bar">
+                        <div class="meter-fill" style="width: 72%"></div>
+                    </div>
+                    <div class="meter-percentage">72% Participation</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Recent Activity -->
+    <div class="activity-section">
+        <div class="section-header">
+            <h2>Recent Survey Submissions</h2>
+            <a href="@Url.Action("Polls", "Admin")" class="view-all">View All</a>
+        </div>
+        
+        <div class="activity-list">
+            <a href="@Url.Action("PollDetails", "Admin", new { id = 1 })" class="activity-link">
+                <div class="activity-item">
+                    <div class="activity-icon">
+                        <i class="fas fa-poll"></i>
+                    </div>
+                    <div class="activity-content">
+                        <p><strong>John Smith</strong> submitted a survey</p>
+                        <div class="activity-time">2 hours ago</div>
+                    </div>
+                </div>
+            </a>
+            
+            <a href="@Url.Action("PollDetails", "Admin", new { id = 2 })" class="activity-link">
+                <div class="activity-item">
+                    <div class="activity-icon">
+                        <i class="fas fa-poll"></i>
+                    </div>
+                    <div class="activity-content">
+                        <p><strong>Sarah Johnson</strong> submitted a survey</p>
+                        <div class="activity-time">1 day ago</div>
+                    </div>
+                </div>
+            </a>
+            
+            <a href="@Url.Action("PollDetails", "Admin", new { id = 3 })" class="activity-link">
+                <div class="activity-item">
+                    <div class="activity-icon">
+                        <i class="fas fa-poll"></i>
+                    </div>
+                    <div class="activity-content">
+                        <p><strong>Michael Brown</strong> submitted a survey</p>
+                        <div class="activity-time">2 days ago</div>
+                    </div>
+                </div>
+            </a>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/moment@2.29.1/moment.min.js"></script>
+<script src="~/js/admin/dashboard.js" asp-append-version="true"></script>
