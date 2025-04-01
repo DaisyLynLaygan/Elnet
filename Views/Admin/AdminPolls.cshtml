@@ -3,3 +3,190 @@
     ViewData["Title"] = "Polls";
     ViewData["Subtitle"] = "Manage Community Polls";
 }
+
+<link rel="stylesheet" href="~/css/admin/polls.css" />
+
+<div class="polls-admin-container">
+    <div class="polls-header">
+        <button id="createPollBtn" class="btn-primary">+ Create New Poll</button>
+    </div>
+
+    <div class="polls-grid-container">
+        <!-- Active Polls Section -->
+        <div class="section active-polls">
+            <h2>Active Polls</h2>
+            <div class="polls-grid">
+                <div class="poll-card">
+                    <div class="poll-header">
+                        <h3>Community Garden Improvements</h3>
+                        <span class="badge active">Active</span>
+                    </div>
+                    <p class="poll-desc">Share your ideas for improving our community garden space</p>
+                    <div class="poll-meta">
+                        <span>Ends: May 31, 2023</span>
+                        <span>Responses: 42</span>
+                    </div>
+                    <div class="poll-actions">
+                        <button class="btn-secondary">View Results</button>
+                        <button class="btn-text">Edit</button>
+                    </div>
+                </div>
+
+                <div class="poll-card">
+                    <div class="poll-header">
+                        <h3>Summer Event Planning</h3>
+                        <span class="badge active">Active</span>
+                    </div>
+                    <p class="poll-desc">Help us plan our summer community events</p>
+                    <div class="poll-meta">
+                        <span>Ends: June 15, 2023</span>
+                        <span>Responses: 28</span>
+                    </div>
+                    <div class="poll-actions">
+                        <button class="btn-secondary">View Results</button>
+                        <button class="btn-text">Edit</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Past Polls Section -->
+        <div class="section past-polls">
+            <h2>Past Polls</h2>
+            <div class="polls-grid">
+                <div class="poll-card">
+                    <div class="poll-header">
+                        <h3>Park Renovation Ideas</h3>
+                        <span class="badge inactive">Completed</span>
+                    </div>
+                    <p class="poll-desc">What features would you like to see in our park renovation?</p>
+                    <div class="poll-meta">
+                        <span>Ended: Apr 15, 2023</span>
+                        <span>Responses: 87</span>
+                    </div>
+                    <div class="poll-actions">
+                        <button class="btn-secondary">View Results</button>
+                    </div>
+                </div>
+
+                <div class="poll-card">
+                    <div class="poll-header">
+                        <h3>Winter Festival Activities</h3>
+                        <span class="badge inactive">Completed</span>
+                    </div>
+                    <p class="poll-desc">Which activities would you like at our winter festival?</p>
+                    <div class="poll-meta">
+                        <span>Ended: Dec 10, 2022</span>
+                        <span>Responses: 64</span>
+                    </div>
+                    <div class="poll-actions">
+                        <button class="btn-secondary">View Results</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Create Poll Modal -->
+<div id="createPollModal" class="modal">
+    <div class="modal-content-container">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Create New Poll</h3>
+                <span class="close">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="pollForm">
+                    <div class="form-group">
+                        <label for="pollTitle">Poll Title</label>
+                        <input type="text" id="pollTitle" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="pollDescription">Description</label>
+                        <textarea id="pollDescription" rows="3"></textarea>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="startDate">Start Date</label>
+                            <input type="date" id="startDate" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="endDate">End Date</label>
+                            <input type="date" id="endDate" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="isMonthly"> Monthly recurring poll
+                        </label>
+                    </div>
+                    
+                    <div id="questionsContainer">
+                        <div class="question-item">
+                            <div class="question-header">
+                                <label>Question 1</label>
+                                <button type="button" class="btn-text remove-question">Remove</button>
+                            </div>
+                            <input type="text" class="question-text" placeholder="Enter question" required>
+                            <div class="options-container">
+                                <div class="option-item">
+                                    <input type="text" placeholder="Option 1" required>
+                                    <button type="button" class="btn-icon remove-option">×</button>
+                                </div>
+                                <div class="option-item">
+                                    <input type="text" placeholder="Option 2" required>
+                                    <button type="button" class="btn-icon remove-option">×</button>
+                                </div>
+                            </div>
+                            <button type="button" class="btn-text add-option">+ Add Option</button>
+                        </div>
+                    </div>
+                    
+                    <button type="button" id="addQuestionBtn" class="btn-text">+ Add Another Question</button>
+                    
+                    <div class="modal-footer">
+                        <button type="button" class="btn-secondary" id="cancelPollBtn">Cancel</button>
+                        <button type="submit" class="btn-primary">Create Poll</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Results Modal -->
+<div id="resultsModal" class="modal">
+    <div class="modal-content-container wide">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Poll Results: <span id="resultsPollTitle"></span></h3>
+                <span class="close">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div id="resultsContainer">
+                    <div class="result-item">
+                        <h4>1. What feature would you like to see in our park renovation?</h4>
+                        <div class="result-chart">
+                            <div class="chart-bar" style="width: 70%">Playground Equipment (70%)</div>
+                            <div class="chart-bar" style="width: 45%">Walking Trails (45%)</div>
+                            <div class="chart-bar" style="width: 30%">Picnic Areas (30%)</div>
+                            <div class="chart-bar" style="width: 25%">Dog Park (25%)</div>
+                        </div>
+                    </div>
+                    <div class="result-item">
+                        <h4>2. How often do you use the community park?</h4>
+                        <div class="result-chart">
+                            <div class="chart-bar" style="width: 50%">Weekly (50%)</div>
+                            <div class="chart-bar" style="width: 30%">Monthly (30%)</div>
+                            <div class="chart-bar" style="width: 15%">Rarely (15%)</div>
+                            <div class="chart-bar" style="width: 5%">Never (5%)</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="~/js/admin/polls.js"></script>

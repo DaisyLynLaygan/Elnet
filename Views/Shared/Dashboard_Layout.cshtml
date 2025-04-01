@@ -12,6 +12,271 @@
     <link rel="stylesheet" href="~/css/homeowners/dashboardhomeowners.css"/>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
 </head>
+<style>
+    /* Survey Modal Styles */
+.modal {
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-content {
+    background-color: #fff;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 600px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+    overflow: hidden;
+}
+
+.modal-header {
+    padding: 20px;
+    background-color: #6D4C41;
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-header h3 {
+    margin: 0;
+    font-size: 1.5rem;
+}
+
+.close {
+    font-size: 1.8rem;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.close:hover {
+    transform: scale(1.1);
+}
+
+.modal-body {
+    padding: 20px;
+}
+
+.survey-intro {
+    margin-bottom: 20px;
+    padding: 15px;
+    background-color: #f8f8f8;
+    border-radius: 8px;
+    border-left: 4px solid #6D4C41;
+}
+
+.survey-intro p {
+    margin: 0;
+    color: #555;
+}
+
+/* Progress Bar */
+.progress-container {
+    margin-bottom: 25px;
+}
+
+.progress-bar {
+    height: 8px;
+    background-color: #f0f0f0;
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 8px;
+}
+
+.progress-fill {
+    height: 100%;
+    background-color: #6D4C41;
+    width: 0%;
+    transition: width 0.3s ease;
+    border-radius: 4px;
+}
+
+.progress-text {
+    font-size: 0.9rem;
+    color: #666;
+    display: block;
+    text-align: center;
+}
+
+/* Survey Questions */
+.survey-question {
+    margin-bottom: 25px;
+    animation: fadeIn 0.3s ease;
+}
+
+@@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.survey-question h4 {
+    margin-bottom: 15px;
+    color: #333;
+    font-size: 1.1rem;
+}
+
+/* Question Options */
+.option-radio {
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+}
+
+.option-radio input[type="radio"],
+.option-radio input[type="checkbox"] {
+    margin-right: 12px;
+    width: 18px;
+    height: 18px;
+}
+
+.option-radio label {
+    cursor: pointer;
+    color: #444;
+    flex: 1;
+}
+
+/* Text Answer */
+.text-answer {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 1rem;
+    resize: vertical;
+    min-height: 100px;
+}
+
+.text-answer:focus {
+    outline: none;
+    border-color: #6D4C41;
+    box-shadow: 0 0 0 2px rgba(109, 76, 65, 0.2);
+}
+
+/* Range Slider */
+.range-container {
+    margin: 20px 0;
+}
+
+.range-slider {
+    width: 100%;
+    margin: 15px 0;
+    -webkit-appearance: none;
+    height: 8px;
+    border-radius: 4px;
+    background: #ddd;
+    outline: none;
+}
+
+.range-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #6D4C41;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.range-slider::-webkit-slider-thumb:hover {
+    transform: scale(1.1);
+}
+
+.range-value {
+    text-align: center;
+    font-size: 1.2rem;
+    color: #6D4C41;
+    font-weight: bold;
+    margin-top: 5px;
+}
+
+/* Navigation Buttons */
+.survey-nav {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 1px solid #eee;
+}
+
+.btn-primary {
+    background-color: #6D4C41;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s;
+}
+
+.btn-primary:hover {
+    background-color: #5a3f36;
+    transform: translateY(-1px);
+}
+
+.btn-primary:active {
+    transform: translateY(0);
+}
+
+.btn-outline {
+    background-color: transparent;
+    color: #6D4C41;
+    border: 1px solid #6D4C41;
+    padding: 10px 20px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s;
+}
+
+.btn-outline:hover {
+    background-color: rgba(109, 76, 65, 0.1);
+    transform: translateY(-1px);
+}
+
+.btn-outline:active {
+    transform: translateY(0);
+}
+
+.btn-outline:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* Responsive Adjustments */
+@@media (max-width: 480px) {
+    .modal-content {
+        width: 95%;
+    }
+    
+    .survey-nav {
+        flex-direction: column-reverse;
+        gap: 10px;
+    }
+    
+    .btn-primary, .btn-outline {
+        width: 100%;
+        justify-content: center;
+    }
+}
+</style>
 <body>
 <nav class="navbar">
     <!-- Logo -->
@@ -72,6 +337,47 @@
     </main>
 </div>
 
+<!-- Survey Modal - Add this to your layout file -->
+<div id="surveyModal" class="modal" style="display: none;">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Community Survey</h3>
+            <span class="close">&times;</span>
+        </div>
+        <div class="modal-body">
+            <div class="survey-intro">
+                <p>We value your feedback! Please take a moment to complete this short survey about our community.</p>
+            </div>
+            
+            <div id="surveyProgress">
+                <div class="progress-container">
+                    <div class="progress-bar">
+                        <div class="progress-fill"></div>
+                    </div>
+                    <span class="progress-text">Question <span id="currentQuestionNum">1</span> of <span id="totalQuestions">5</span></span>
+                </div>
+            </div>
+            
+            <form id="surveyForm">
+                <div id="surveyQuestionsContainer">
+                    <!-- Questions will be loaded here dynamically -->
+                </div>
+                
+                <div class="survey-nav">
+                    <button type="button" id="prevQuestion" class="btn-outline" disabled>
+                        <i class="fas fa-chevron-left"></i> Previous
+                    </button>
+                    <button type="button" id="nextQuestion" class="btn-primary">
+                        Next <i class="fas fa-chevron-right"></i>
+                    </button>
+                    <button type="submit" id="submitSurvey" class="btn-primary" style="display: none;">
+                        Submit Survey <i class="fas fa-check"></i>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 
 <script src="~/lib/jquery/dist/jquery.min.js"></script>
 <script src="https://unpkg.com/swiper/swiper-bundle.min.js"></script>
@@ -215,6 +521,279 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 });
+
+// Survey functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const surveyModal = document.getElementById('surveyModal');
+    const closeButton = surveyModal.querySelector('.close');
+    const surveyForm = document.getElementById('surveyForm');
+    const questionsContainer = document.getElementById('surveyQuestionsContainer');
+    const prevQuestionBtn = document.getElementById('prevQuestion');
+    const nextQuestionBtn = document.getElementById('nextQuestion');
+    const submitSurveyBtn = document.getElementById('submitSurvey');
+    const progressFill = document.querySelector('.progress-fill');
+    const currentQuestionNum = document.getElementById('currentQuestionNum');
+    const totalQuestions = document.getElementById('totalQuestions');
+    
+    // Sample survey questions (in a real app, these would come from the server)
+    const surveyQuestions = [
+        {
+            id: 1,
+            text: "How satisfied are you with the current community amenities?",
+            type: "radio",
+            options: ["Very satisfied", "Satisfied", "Neutral", "Dissatisfied", "Very dissatisfied"]
+        },
+        {
+            id: 2,
+            text: "Which of these improvements would you like to see in our community? (Select all that apply)",
+            type: "checkbox",
+            options: ["Better playground equipment", "More green spaces", "Improved parking", "Community center", "Walking trails"]
+        },
+        {
+            id: 3,
+            text: "How often do you attend community events?",
+            type: "radio",
+            options: ["Regularly", "Occasionally", "Rarely", "Never"]
+        },
+        {
+            id: 4,
+            text: "What additional services would you like the HOA to provide?",
+            type: "text",
+            placeholder: "Enter your suggestions..."
+        },
+        {
+            id: 5,
+            text: "On a scale of 1-10, how would you rate your overall experience living in this community?",
+            type: "range",
+            min: 1,
+            max: 10
+        }
+    ];
+    
+    let currentQuestionIndex = 0;
+    let answers = {};
+    
+    // Set total questions count
+    totalQuestions.textContent = surveyQuestions.length;
+    
+    // Function to show survey modal (call this after transactions)
+    window.showSurveyModal = function() {
+        // Check if user has already completed this survey
+        const hasCompleted = localStorage.getItem('currentSurveyCompleted');
+        if (!hasCompleted) {
+            surveyModal.style.display = 'flex';
+            loadQuestion(currentQuestionIndex);
+        }
+    }
+    
+    // For testing - you can call showSurveyModal() when needed
+    // setTimeout(showSurveyModal, 1000);
+    
+    // Close modal
+    closeButton.addEventListener('click', function() {
+        surveyModal.style.display = 'none';
+        saveCurrentAnswer(); // Save progress if user closes
+    });
+    
+    // Close when clicking outside
+    window.addEventListener('click', function(event) {
+        if (event.target === surveyModal) {
+            surveyModal.style.display = 'none';
+            saveCurrentAnswer(); // Save progress if user closes
+        }
+    });
+    
+    // Load a question by index
+    function loadQuestion(index) {
+        const question = surveyQuestions[index];
+        questionsContainer.innerHTML = '';
+        
+        // Update progress
+        const progressPercent = ((index + 1) / surveyQuestions.length) * 100;
+        progressFill.style.width = `${progressPercent}%`;
+        currentQuestionNum.textContent = index + 1;
+        
+        // Create question element
+        const questionElement = document.createElement('div');
+        questionElement.className = 'survey-question';
+        questionElement.dataset.questionId = question.id;
+        
+        // Add question text
+        const questionText = document.createElement('h4');
+        questionText.textContent = question.text;
+        questionElement.appendChild(questionText);
+        
+        // Add input based on question type
+        if (question.type === 'radio') {
+            question.options.forEach((option, i) => {
+                const optionId = `q${question.id}_opt${i}`;
+                const optionContainer = document.createElement('div');
+                optionContainer.className = 'option-radio';
+                
+                const input = document.createElement('input');
+                input.type = 'radio';
+                input.name = `q${question.id}`;
+                input.id = optionId;
+                input.value = option;
+                
+                // Check if this option was previously selected
+                if (answers[question.id] === option) {
+                    input.checked = true;
+                }
+                
+                const label = document.createElement('label');
+                label.htmlFor = optionId;
+                label.textContent = option;
+                
+                optionContainer.appendChild(input);
+                optionContainer.appendChild(label);
+                questionElement.appendChild(optionContainer);
+            });
+        } else if (question.type === 'checkbox') {
+            question.options.forEach((option, i) => {
+                const optionId = `q${question.id}_opt${i}`;
+                const optionContainer = document.createElement('div');
+                optionContainer.className = 'option-radio';
+                
+                const input = document.createElement('input');
+                input.type = 'checkbox';
+                input.name = `q${question.id}`;
+                input.id = optionId;
+                input.value = option;
+                
+                // Check if this option was previously selected
+                if (answers[question.id] && answers[question.id].includes(option)) {
+                    input.checked = true;
+                }
+                
+                const label = document.createElement('label');
+                label.htmlFor = optionId;
+                label.textContent = option;
+                
+                optionContainer.appendChild(input);
+                optionContainer.appendChild(label);
+                questionElement.appendChild(optionContainer);
+            });
+        } else if (question.type === 'text') {
+            const input = document.createElement('textarea');
+            input.className = 'text-answer';
+            input.name = `q${question.id}`;
+            input.placeholder = question.placeholder || 'Enter your answer...';
+            
+            // Set previous answer if exists
+            if (answers[question.id]) {
+                input.value = answers[question.id];
+            }
+            
+            questionElement.appendChild(input);
+        } else if (question.type === 'range') {
+            const rangeContainer = document.createElement('div');
+            rangeContainer.className = 'range-container';
+            
+            const input = document.createElement('input');
+            input.type = 'range';
+            input.className = 'range-slider';
+            input.name = `q${question.id}`;
+            input.min = question.min;
+            input.max = question.max;
+            input.value = answers[question.id] || Math.floor((question.max - question.min) / 2) + question.min;
+            
+            const valueDisplay = document.createElement('div');
+            valueDisplay.className = 'range-value';
+            valueDisplay.textContent = input.value;
+            
+            input.addEventListener('input', function() {
+                valueDisplay.textContent = this.value;
+            });
+            
+            rangeContainer.appendChild(input);
+            rangeContainer.appendChild(valueDisplay);
+            questionElement.appendChild(rangeContainer);
+        }
+        
+        questionsContainer.appendChild(questionElement);
+        
+        // Update navigation buttons
+        prevQuestionBtn.disabled = index === 0;
+        nextQuestionBtn.style.display = index === surveyQuestions.length - 1 ? 'none' : 'block';
+        submitSurveyBtn.style.display = index === surveyQuestions.length - 1 ? 'block' : 'none';
+    }
+    
+    // Save answer for current question
+    function saveCurrentAnswer() {
+        const question = surveyQuestions[currentQuestionIndex];
+        const questionElement = questionsContainer.querySelector('.survey-question');
+        
+        if (!questionElement) return;
+        
+        if (question.type === 'radio') {
+            const selectedOption = questionElement.querySelector(`input[name="q${question.id}"]:checked`);
+            answers[question.id] = selectedOption ? selectedOption.value : null;
+        } else if (question.type === 'checkbox') {
+            const selectedOptions = questionElement.querySelectorAll(`input[name="q${question.id}"]:checked`);
+            answers[question.id] = Array.from(selectedOptions).map(opt => opt.value);
+        } else {
+            const input = questionElement.querySelector(`input[name="q${question.id}"], textarea[name="q${question.id}"]`);
+            if (input) {
+                answers[question.id] = input.value;
+            }
+        }
+    }
+    
+    // Navigation between questions
+    nextQuestionBtn.addEventListener('click', function() {
+        saveCurrentAnswer();
+        currentQuestionIndex++;
+        loadQuestion(currentQuestionIndex);
+    });
+    
+    prevQuestionBtn.addEventListener('click', function() {
+        saveCurrentAnswer();
+        currentQuestionIndex--;
+        loadQuestion(currentQuestionIndex);
+    });
+    
+    // Form submission
+    surveyForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        saveCurrentAnswer();
+        
+        // Here you would typically send the answers to the server
+        console.log('Survey answers:', answers);
+        
+        // Mark survey as completed
+        localStorage.setItem('currentSurveyCompleted', 'true');
+        
+        // Close modal and show thank you message
+        surveyModal.style.display = 'none';
+        
+        // Show thank you message (you can customize this)
+        const thankYouMessage = document.createElement('div');
+        thankYouMessage.className = 'thank-you-message';
+        thankYouMessage.innerHTML = `
+            <div class="thank-you-content">
+                <i class="fas fa-check-circle" style="font-size: 3rem; color: #4CAF50; margin-bottom: 1rem;"></i>
+                <h3>Thank You!</h3>
+                <p>Your feedback has been submitted successfully.</p>
+                <p>We appreciate your time and valuable input.</p>
+            </div>
+        `;
+        
+        document.body.appendChild(thankYouMessage);
+        
+        setTimeout(() => {
+            thankYouMessage.style.opacity = '1';
+        }, 10);
+        
+        setTimeout(() => {
+            thankYouMessage.style.opacity = '0';
+            setTimeout(() => {
+                document.body.removeChild(thankYouMessage);
+            }, 300);
+        }, 3000);
+    });
+});
+
 </script>
 </body>
 </html>
