@@ -89,5 +89,11 @@ namespace HomeOwner.Controllers
             ViewContents();
             return View();
         }
+
+       public IActionResult Events()
+        {
+            ViewContents();
+            return View();
+        }
     }
 }
