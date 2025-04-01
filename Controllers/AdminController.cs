@@ -33,6 +33,26 @@ namespace HomeOwner.Controllers
 
             return viewModel; 
         }
+        public ViewModel GetAnnouncement()
+        {
+            var viewModel = new ViewModel();
+
+            try
+            {
+                var announcements = _context.Announcement.ToList();
+                viewModel.Announcements = announcements;
+                viewModel.newAnnouncement = new Announcement(); 
+            }
+            catch (Exception ex)
+            {
+                viewModel.ErrorMessage = ex.Message;
+            }
+
+            return viewModel; 
+        }
+
+
+
          public int GetStaffCount()
         {
             return _context.User
@@ -164,11 +184,11 @@ namespace HomeOwner.Controllers
             return View();
         }
 
-        public IActionResult Announcements()
+        public IActionResult AdminAnnouncements()
         {
             ViewContents();
             ViewBag.ActiveMenu = "Announcements";
-            return View("AdminAnnouncements"); // Use this if you want to keep the current view name
+            return View(GetAnnouncement()); // Use this if you want to keep the current view name
         }
 
         public IActionResult Documents()
