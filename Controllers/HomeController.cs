@@ -123,7 +123,7 @@ public class HomeController : Controller
                     firstname = model.firstname,
                     lastname = model.lastname,
                     date_created = DateOnly.FromDateTime(DateTime.Now),
-                    role = "Homeowner", //Kalimot mo add ani, ma null nis database
+                    role = "homeowner", //Kalimot mo add ani, ma null nis database
                     status="Active"
                     
                 };

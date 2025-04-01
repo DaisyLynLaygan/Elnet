@@ -33,15 +33,31 @@ namespace HomeOwner.Controllers
 
             return viewModel; 
         }
+         public int GetStaffCount()
+        {
+            return _context.User
+                .Count(u => u.role == "staff");
+        }
+         public int GetHomeOwnerCount()
+        {
+            return _context.User
+                .Count(u => u.role == "homeowner");
+        }
+        
 
 
+        public int GetActiveUserCount()
+        {
+            return _context.User
+                .Count(u => u.status == "Active");
+        }
 
 
         //Add New User via Modal 
 
         public IActionResult addUserModal(ViewModel model)
         {
-            
+
             try
             {
                 var user = new User
@@ -55,7 +71,7 @@ namespace HomeOwner.Controllers
                     lastname = model.newUser.lastname,
                     date_created = DateOnly.FromDateTime(DateTime.Now),
                     role = model.newUser.role,
-                     status="Active"
+                    status = "Active"
                 };
 
 
@@ -107,7 +123,9 @@ namespace HomeOwner.Controllers
         {
 
             ViewContents();
-
+            ViewBag.ActiveCount = GetActiveUserCount();
+            ViewBag.StaffCount = GetStaffCount();
+            ViewBag.HomeOwnerCount = GetHomeOwnerCount();
             ViewBag.ActiveMenu = "Dashboard";
             return View();
         }

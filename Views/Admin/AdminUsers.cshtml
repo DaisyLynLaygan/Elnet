@@ -60,17 +60,17 @@
                             <div class="user-info">
                                 <div class="avatar" style="background-color: #FFAB91;">JD</div>
                                 <div class="user-details">
-                                    <span class="name">@user.firstname @user.lastname</span>
-                                    <span class="phone">@user.contact_no</span>
+                                    <span class="name">@user?.firstname @user.lastname</span>
+                                    <span class="phone">@user?.contact_no</span>
                                 </div>
                             </div>
                         </td>
-                        <td data-label="Email">@user.email</td>
+                        <td data-label="Email">@user?.email</td>
                         <td data-label="Type">
-                            <span class="badge @user.role.ToLower()">@user.role</span>
+                            <span class="badge @user?.role.ToLower()">@user?.role</span>
                         </td>
                         <td data-label="Status">
-                            <span class="status @user.status">@user.status</span>
+                            <span class="status @user.status.ToLower()">@user?.status</span>
                         </td>
                         <td data-label="Last Active">2 hours ago</td>
                         <td data-label="Actions">
