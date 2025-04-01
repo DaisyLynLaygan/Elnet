@@ -115,6 +115,40 @@ namespace HomeOwner.Controllers
 
 
 
+        //Add announcement 
+        public IActionResult AddAnnouncement(ViewModel model)
+        {
+            
+             try
+            {
+                var announcement = new Announcement
+                {
+                    title = model.newAnnouncement.title,
+                    content = model.newAnnouncement.content,
+                    start_date =  model.newAnnouncement.start_date,
+                    end_date = model.newAnnouncement.end_date,
+                    priority = model.newAnnouncement.priority,
+                    status = "Active",
+                    author = CurrentUser.firstname + " " + CurrentUser.lastname
+                };
+               
+
+
+                // Save the user to the database
+               _context.Announcement.Add(announcement);
+                _context.SaveChanges();
+                TempData["Message"] = "Announcement publish successfully!";
+                return RedirectToAction("Announcements");
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = ex.Message;
+                return RedirectToAction("Announcements");
+            }
+        }
+
+
+
 
 
 
