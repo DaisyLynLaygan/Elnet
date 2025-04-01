@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace HomeOwner.Migrations
 {
     [DbContext(typeof(HomeOwnerContext))]
-    [Migration("20250330080612_addedRole")]
-    partial class addedRole
+    [Migration("20250401195319_addedAnnouncement")]
+    partial class addedAnnouncement
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -24,6 +24,41 @@ namespace HomeOwner.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
+
+            modelBuilder.Entity("HomeOwner.Models.Announcement", b =>
+                {
+                    b.Property<int>("announcement_id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("announcement_id"));
+
+                    b.Property<string>("author")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("content")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("end_date")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("priority")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("start_date")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("status")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("title")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("announcement_id");
+
+                    b.ToTable("Announcement");
+                });
 
             modelBuilder.Entity("HomeOwner.Models.User", b =>
                 {
@@ -52,6 +87,9 @@ namespace HomeOwner.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("role")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("status")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("user_password")

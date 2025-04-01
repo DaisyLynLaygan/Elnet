@@ -9,11 +9,12 @@ namespace HomeOwner.Data
 {
     public class HomeOwnerContext : DbContext
     {
-        public HomeOwnerContext (DbContextOptions<HomeOwnerContext> options)
+        public HomeOwnerContext(DbContextOptions<HomeOwnerContext> options)
             : base(options)
         {
         }
 
         public DbSet<HomeOwner.Models.User> User { get; set; } = default!;
+        public DbSet<HomeOwner.Models.Announcement> Announcement { get; set; } = default!;
     }
 }

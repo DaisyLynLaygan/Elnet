@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace HomeOwner.Migrations
 {
     [DbContext(typeof(HomeOwnerContext))]
-    [Migration("20250330074130_AddHomeOwnerTable")]
-    partial class AddHomeOwnerTable
+    [Migration("20250401175414_initialCreate")]
+    partial class initialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

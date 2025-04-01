@@ -5,13 +5,13 @@
 namespace HomeOwner.Migrations
 {
     /// <inheritdoc />
-    public partial class addedRole : Migration
+    public partial class addedStatus : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.AddColumn<string>(
-                name: "role",
+                name: "status",
                 table: "User",
                 type: "nvarchar(max)",
                 nullable: true);
@@ -21,7 +21,7 @@ namespace HomeOwner.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropColumn(
-                name: "role",
+                name: "status",
                 table: "User");
         }
     }

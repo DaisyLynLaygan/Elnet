@@ -22,6 +22,41 @@ namespace HomeOwner.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("HomeOwner.Models.Announcement", b =>
+                {
+                    b.Property<int>("announcement_id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("announcement_id"));
+
+                    b.Property<string>("author")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("content")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("end_date")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("priority")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("start_date")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("status")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("title")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("announcement_id");
+
+                    b.ToTable("Announcement");
+                });
+
             modelBuilder.Entity("HomeOwner.Models.User", b =>
                 {
                     b.Property<int>("user_id")
@@ -49,6 +84,9 @@ namespace HomeOwner.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("role")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("status")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("user_password")

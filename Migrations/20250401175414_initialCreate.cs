@@ -1,4 +1,4 @@
-﻿
+﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace HomeOwner.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCreate : Migration
+    public partial class initialCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -18,10 +18,14 @@ namespace HomeOwner.Migrations
                     user_id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     username = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    firstname = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    lastname = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     user_password = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     email = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     address = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    contact_no = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                    role = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    contact_no = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    date_created = table.Column<DateOnly>(type: "date", nullable: true)
                 },
                 constraints: table =>
                 {

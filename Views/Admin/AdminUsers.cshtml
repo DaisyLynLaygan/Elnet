@@ -55,22 +55,22 @@
                 @foreach (var user in users)
                 {
 
-                    <tr data-type=@user.role.ToLower()>
+                    <tr data-type=@user?.role.ToLower()>
                         <td data-label="Name">
                             <div class="user-info">
                                 <div class="avatar" style="background-color: #FFAB91;">JD</div>
                                 <div class="user-details">
-                                    <span class="name">@user.firstname @user.lastname</span>
-                                    <span class="phone">@user.contact_no</span>
+                                    <span class="name">@user?.firstname @user.lastname</span>
+                                    <span class="phone">@user?.contact_no</span>
                                 </div>
                             </div>
                         </td>
-                        <td data-label="Email">@user.email</td>
+                        <td data-label="Email">@user?.email</td>
                         <td data-label="Type">
-                            <span class="badge @user.role.ToLower()">@user.role</span>
+                            <span class="badge @user?.role.ToLower()">@user?.role</span>
                         </td>
                         <td data-label="Status">
-                            <span class="status active">Active</span>
+                            <span class="status @user.status.ToLower()">@user?.status</span>
                         </td>
                         <td data-label="Last Active">2 hours ago</td>
                         <td data-label="Actions">
@@ -224,6 +224,8 @@
 </div>
 
 <!-- Delete Confirmation Modal -->
+<form asp-action="HardDeleteUser" asp-controller="Admin">
+   <input type="hidden" name="Id" id="deleteUserId" value="" />
 <div class="modal-overlay" id="deleteModal">
     <div class="modal-content">
         <div class="modal-header">
@@ -235,11 +237,11 @@
         </div>
         <div class="modal-footer">
             <button class="btn btn-secondary modal-close-btn">Cancel</button>
-            <button class="btn btn-danger" id="confirmDeleteBtn">Delete User</button>
+            <button type="submit" class="btn btn-danger" id="confirmDeleteBtn">Delete User</button>
         </div>
     </div>
 </div>
-
+</form>
 
 
 <!-- Add User Modal -->
@@ -414,6 +416,7 @@
                 
                 document.getElementById('deleteUserName').textContent = userName;
                 document.getElementById('confirmDeleteBtn').setAttribute('data-user-id', userId);
+                 document.getElementById('deleteUserId').value = userId;
                 
                 openModal(modals.delete);
             });
