@@ -55,6 +55,7 @@ namespace HomeOwner.Controllers
                     lastname = model.newUser.lastname,
                     date_created = DateOnly.FromDateTime(DateTime.Now),
                     role = model.newUser.role,
+                     status="Active"
                 };
 
 
@@ -69,6 +70,31 @@ namespace HomeOwner.Controllers
                 TempData["Error"] = "An error occurred while adding the user.";
                 return RedirectToAction("AdminUsers");
             }
+        }
+
+
+        public IActionResult HardDeleteUser(int Id)
+        {
+            try
+            {
+                var user = _context.User.FirstOrDefault(m => m.user_id == Id);
+                if (user != null)
+                {
+                    _context.User.Remove(user);
+                    _context.SaveChanges();
+                    TempData["Message"] = "User deleted successfully!";
+                }
+                else
+                {
+                    TempData["Error"] = "User not found.";
+                }
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = "An error occurred while deleting the user.";
+            }
+
+            return RedirectToAction("AdminUsers");
         }
 
 

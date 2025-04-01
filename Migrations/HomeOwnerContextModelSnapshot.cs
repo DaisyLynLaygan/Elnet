@@ -51,6 +51,9 @@ namespace HomeOwner.Migrations
                     b.Property<string>("role")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("status")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("user_password")
                         .HasColumnType("nvarchar(max)");
 

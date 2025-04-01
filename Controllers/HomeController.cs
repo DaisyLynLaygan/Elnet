@@ -52,21 +52,32 @@ public class HomeController : Controller
             return RedirectToAction("Index", "Home");
         }
 
+        //Since naa namay data sa database from homeowner , staff and admin kay pwede ra di mag static login
+
         var user = _context.User.FirstOrDefault(m => m.username == Username && m.user_password == Password);
 
 
 
-        if (Username.CompareTo("admin") == 0 && Password.CompareTo("admin") == 0)
+        if (user?.role == "Admin" || Username.CompareTo("admin") == 0 && Password.CompareTo("admin") == 0)
         {
-            var admin = new Admin
-            {
-                name = "admin",
-                role = "Admin"
-            };
-
-
-            HttpContext.Session.SetObject("CurrentUser", admin);
+          
+            if (user == null) {
+                user = new User
+                {
+                    firstname = "Admin",
+                    role = "Admin"
+                };
+    
+           }
+          
+            HttpContext.Session.SetObject("CurrentUser", user  );
             return RedirectToAction("Dashboard", "Admin");
+        }
+        else if (user?.role == "Staff")
+        {
+
+            HttpContext.Session.SetObject("CurrentUser", user);
+            return RedirectToAction("Dashboard", "Staff");
         }
         else if (user?.role == "Homeowner")
         {
@@ -116,7 +127,9 @@ public class HomeController : Controller
                     firstname = model.firstname,
                     lastname = model.lastname,
                     date_created = DateOnly.FromDateTime(DateTime.Now),
-                    role= "Homeowner"//Kalimot mo add ani, ma null nis database
+                    role = "Homeowner", //Kalimot mo add ani, ma null nis database
+                    status="Active"
+                    
                 };
 
 
