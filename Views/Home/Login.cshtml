@@ -12,6 +12,13 @@
     </div>
     <h1>Welcome Back</h1>
 
+    
+   @if (TempData["invalidLogin"] != null)
+{
+    <div class="alert alert-danger">
+        @TempData["invalidLogin"]
+    </div>
+}
     <!-- The form will submit to the LoginTask action in the Home controller -->
     <form asp-action="LoginTask" asp-controller="Home">
         <div class="form-group">

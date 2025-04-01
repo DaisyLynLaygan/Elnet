@@ -67,7 +67,7 @@ namespace HomeOwner.Controllers
             }
             catch (Exception ex)
             {
-                TempData["Error"] = "An error occurred while adding the user.";
+                TempData["Error"] = ex.Message;
                 return RedirectToAction("AdminUsers");
             }
         }
@@ -91,7 +91,7 @@ namespace HomeOwner.Controllers
             }
             catch (Exception ex)
             {
-                TempData["Error"] = "An error occurred while deleting the user.";
+                TempData["Error"] =  ex.Message;
             }
 
             return RedirectToAction("AdminUsers");

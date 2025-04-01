@@ -46,55 +46,51 @@ public class HomeController : Controller
 
     public IActionResult LoginTask(string? Username, string Password)
     {
-        if (Username == null || string.IsNullOrWhiteSpace(Password))
-        {
-            TempData["invalidLogin"] = "Username and password are required.";
-            return RedirectToAction("Index", "Home");
-        }
+
 
         //Since naa namay data sa database from homeowner , staff and admin kay pwede ra di mag static login
 
-        var user = _context.User.FirstOrDefault(m => m.username == Username && m.user_password == Password);
+    
+        var user = _context.User.FirstOrDefault(m => m.username == Username  && m.user_password == Password);
 
-
-
-        if (user?.role == "Admin" || Username.CompareTo("admin") == 0 && Password.CompareTo("admin") == 0)
+      
+    
+        if (user?.role == "admin" || Username?.CompareTo("admin") == 0 && Password.CompareTo("admin") == 0)
         {
-          
-            if (user == null) {
+
+            if (user == null)
+            {
                 user = new User
                 {
                     firstname = "Admin",
                     role = "Admin"
                 };
-    
-           }
-          
-            HttpContext.Session.SetObject("CurrentUser", user  );
+
+            }
+
+            HttpContext.Session.SetObject("CurrentUser", user);
             return RedirectToAction("Dashboard", "Admin");
         }
-        else if (user?.role == "Staff")
+        else if (user?.role == "staff")
         {
 
             HttpContext.Session.SetObject("CurrentUser", user);
             return RedirectToAction("Dashboard", "Staff");
         }
-        else if (user?.role == "Homeowner")
+        else if (user?.role == "homeowner")
         {
 
             HttpContext.Session.SetObject("CurrentUser", user);
             return RedirectToAction("Dashboard", "Homeowner");
-         
+
         }
         else
         {
-            TempData["invalidLogin"] = "Incorrect username or password.";
-            return RedirectToAction("Index", "Home");
+            TempData["invalidLogin"] = "Invalid username or password.";
+           
+            return RedirectToAction("Login", "Home");
         }
         
-        
-        //Since walay admin database, mag static login lang ta, ayaw lang sa ninyu gub a hehe
-
 
        
       

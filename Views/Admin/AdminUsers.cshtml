@@ -55,7 +55,7 @@
                 @foreach (var user in users)
                 {
 
-                    <tr data-type=@user.role.ToLower()>
+                    <tr data-type=@user?.role.ToLower()>
                         <td data-label="Name">
                             <div class="user-info">
                                 <div class="avatar" style="background-color: #FFAB91;">JD</div>
