@@ -75,7 +75,7 @@ public class HomeController : Controller
         {
 
             HttpContext.Session.SetObject("CurrentUser", user);
-            return RedirectToAction("Dashboard", "Staff");
+            return RedirectToAction("StaffDashboard", "Staff");
         }
         else if (user?.role == "homeowner")
         {
