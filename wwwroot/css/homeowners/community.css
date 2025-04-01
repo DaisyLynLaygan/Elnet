@@ -778,8 +778,8 @@ body {
     font-size: 12px;
 }
 
-/* Comment Modal Styles */
-.modal {
+/* Community Modal Styles */
+.community-modal {
     display: none;
     position: fixed;
     top: 0;
@@ -793,20 +793,20 @@ body {
     padding: 20px;
 }
 
-.modal.show {
+.community-modal.show {
     display: flex;
 }
 
-.modal-dialog {
+.community-modal-dialog {
     width: 100%;
     max-width: 600px;
-    background-color: white;
-    border-radius: 8px;
+    background-color: var(--white);
+    border-radius: 10px;
     overflow: hidden;
     box-shadow: 0 5px 30px rgba(0, 0, 0, 0.3);
 }
 
-.modal-header {
+.community-modal-header {
     padding: 15px 20px;
     border-bottom: 1px solid var(--border-color);
     display: flex;
@@ -814,13 +814,13 @@ body {
     align-items: center;
 }
 
-.modal-header h3 {
+.community-modal-header h3 {
     font-size: 18px;
     font-weight: 600;
     margin: 0;
 }
 
-.close-modal {
+.close-community-modal {
     background: none;
     border: none;
     font-size: 24px;
@@ -828,12 +828,11 @@ body {
     color: var(--text-gray);
 }
 
-.modal-body {
+.community-modal-body {
     padding: 20px;
     max-height: 70vh;
     overflow-y: auto;
 }
-
 /* Comments Container */
 .comments-container {
     margin-bottom: 20px;

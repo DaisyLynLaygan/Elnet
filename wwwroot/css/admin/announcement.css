@@ -1,9 +1,16 @@
 /* Announcements Page Specific Styles */
+
+.dashboard-content
+{
+    padding: 2rem;
+    width: 100%;
+}
 .announcements-container {
     background: var(--white);
     border-radius: var(--border-radius);
     box-shadow: var(--shadow);
     padding: 1.5rem;
+    max-width: 1400px;
 }
 
 .announcements-header {

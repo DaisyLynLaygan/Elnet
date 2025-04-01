@@ -3,3 +3,438 @@
     ViewData["Title"] = "Feedback";
     ViewData["Subtitle"] = "View User Feedback";
 }
+
+<link rel="stylesheet" href="~/css/admin/admin-feedback.css" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+
+<div class="feedback-admin-container">
+    <div class="feedback-header">
+    </div>
+
+    <!-- Feedback Tabs -->
+    <div class="feedback-tabs">
+        <button class="tab-button active" data-tab="facility-feedback">Facility Feedback</button>
+        <button class="tab-button" data-tab="service-complaints">Service Complaints</button>
+    </div>
+
+    <!-- Facility Feedback Section -->
+    <section class="feedback-content active" id="facility-feedback">
+        <!-- Stats Cards -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <span class="stat-label">Total Feedback</span>
+                <span class="stat-value">347</span>
+                <span class="stat-change positive">
+                    <i class="fas fa-arrow-up"></i> 12% from last month
+                </span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-label">Average Rating</span>
+                <span class="stat-value">4.7</span>
+                <span class="stat-change positive">
+                    <i class="fas fa-arrow-up"></i> 0.2 from last month
+                </span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-label">New This Week</span>
+                <span class="stat-value">28</span>
+                <span class="stat-change negative">
+                    <i class="fas fa-arrow-down"></i> 3 from last week
+                </span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-label">Facilities</span>
+                <span class="stat-value">8</span>
+                <span class="stat-change">
+                    <i class="fas fa-equals"></i> No change
+                </span>
+            </div>
+        </div>
+
+        <!-- Facility Filter -->
+        <div class="card">
+            <div class="card-header">
+                <h2>Facility Feedback</h2>
+                <div class="filter-controls">
+                    <select id="facilityFilter" class="form-select">
+                        <option value="all">All Facilities</option>
+                        <option value="Function Hall">Function Hall</option>
+                        <option value="Sports Court">Sports Court</option>
+                        <option value="Swimming Pool">Swimming Pool</option>
+                        <option value="Gym Facility">Gym Facility</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="table-responsive">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>User</th>
+                            <th>Facility</th>
+                            <th>Rating</th>
+                            <th>Feedback</th>
+                            <th>Date</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>
+                                <div class="feedback-user">
+                                    <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="User" class="feedback-user-avatar">
+                                    <div class="feedback-user-info">
+                                        <h4>Pradeep Kumar Singh</h4>
+                                        <p>Unit 12B</p>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>Function Hall</td>
+                            <td>
+                                <div class="rating-stars">★★★★★</div>
+                            </td>
+                            <td>Perfect for our wedding! The staff went above and beyond...</td>
+                            <td>May 15, 2023</td>
+                            <td><span class="badge success">Published</span></td>
+                            <td>
+                                <button class="btn-icon view-details" title="View Details" data-type="feedback" data-id="1">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <button class="btn-icon delete-feedback" title="Delete" data-id="1">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <div class="feedback-user">
+                                    <img src="https://randomuser.me/api/portraits/women/44.jpg" alt="User" class="feedback-user-avatar">
+                                    <div class="feedback-user-info">
+                                        <h4>Priya Sharma</h4>
+                                        <p>Unit 5C</p>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>Swimming Pool</td>
+                            <td>
+                                <div class="rating-stars">★★★☆☆</div>
+                            </td>
+                            <td>Water was too cold and the pool wasn't cleaned properly...</td>
+                            <td>May 14, 2023</td>
+                            <td><span class="badge warning">Pending</span></td>
+                            <td>
+                                <button class="btn-icon view-details" title="View Details" data-type="feedback" data-id="2">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <button class="btn-icon delete-feedback" title="Delete" data-id="2">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <div class="feedback-user">
+                                    <img src="https://randomuser.me/api/portraits/men/67.jpg" alt="User" class="feedback-user-avatar">
+                                    <div class="feedback-user-info">
+                                        <h4>Rahul Mehta</h4>
+                                        <p>Unit 8A</p>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>Gym Facility</td>
+                            <td>
+                                <div class="rating-stars">★★★★☆</div>
+                            </td>
+                            <td>Good equipment but needs more maintenance...</td>
+                            <td>May 12, 2023</td>
+                            <td><span class="badge success">Published</span></td>
+                            <td>
+                                <button class="btn-icon view-details" title="View Details" data-type="feedback" data-id="3">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <button class="btn-icon delete-feedback" title="Delete" data-id="3">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="pagination">
+                <button class="active">1</button>
+                <button>2</button>
+                <button>3</button>
+                <button>Next <i class="fas fa-chevron-right"></i></button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Service Complaints Section -->
+    <section class="feedback-content" id="service-complaints">
+        <!-- Stats Cards -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <span class="stat-label">Total Complaints</span>
+                <span class="stat-value">124</span>
+                <span class="stat-change positive">
+                    <i class="fas fa-arrow-down"></i> 8% from last month
+                </span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-label">Open Complaints</span>
+                <span class="stat-value">18</span>
+                <span class="stat-change negative">
+                    <i class="fas fa-arrow-up"></i> 3 from last week
+                </span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-label">Avg Resolution Time</span>
+                <span class="stat-value">3.2</span>
+                <span class="stat-value" style="font-size: 1rem;">days</span>
+                <span class="stat-change positive">
+                    <i class="fas fa-arrow-down"></i> 0.5 from last month
+                </span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-label">Satisfaction Rate</span>
+                <span class="stat-value">92%</span>
+                <span class="stat-change positive">
+                    <i class="fas fa-arrow-up"></i> 5% from last month
+                </span>
+            </div>
+        </div>
+
+        <!-- Complaint Filter -->
+        <div class="card">
+            <div class="card-header">
+                <h2>Service Complaints</h2>
+                <div class="filter-controls">
+                    <select id="statusFilter" class="form-select">
+                        <option value="all">All Statuses</option>
+                        <option value="open">Open</option>
+                        <option value="in-progress">In Progress</option>
+                        <option value="resolved">Resolved</option>
+                    </select>
+                    <select id="serviceTypeFilter" class="form-select">
+                        <option value="all">All Service Types</option>
+                        <option value="House Cleaning">House Cleaning</option>
+                        <option value="Garden Maintenance">Garden Maintenance</option>
+                        <option value="Handyman Services">Handyman Services</option>
+                        <option value="Safety Inspection">Safety Inspection</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="table-responsive">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>User</th>
+                            <th>Service Type</th>
+                            <th>Complaint</th>
+                            <th>Severity</th>
+                            <th>Date</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>
+                                <div class="feedback-user">
+                                    <img src="https://randomuser.me/api/portraits/women/28.jpg" alt="User" class="feedback-user-avatar">
+                                    <div class="feedback-user-info">
+                                        <h4>Neha Gupta</h4>
+                                        <p>Unit 9D</p>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>House Cleaning</td>
+                            <td>Incomplete cleaning service</td>
+                            <td><span class="badge danger">High</span></td>
+                            <td>May 15, 2023</td>
+                            <td><span class="badge danger">Open</span></td>
+                            <td>
+                                <button class="btn-icon view-details" title="View Details" data-type="complaint" data-id="101">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <button class="btn-icon resolve-complaint" title="Resolve" data-id="101">
+                                    <i class="fas fa-check"></i>
+                                </button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <div class="feedback-user">
+                                    <img src="https://randomuser.me/api/portraits/men/55.jpg" alt="User" class="feedback-user-avatar">
+                                    <div class="feedback-user-info">
+                                        <h4>Vikram Patel</h4>
+                                        <p>Unit 3B</p>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>Garden Maintenance</td>
+                            <td>Overgrown bushes blocking pathway</td>
+                            <td><span class="badge warning">Medium</span></td>
+                            <td>May 14, 2023</td>
+                            <td><span class="badge primary">In Progress</span></td>
+                            <td>
+                                <button class="btn-icon view-details" title="View Details" data-type="complaint" data-id="102">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <button class="btn-icon resolve-complaint" title="Resolve" data-id="102">
+                                    <i class="fas fa-check"></i>
+                                </button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <div class="feedback-user">
+                                    <img src="https://randomuser.me/api/portraits/women/63.jpg" alt="User" class="feedback-user-avatar">
+                                    <div class="feedback-user-user-info">
+                                        <h4>Ananya Reddy</h4>
+                                        <p>Unit 7E</p>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>Safety Inspection</td>
+                            <td>Fire extinguisher expired in common area</td>
+                            <td><span class="badge danger">High</span></td>
+                            <td>May 10, 2023</td>
+                            <td><span class="badge success">Resolved</span></td>
+                            <td>
+                                <button class="btn-icon view-details" title="View Details" data-type="complaint" data-id="103">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <button class="btn-icon resolve-complaint" title="Resolve" data-id="103">
+                                    <i class="fas fa-check"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="pagination">
+                <button class="active">1</button>
+                <button>2</button>
+                <button>3</button>
+                <button>Next <i class="fas fa-chevron-right"></i></button>
+            </div>
+        </div>
+    </section>
+</div>
+
+<!-- Feedback Detail Modal -->
+<div class="modal" id="feedbackDetailModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Feedback Details</h3>
+            <span class="close">&times;</span>
+        </div>
+        <div class="modal-body">
+            <div class="feedback-detail">
+                <div class="feedback-user-detail">
+                    <img src="" alt="User" class="detail-user-avatar" id="feedbackUserAvatar">
+                    <div class="feedback-user-info">
+                        <h4 id="feedbackUserName"></h4>
+                        <p id="feedbackUserUnit"></p>
+                    </div>
+                </div>
+                
+                <div class="feedback-meta">
+                    <div class="meta-item">
+                        <span class="meta-label">Facility:</span>
+                        <span class="meta-value" id="feedbackFacility"></span>
+                    </div>
+                    <div class="meta-item">
+                        <span class="meta-label">Rating:</span>
+                        <span class="meta-value" id="feedbackRating"></span>
+                    </div>
+                    <div class="meta-item">
+                        <span class="meta-label">Date:</span>
+                        <span class="meta-value" id="feedbackDate"></span>
+                    </div>
+                    <div class="meta-item">
+                        <span class="meta-label">Status:</span>
+                        <span class="meta-value" id="feedbackStatus"></span>
+                    </div>
+                </div>
+                
+                <div class="feedback-fulltext">
+                    <h4>Full Feedback:</h4>
+                    <p id="feedbackFullText"></p>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary close-modal">Close</button>
+            <button class="btn btn-danger" id="deleteFeedbackBtn">
+                <i class="fas fa-trash"></i> Delete Feedback
+            </button>
+            <button class="btn btn-primary" id="approveFeedbackBtn">
+                <i class="fas fa-check"></i> Approve
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Complaint Detail Modal -->
+<div class="modal" id="complaintDetailModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Complaint Details</h3>
+            <span class="close">&times;</span>
+        </div>
+        <div class="modal-body">
+            <div class="feedback-detail">
+                <div class="feedback-user-detail">
+                    <img src="" alt="User" class="detail-user-avatar" id="complaintUserAvatar">
+                    <div class="feedback-user-info">
+                        <h4 id="complaintUserName"></h4>
+                        <p id="complaintUserUnit"></p>
+                    </div>
+                </div>
+                
+                <div class="feedback-meta">
+                    <div class="meta-item">
+                        <span class="meta-label">Service Type:</span>
+                        <span class="meta-value" id="complaintServiceType"></span>
+                    </div>
+                    <div class="meta-item">
+                        <span class="meta-label">Severity:</span>
+                        <span class="meta-value" id="complaintSeverity"></span>
+                    </div>
+                    <div class="meta-item">
+                        <span class="meta-label">Date:</span>
+                        <span class="meta-value" id="complaintDate"></span>
+                    </div>
+                    <div class="meta-item">
+                        <span class="meta-label">Status:</span>
+                        <span class="meta-value" id="complaintStatus"></span>
+                    </div>
+                </div>
+                
+                <div class="feedback-fulltext">
+                    <h4>Complaint Details:</h4>
+                    <p id="complaintFullText"></p>
+                </div>
+                
+                <div class="complaint-resolution" id="resolutionSection">
+                    <h4>Resolution Notes:</h4>
+                    <textarea id="resolutionNotes" class="form-control" rows="3" placeholder="Enter resolution details..."></textarea>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary close-modal">Close</button>
+            <button class="btn btn-primary" id="resolveComplaintBtn">
+                <i class="fas fa-check"></i> Mark as Resolved
+            </button>
+        </div>
+    </div>
+</div>
+
+<script src="~/js/admin/feedback.js"></script>

@@ -2,7 +2,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Comment Modal Functionality
     const commentModal = document.getElementById('commentModal');
     const commentBtns = document.querySelectorAll('.comment-btn');
-    const closeModalBtn = document.querySelector('#commentModal .close-modal');
+    const closeModalBtn = document.querySelector('#commentModal .close-community-modal'); // Updated class
     const commentsContainer = document.getElementById('commentsContainer');
     const commentInput = document.getElementById('commentInput');
     const postCommentBtn = document.querySelector('.btn-post-comment');
@@ -42,6 +42,14 @@ document.addEventListener('DOMContentLoaded', function() {
     closeModalBtn.addEventListener('click', function() {
         commentModal.classList.remove('show');
         document.body.style.overflow = '';
+    });
+    
+    // Close when clicking outside modal
+    commentModal.addEventListener('click', function(e) {
+        if (e.target === commentModal) {
+            commentModal.classList.remove('show');
+            document.body.style.overflow = '';
+        }
     });
     
     // Load comments for a post
@@ -109,6 +117,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const photoUpload = document.getElementById('photoUpload');
     const photoPreviewContainer = document.getElementById('photoPreviewContainer');
     const submitPostBtn = document.getElementById('submitPostBtn');
+    const postInput = document.getElementById('postInput');
     
     // Add photo button click
     addPhotoBtn.addEventListener('click', function() {
@@ -145,16 +154,31 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Submit post button
     submitPostBtn.addEventListener('click', function() {
-        const postText = document.getElementById('postInput').value.trim();
+        const postText = postInput.value.trim();
         const hasPhotos = photoPreviewContainer.children.length > 0;
         
         if (postText || hasPhotos) {
             // In a real app, this would send to backend
             alert('Post submitted! (This is a UI demo only)');
-            document.getElementById('postInput').value = '';
+            postInput.value = '';
             photoPreviewContainer.innerHTML = '';
         } else {
             alert('Please add some text or photos to your post');
+        }
+    });
+
+    // Allow pressing Enter in comment input to post
+    commentInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            postCommentBtn.click();
+        }
+    });
+
+    // Allow pressing Enter in post input to submit (but only if Shift isn't held)
+    postInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            submitPostBtn.click();
         }
     });
 });
