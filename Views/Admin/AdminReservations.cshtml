@@ -3,3 +3,649 @@
     ViewData["Title"] = "Reservations";
     ViewData["Subtitle"] = "Manage Facility Reservations";
 }
+<link rel="stylesheet" href="~/css/admin/reservation.css" />
+
+<div class="reservations-container">
+    <div class="reservations-header">
+        <div class="reservations-title">
+            <h2>@ViewData["Title"]</h2>
+            <p>@ViewData["Subtitle"]</p>
+        </div>
+        <div class="reservations-actions">
+            <button class="btn btn-primary" id="manageFacilitiesBtn">
+                <i class="fas fa-building"></i> Manage Facilities
+            </button>
+        </div>
+    </div>
+
+    <div class="reservations-tabs">
+        <div class="reservations-tab active" data-tab="all">All Reservations</div>
+        <div class="reservations-tab" data-tab="pending">Pending Approval</div>
+        <div class="reservations-tab" data-tab="approved">Approved</div>
+        <div class="reservations-tab" data-tab="completed">Completed</div>
+    </div>
+
+    <div class="reservations-table-container">
+        <table class="reservations-table">
+            <thead>
+                <tr>
+                    <th>Reservation ID</th>
+                    <th>Facility</th>
+                    <th>Resident</th>
+                    <th>Date & Time</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="reservationsTableBody">
+                <!-- Reservations will be populated here -->
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Pagination Controls -->
+    <div class="pagination-container">
+        <div class="pagination-info" id="paginationInfo"></div>
+        <div class="pagination-controls">
+            <button class="btn btn-outline" id="prevPageBtn" disabled>
+                <i class="fas fa-chevron-left"></i> Previous
+            </button>
+            <div class="page-numbers" id="pageNumbers"></div>
+            <button class="btn btn-outline" id="nextPageBtn">
+                Next <i class="fas fa-chevron-right"></i>
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Facilities Management Modal -->
+<div class="modal-overlay" id="facilitiesModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Manage Facilities</h3>
+            <button class="close-modal">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="facilities-grid">
+                <div class="facility-card" data-facility="function-hall">
+                    <div class="facility-image">
+                        <img src="~/images/function-hall.jpg" alt="Function Hall">
+                        <span class="facility-status available">Available</span>
+                    </div>
+                    <div class="facility-details">
+                        <h4 class="facility-name">Function Hall</h4>
+                        <p class="facility-price">Starting at $500/event</p>
+                        <div class="facility-meta">
+                            <span><i class="fas fa-users"></i> 50-100 people</span>
+                        </div>
+                        <div class="facility-actions">
+                            <button class="toggle-availability available">
+                                <i class="fas fa-times"></i> Set Unavailable
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="facility-card" data-facility="sports-court">
+                    <div class="facility-image">
+                        <img src="~/images/sports-court.jpg" alt="Sports Court">
+                        <span class="facility-status available">Available</span>
+                    </div>
+                    <div class="facility-details">
+                        <h4 class="facility-name">Sports Court</h4>
+                        <p class="facility-price">$50/hour</p>
+                        <div class="facility-meta">
+                            <span><i class="fas fa-users"></i> 20 people</span>
+                        </div>
+                        <div class="facility-actions">
+                            <button class="toggle-availability available">
+                                <i class="fas fa-times"></i> Set Unavailable
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="facility-card" data-facility="swimming-pool">
+                    <div class="facility-image">
+                        <img src="~/images/swimming-pool.jpg" alt="Swimming Pool">
+                        <span class="facility-status unavailable">Unavailable</span>
+                    </div>
+                    <div class="facility-details">
+                        <h4 class="facility-name">Swimming Pool</h4>
+                        <p class="facility-price">$10/hour per person</p>
+                        <div class="facility-meta">
+                            <span><i class="fas fa-users"></i> 30 people</span>
+                        </div>
+                        <div class="facility-actions">
+                            <button class="toggle-availability unavailable">
+                                <i class="fas fa-check"></i> Set Available
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="facility-card" data-facility="fitness-gym">
+                    <div class="facility-image">
+                        <img src="~/images/gym.jpg" alt="Gym Facility">
+                        <span class="facility-status available">Available</span>
+                    </div>
+                    <div class="facility-details">
+                        <h4 class="facility-name">Fitness Gym</h4>
+                        <p class="facility-price">$5/hour per person</p>
+                        <div class="facility-meta">
+                            <span><i class="fas fa-users"></i> 15 people</span>
+                        </div>
+                        <div class="facility-actions">
+                            <button class="toggle-availability available">
+                                <i class="fas fa-times"></i> Set Unavailable
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-outline close-modal-btn">Close</button>
+        </div>
+    </div>
+</div>
+
+<!-- Reservation Details Modal -->
+<div class="modal-overlay" id="detailsModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Reservation Details</h3>
+            <button class="close-modal">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="details-summary">
+                <h4 id="detailsReservationId">Reservation #RES-2023-002</h4>
+                <div class="details-item">
+                    <span class="details-label">Status:</span>
+                    <span class="details-value" id="detailsStatus"><span class="status-badge status-pending">Pending</span></span>
+                </div>
+                <div class="details-item">
+                    <span class="details-label">Facility:</span>
+                    <span class="details-value" id="detailsFacility">Sports Court</span>
+                </div>
+                <div class="details-item">
+                    <span class="details-label">Resident:</span>
+                    <span class="details-value" id="detailsResident">Maria Garcia (Unit 205)</span>
+                </div>
+                <div class="details-item">
+                    <span class="details-label">Date:</span>
+                    <span class="details-value" id="detailsDate">16 Oct 2023</span>
+                </div>
+                <div class="details-item">
+                    <span class="details-label">Time:</span>
+                    <span class="details-value" id="detailsTime">09:00 - 11:00 (2 hours)</span>
+                </div>
+                <div class="details-item">
+                    <span class="details-label">Guests:</span>
+                    <span class="details-value" id="detailsGuests">15 people</span>
+                </div>
+                <div class="details-item">
+                    <span class="details-label">Purpose:</span>
+                    <span class="details-value" id="detailsPurpose">Badminton Tournament</span>
+                </div>
+                <div class="details-item">
+                    <span class="details-label">Total Amount:</span>
+                    <span class="details-value" id="detailsAmount">$100.00</span>
+                </div>
+            </div>
+            
+            <div class="staff-notes">
+                <h5>Staff Notes</h5>
+                <textarea id="staffNotes" placeholder="Add any notes for staff..."></textarea>
+                <div class="modal-footer">
+                    <button class="btn btn-outline">Cancel</button>
+                    <button class="btn btn-primary" id="saveNotesBtn">Save Notes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Sample reservation data
+const reservations = [
+    {
+        id: "RES-2023-001",
+        facility: "Function Hall",
+        resident: "John Smith (Unit 101)",
+        dateTime: "15 Oct 2023, 14:00-18:00",
+        date: "15 Oct 2023",
+        time: "14:00 - 18:00 (4 hours)",
+        status: "approved",
+        guests: "50 people",
+        purpose: "Wedding Anniversary",
+        amount: "$500.00",
+        notes: ""
+    },
+    {
+        id: "RES-2023-002",
+        facility: "Sports Court",
+        resident: "Maria Garcia (Unit 205)",
+        dateTime: "16 Oct 2023, 09:00-11:00",
+        date: "16 Oct 2023",
+        time: "09:00 - 11:00 (2 hours)",
+        status: "pending",
+        guests: "15 people",
+        purpose: "Badminton Tournament",
+        amount: "$100.00",
+        notes: ""
+    },
+    {
+        id: "RES-2023-003",
+        facility: "Swimming Pool",
+        resident: "Robert Johnson (Unit 312)",
+        dateTime: "17 Oct 2023, 10:00-12:00",
+        date: "17 Oct 2023",
+        time: "10:00 - 12:00 (2 hours)",
+        status: "completed",
+        guests: "10 people",
+        purpose: "Swim Practice",
+        amount: "$20.00",
+        notes: ""
+    },
+    {
+        id: "RES-2023-004",
+        facility: "Fitness Gym",
+        resident: "Sarah Lee (Unit 108)",
+        dateTime: "18 Oct 2023, 07:00-08:00",
+        date: "18 Oct 2023",
+        time: "07:00 - 08:00 (1 hour)",
+        status: "approved",
+        guests: "1 person",
+        purpose: "Personal Training",
+        amount: "$5.00",
+        notes: ""
+    },
+    {
+        id: "RES-2023-005",
+        facility: "Function Hall",
+        resident: "Michael Brown (Unit 402)",
+        dateTime: "19 Oct 2023, 19:00-23:00",
+        date: "19 Oct 2023",
+        time: "19:00 - 23:00 (4 hours)",
+        status: "pending",
+        guests: "80 people",
+        purpose: "Birthday Party",
+        amount: "$500.00",
+        notes: ""
+    },
+    {
+        id: "RES-2023-006",
+        facility: "Sports Court",
+        resident: "Emily Wilson (Unit 315)",
+        dateTime: "20 Oct 2023, 15:00-17:00",
+        date: "20 Oct 2023",
+        time: "15:00 - 17:00 (2 hours)",
+        status: "approved",
+        guests: "12 people",
+        purpose: "Basketball Game",
+        amount: "$100.00",
+        notes: ""
+    },
+    {
+        id: "RES-2023-007",
+        facility: "Swimming Pool",
+        resident: "David Taylor (Unit 210)",
+        dateTime: "21 Oct 2023, 11:00-13:00",
+        date: "21 Oct 2023",
+        time: "11:00 - 13:00 (2 hours)",
+        status: "pending",
+        guests: "8 people",
+        purpose: "Family Swim",
+        amount: "$80.00",
+        notes: ""
+    },
+    {
+        id: "RES-2023-008",
+        facility: "Fitness Gym",
+        resident: "Jessica Martinez (Unit 112)",
+        dateTime: "22 Oct 2023, 06:00-07:00",
+        date: "22 Oct 2023",
+        time: "06:00 - 07:00 (1 hour)",
+        status: "completed",
+        guests: "1 person",
+        purpose: "Morning Workout",
+        amount: "$5.00",
+        notes: ""
+    },
+    {
+        id: "RES-2023-009",
+        facility: "Function Hall",
+        resident: "Daniel Anderson (Unit 305)",
+        dateTime: "23 Oct 2023, 12:00-16:00",
+        date: "23 Oct 2023",
+        time: "12:00 - 16:00 (4 hours)",
+        status: "approved",
+        guests: "60 people",
+        purpose: "Business Meeting",
+        amount: "$500.00",
+        notes: ""
+    },
+    {
+        id: "RES-2023-010",
+        facility: "Sports Court",
+        resident: "Olivia Thomas (Unit 118)",
+        dateTime: "24 Oct 2023, 08:00-10:00",
+        date: "24 Oct 2023",
+        time: "08:00 - 10:00 (2 hours)",
+        status: "pending",
+        guests: "10 people",
+        purpose: "Tennis Match",
+        amount: "$100.00",
+        notes: ""
+    },
+    {
+        id: "RES-2023-011",
+        facility: "Swimming Pool",
+        resident: "James White (Unit 207)",
+        dateTime: "25 Oct 2023, 14:00-16:00",
+        date: "25 Oct 2023",
+        time: "14:00 - 16:00 (2 hours)",
+        status: "approved",
+        guests: "5 people",
+        purpose: "Swim Lessons",
+        amount: "$50.00",
+        notes: ""
+    }
+];
+
+document.addEventListener('DOMContentLoaded', function() {
+    const reservationsTableBody = document.getElementById('reservationsTableBody');
+    const tabs = document.querySelectorAll('.reservations-tab');
+    const manageFacilitiesBtn = document.getElementById('manageFacilitiesBtn');
+    const facilitiesModal = document.getElementById('facilitiesModal');
+    const detailsModal = document.getElementById('detailsModal');
+    const closeModalButtons = document.querySelectorAll('.close-modal, .close-modal-btn');
+    const saveNotesBtn = document.getElementById('saveNotesBtn');
+    const prevPageBtn = document.getElementById('prevPageBtn');
+    const nextPageBtn = document.getElementById('nextPageBtn');
+    const pageNumbers = document.getElementById('pageNumbers');
+    const paginationInfo = document.getElementById('paginationInfo');
+    
+    // Pagination variables
+    let currentPage = 1;
+    const reservationsPerPage = 5;
+    let currentFilter = 'all';
+    
+    // Current selected reservation for details modal
+    let currentReservation = null;
+    
+    // Initialize the table with pagination
+    function renderReservations(filter = 'all', page = 1) {
+        currentFilter = filter;
+        currentPage = page;
+        
+        const filteredReservations = reservations.filter(res => {
+            if (filter === 'all') return true;
+            return res.status === filter;
+        });
+        
+        // Calculate pagination
+        const totalPages = Math.ceil(filteredReservations.length / reservationsPerPage);
+        const startIndex = (page - 1) * reservationsPerPage;
+        const endIndex = Math.min(startIndex + reservationsPerPage, filteredReservations.length);
+        const paginatedReservations = filteredReservations.slice(startIndex, endIndex);
+        
+        // Clear table
+        reservationsTableBody.innerHTML = '';
+        
+        // Populate table with paginated reservations
+        paginatedReservations.forEach(reservation => {
+            const row = document.createElement('tr');
+            row.dataset.id = reservation.id;
+            
+            // Determine action buttons based on status
+            let actionButtons = '';
+            if (reservation.status === 'pending') {
+                actionButtons = `
+                    <button class="btn btn-sm btn-info" data-action="details">
+                        <i class="fas fa-eye"></i> <span class="action-text">Details</span>
+                    </button>
+                    <button class="btn btn-sm btn-success" data-action="approve">
+                        <i class="fas fa-check"></i> <span class="action-text">Approve</span>
+                    </button>
+                    <button class="btn btn-sm btn-danger" data-action="reject">
+                        <i class="fas fa-times"></i> <span class="action-text">Reject</span>
+                    </button>
+                `;
+            } else {
+                actionButtons = `
+                    <button class="btn btn-sm btn-info" data-action="details">
+                        <i class="fas fa-eye"></i> <span class="action-text">Details</span>
+                    </button>
+                `;
+            }
+            
+            // Get status badge class
+            const statusClass = `status-${reservation.status}`;
+            const statusText = reservation.status.charAt(0).toUpperCase() + reservation.status.slice(1);
+            
+            row.innerHTML = `
+                <td data-label="Reservation ID">${reservation.id}</td>
+                <td data-label="Facility">${reservation.facility}</td>
+                <td data-label="Resident">${reservation.resident}</td>
+                <td data-label="Date & Time">${reservation.dateTime}</td>
+                <td data-label="Status"><span class="status-badge ${statusClass}">${statusText}</span></td>
+                <td data-label="Actions">
+                    <div class="action-buttons">${actionButtons}</div>
+                </td>
+            `;
+            
+            reservationsTableBody.appendChild(row);
+            
+            // Add event listeners to action buttons
+            row.querySelectorAll('[data-action]').forEach(btn => {
+                btn.addEventListener('click', () => handleReservationAction(reservation.id, btn.dataset.action));
+            });
+        });
+        
+        // Update pagination controls
+        updatePaginationControls(filteredReservations.length, page, totalPages);
+    }
+    
+    // Update pagination controls
+    function updatePaginationControls(totalReservations, currentPage, totalPages) {
+        // Update pagination info
+        const startIndex = (currentPage - 1) * reservationsPerPage + 1;
+        const endIndex = Math.min(startIndex + reservationsPerPage - 1, totalReservations);
+        paginationInfo.textContent = `Showing ${startIndex}-${endIndex} of ${totalReservations} reservations`;
+        
+        // Update previous/next buttons
+        prevPageBtn.disabled = currentPage === 1;
+        nextPageBtn.disabled = currentPage === totalPages;
+        
+        // Update page numbers
+        pageNumbers.innerHTML = '';
+        
+        // Always show first page
+        if (currentPage > 2) {
+            addPageNumber(1);
+            if (currentPage > 3) {
+                pageNumbers.innerHTML += '<span class="page-ellipsis">...</span>';
+            }
+        }
+        
+        // Show current page and adjacent pages
+        for (let i = Math.max(1, currentPage - 1); i <= Math.min(totalPages, currentPage + 1); i++) {
+            addPageNumber(i);
+        }
+        
+        // Always show last page
+        if (currentPage < totalPages - 1) {
+            if (currentPage < totalPages - 2) {
+                pageNumbers.innerHTML += '<span class="page-ellipsis">...</span>';
+            }
+            addPageNumber(totalPages);
+        }
+        
+        function addPageNumber(pageNumber) {
+            const pageBtn = document.createElement('button');
+            pageBtn.className = `page-number ${pageNumber === currentPage ? 'active' : ''}`;
+            pageBtn.textContent = pageNumber;
+            pageBtn.addEventListener('click', () => {
+                renderReservations(currentFilter, pageNumber);
+            });
+            pageNumbers.appendChild(pageBtn);
+        }
+    }
+    
+    // Handle reservation actions
+    function handleReservationAction(reservationId, action) {
+        const reservation = reservations.find(res => res.id === reservationId);
+        
+        switch(action) {
+            case 'details':
+                showReservationDetails(reservation);
+                break;
+            case 'approve':
+                approveReservation(reservationId);
+                break;
+            case 'reject':
+                rejectReservation(reservationId);
+                break;
+        }
+    }
+    
+    // Show reservation details in modal
+    function showReservationDetails(reservation) {
+        currentReservation = reservation;
+        
+        // Update modal content
+        document.getElementById('detailsReservationId').textContent = `Reservation ${reservation.id}`;
+        document.getElementById('detailsStatus').innerHTML = 
+            `<span class="status-badge status-${reservation.status}">
+                ${reservation.status.charAt(0).toUpperCase() + reservation.status.slice(1)}
+            </span>`;
+        document.getElementById('detailsFacility').textContent = reservation.facility;
+        document.getElementById('detailsResident').textContent = reservation.resident;
+        document.getElementById('detailsDate').textContent = reservation.date;
+        document.getElementById('detailsTime').textContent = reservation.time;
+        document.getElementById('detailsGuests').textContent = reservation.guests;
+        document.getElementById('detailsPurpose').textContent = reservation.purpose;
+        document.getElementById('detailsAmount').textContent = reservation.amount;
+        document.getElementById('staffNotes').value = reservation.notes || '';
+        
+        detailsModal.classList.add('active');
+    }
+    
+    // Approve a reservation
+    function approveReservation(reservationId) {
+        const reservation = reservations.find(res => res.id === reservationId);
+        if (reservation) {
+            reservation.status = 'approved';
+            renderReservations(currentFilter, currentPage);
+            alert('Reservation approved successfully! It has been sent to staff for processing.');
+        }
+    }
+    
+    // Reject a reservation
+    function rejectReservation(reservationId) {
+        const reservation = reservations.find(res => res.id === reservationId);
+        if (reservation) {
+            reservation.status = 'cancelled';
+            renderReservations(currentFilter, currentPage);
+            alert('Reservation rejected successfully!');
+        }
+    }
+    
+    // Initialize tab functionality
+    tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            // Remove active class from all tabs
+            tabs.forEach(t => t.classList.remove('active'));
+            
+            // Add active class to clicked tab
+            tab.classList.add('active');
+            
+            // Filter reservations and reset to page 1
+            renderReservations(tab.dataset.tab, 1);
+        });
+    });
+    
+    // Pagination button handlers
+    prevPageBtn.addEventListener('click', () => {
+        if (currentPage > 1) {
+            renderReservations(currentFilter, currentPage - 1);
+        }
+    });
+    
+    nextPageBtn.addEventListener('click', () => {
+        const filteredReservations = reservations.filter(res => {
+            if (currentFilter === 'all') return true;
+            return res.status === currentFilter;
+        });
+        const totalPages = Math.ceil(filteredReservations.length / reservationsPerPage);
+        
+        if (currentPage < totalPages) {
+            renderReservations(currentFilter, currentPage + 1);
+        }
+    });
+    
+    // Modal toggles
+    manageFacilitiesBtn.addEventListener('click', () => {
+        facilitiesModal.classList.add('active');
+    });
+    
+    // Close all modals
+    closeModalButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+            facilitiesModal.classList.remove('active');
+            detailsModal.classList.remove('active');
+        });
+    });
+    
+    // Save staff notes
+    saveNotesBtn.addEventListener('click', () => {
+        if (currentReservation) {
+            currentReservation.notes = document.getElementById('staffNotes').value;
+            alert('Notes saved successfully!');
+            detailsModal.classList.remove('active');
+        }
+    });
+    
+    // Close modals when clicking outside
+    document.querySelectorAll('.modal-overlay').forEach(modal => {
+        modal.addEventListener('click', function(e) {
+            if (e.target === this) {
+                this.classList.remove('active');
+            }
+        });
+    });
+    
+    // Toggle facility availability
+    document.querySelectorAll('.toggle-availability').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const card = this.closest('.facility-card');
+            const statusBadge = card.querySelector('.facility-status');
+            
+            if (this.classList.contains('available')) {
+                // Set to unavailable
+                this.classList.remove('available');
+                this.classList.add('unavailable');
+                this.innerHTML = '<i class="fas fa-check"></i> Set Available';
+                
+                statusBadge.classList.remove('available');
+                statusBadge.classList.add('unavailable');
+                statusBadge.textContent = 'Unavailable';
+            } else {
+                // Set to available
+                this.classList.remove('unavailable');
+                this.classList.add('available');
+                this.innerHTML = '<i class="fas fa-times"></i> Set Unavailable';
+                
+                statusBadge.classList.remove('unavailable');
+                statusBadge.classList.add('available');
+                statusBadge.textContent = 'Available';
+            }
+        });
+    });
+    
+    // Initial render
+    renderReservations();
+});
+</script>
