@@ -1,10 +1,9 @@
 /* Announcements Page Specific Styles */
-
-.dashboard-content
-{
+.dashboard-content {
     padding: 2rem;
     width: 100%;
 }
+
 .announcements-container {
     background: var(--white);
     border-radius: var(--border-radius);
@@ -91,13 +90,12 @@
     color: var(--white);
 }
 
-/* Table Container - Always scrollable */
 .announcements-table-container {
     width: 100%;
     margin-bottom: 1.5rem;
+    overflow-x: auto;
 }
 
-/* Table Styles */
 .announcements-table {
     width: 100%;
     border-collapse: collapse;
@@ -108,7 +106,6 @@
     padding: 1rem;
     text-align: left;
     border-bottom: 1px solid var(--medium-gray);
-    white-space: nowrap;
 }
 
 .announcements-table th {
@@ -230,7 +227,6 @@
     cursor: not-allowed;
 }
 
-/* Modal Styles */
 .modal {
     position: fixed;
     top: 0;
@@ -252,12 +248,6 @@
     margin: 1.75rem auto;
     position: relative;
     width: auto;
-}
-
-.modal-dialog-centered {
-    display: flex;
-    align-items: center;
-    min-height: calc(100% - 3.5rem);
 }
 
 .modal-content {
@@ -358,7 +348,6 @@ textarea.form-control {
     height: 18px;
 }
 
-/* View Announcement Modal Specific */
 .announcement-meta {
     display: flex;
     flex-wrap: wrap;
@@ -378,15 +367,6 @@ textarea.form-control {
     line-height: 1.6;
 }
 
-.announcement-content p {
-    margin-bottom: 1rem;
-}
-
-.announcement-content ul {
-    margin-bottom: 1rem;
-    padding-left: 1.5rem;
-}
-
 .badge {
     display: inline-block;
     padding: 0.25em 0.4em;
@@ -404,21 +384,62 @@ textarea.form-control {
     background-color: var(--primary);
 }
 
-/* Responsive Adjustments */
+.badge-danger {
+    background-color: #dc3545;
+    color: white;
+}
+
+.badge-warning {
+    background-color: #ffc107;
+    color: #212529;
+}
+
+.alert.fixed-alert {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 1rem 1.5rem;
+    border-radius: 0.25rem;
+    z-index: 2000;
+    animation: slideIn 0.3s, fadeOut 0.5s 2.5s;
+}
+
+.alert-success {
+    background-color: #d4edda;
+    color: #155724;
+    border-color: #c3e6cb;
+}
+
+.alert-danger {
+    background-color: #f8d7da;
+    color: #721c24;
+    border-color: #f5c6cb;
+}
+
+@keyframes slideIn {
+    from { transform: translateX(100%); }
+    to { transform: translateX(0); }
+}
+
+@keyframes fadeOut {
+    from { opacity: 1; }
+    to { opacity: 0; }
+}
+
 @media (max-width: 768px) {
     .announcements-table th {
-        display: none;  /* Hide the table headers on smaller screens */
+        display: none;
     }
 
     .announcements-table td {
-        display: block;  /* Make each table cell a block element */
-        width: 100%;  /* Ensure cells take full width */
+        display: block;
+        width: 100%;
         position: relative;
-        padding-left: 40%;  /* Space for the data-cell label */
+        padding-left: 40%;
     }
 
     .announcements-table td:before {
-        content: attr(data-cell);  /* Add the data-cell value before the actual data */
+        content: attr(data-cell);
         position: absolute;
         left: 0;
         top: 0;
@@ -426,7 +447,6 @@ textarea.form-control {
         color: var(--primary-dark);
     }
 
-    /* Ensure each row looks like a card with a clear separation */
     .announcements-table tr {
         display: block;
         margin-bottom: 1.5rem;
@@ -465,10 +485,6 @@ textarea.form-control {
         margin: 0.5rem auto;
     }
 
-    .modal-content {
-        border-radius: 0;
-    }
-
     .announcement-meta {
         flex-direction: column;
         gap: 0.75rem;
@@ -483,7 +499,6 @@ textarea.form-control {
     }
 }
 
-/* Modal open state for body */
 .modal-open {
     overflow: hidden;
 }

@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace HomeOwner.Migrations
 {
     /// <inheritdoc />
-    public partial class addedAnnouncement : Migration
+    public partial class RemoveUserTable : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
