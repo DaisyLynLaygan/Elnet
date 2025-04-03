@@ -31,21 +31,13 @@ body {
     justify-content: space-between;
     align-items: center;
     padding: 1rem 2rem;
-    background-color: var(--white);
-    box-shadow: var(--shadow);
+    background-color: white;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     position: sticky;
     top: 0;
     z-index: 100;
 }
 
-.navbar-container {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    width: 100%;
-    max-width: 1200px;
-    margin: 0 auto;
-}
 
 .logo {
     display: flex;
@@ -209,6 +201,66 @@ body {
     display: block;
 }
 
+/* Updated User Profile Styles */
+.user-profile {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem; /* Reduced gap */
+    font-weight: 500;
+    color: var(--text-dark);
+    cursor: pointer;
+    padding: 0.25rem 0.5rem; /* Reduced padding */
+    border-radius: 24px;
+    transition: all 0.3s ease;
+    position: relative;
+    height: 40px; /* Fixed height */
+}
+
+.user-profile img {
+    width: 32px; /* Reduced image size */
+    height: 32px; /* Reduced image size */
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.user-name {
+    font-size: 0.9rem; /* Smaller font size */
+    max-width: 100px; /* Limit width */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.profile-dropdown {
+    display: none;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background-color: var(--white);
+    min-width: 180px; /* Slightly narrower */
+    box-shadow: var(--shadow);
+    border-radius: var(--border-radius);
+    padding: 0.5rem 0;
+    z-index: 1;
+    margin-top: 0.5rem;
+}
+
+.dropdown-link {
+    display: flex;
+    align-items: center;
+    color: var(--text-dark);
+    padding: 0.5rem 1rem; /* Reduced padding */
+    text-decoration: none;
+    transition: all 0.2s ease;
+    font-size: 0.9rem; /* Smaller font size */
+}
+
+.dropdown-link i {
+    width: 18px; /* Smaller icon width */
+    margin-right: 0.5rem; /* Reduced margin */
+    text-align: center;
+    font-size: 0.9rem; /* Smaller icon size */
+}
 /* Hamburger menu for mobile */
 .hamburger {
     display: none;
@@ -243,10 +295,9 @@ body {
 
 
 .staff-content {
-    background-color: var(--white);
     border-radius: var(--border-radius);
     box-shadow: var(--shadow);
-    padding: 2rem;
+    min-height: 100vh;
 }
 
 /* Responsive design */

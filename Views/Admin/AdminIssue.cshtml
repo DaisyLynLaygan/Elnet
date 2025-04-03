@@ -1,0 +1,311 @@
+@{
+    Layout = "~/Views/Shared/Admin_Layout.cshtml";
+    ViewData["Title"] = "Reported Issues";
+    ViewData["Subtitle"] = "Admin";
+    ViewBag.ActiveMenu = "FacilityIssue";
+}
+
+<link rel="stylesheet" href="~/css/admin/issues.css" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+<div class="admin-issues-container">
+    <div class="page-header">
+
+    </div>
+
+    <div class="issues-actions">
+        <div class="search-filter">
+            <input type="text" id="issuesSearch" placeholder="Search issues...">
+            <select id="issuesFilter">
+                <option value="all">All Issues</option>
+                <option value="plumbing">Plumbing</option>
+                <option value="electrical">Electrical</option>
+                <option value="structural">Structural</option>
+                <option value="appliance">Appliance</option>
+                <option value="security">Security</option>
+                <option value="other">Other</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="issues-table-container">
+        <table class="issues-table">
+            <thead>
+                <tr>
+                    <th>Issue ID</th>
+                    <th>Type</th>
+                    <th>Facility</th>
+                    <th>Reported By Staff</th>
+                    <th>Date Reported</th>
+                    <th>Severity</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>ISS-2023-001</td>
+                    <td><span class="badge badge-plumbing">Plumbing</span></td>
+                    <td>Swimming Pool</td>
+                    <td>Staff Member 1</td>
+                    <td>15 Oct 2023 14:30</td>
+                    <td><span class="severity-medium">Medium</span></td>
+                    <td><span class="status-pending">Pending</span></td>
+                    <td>
+                        <button class="btn-icon view-issue" title="View Details">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                        <button class="btn-icon add-note" title="Add Note">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                    </td>
+                </tr>
+                <tr>
+                    <td>ISS-2023-002</td>
+                    <td><span class="badge badge-electrical">Electrical</span></td>
+                    <td>Function Hall</td>
+                    <td>Staff Member 2</td>
+                    <td>16 Oct 2023 09:15</td>
+                    <td><span class="severity-high">High</span></td>
+                    <td><span class="status-in-progress">In Progress</span></td>
+                    <td>
+                        <button class="btn-icon view-issue" title="View Details">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                        <button class="btn-icon add-note" title="Add Note">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                    </td>
+                </tr>
+                <tr>
+                    <td>ISS-2023-003</td>
+                    <td><span class="badge badge-structural">Structural</span></td>
+                    <td>Sports Court</td>
+                    <td>Staff Member 3</td>
+                    <td>17 Oct 2023 11:45</td>
+                    <td><span class="severity-critical">Critical</span></td>
+                    <td><span class="status-pending">Pending</span></td>
+                    <td>
+                        <button class="btn-icon view-issue" title="View Details">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                        <button class="btn-icon add-note" title="Add Note">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                    </td>
+                </tr>
+                <tr>
+                    <td>ISS-2023-004</td>
+                    <td><span class="badge badge-appliance">Appliance</span></td>
+                    <td>Gym</td>
+                    <td>Staff Member 4</td>
+                    <td>18 Oct 2023 16:20</td>
+                    <td><span class="severity-low">Low</span></td>
+                    <td><span class="status-completed">Completed</span></td>
+                    <td>
+                        <button class="btn-icon view-issue" title="View Details">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                        <button class="btn-icon add-note" title="Add Note">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                    </td>
+                </tr>
+                <tr>
+                    <td>ISS-2023-005</td>
+                    <td><span class="badge badge-security">Security</span></td>
+                    <td>Clubhouse</td>
+                    <td>Staff Member 5</td>
+                    <td>19 Oct 2023 08:10</td>
+                    <td><span class="severity-high">High</span></td>
+                    <td><span class="status-in-progress">In Progress</span></td>
+                    <td>
+                        <button class="btn-icon view-issue" title="View Details">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                        <button class="btn-icon add-note" title="Add Note">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="pagination-container">
+        <div class="pagination-info">Showing 1-5 of 15 issues</div>
+        <div class="pagination-controls">
+            <button class="btn btn-outline" disabled>
+                <i class="fas fa-chevron-left"></i> Previous
+            </button>
+            <button class="btn btn-primary active">1</button>
+            <button class="btn btn-outline">2</button>
+            <button class="btn btn-outline">3</button>
+            <button class="btn btn-outline">
+                Next <i class="fas fa-chevron-right"></i>
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Issue Details Modal -->
+<div class="modal-overlay" id="issueDetailsModal">
+    <div class="modal-container">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Issue Details</h3>
+                <button class="modal-close" id="closeIssueDetailsModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="issue-details">
+                    <div class="detail-item">
+                        <span class="detail-label">Issue ID:</span>
+                        <span class="detail-value" id="detailIssueId">ISS-2023-001</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Type:</span>
+                        <span class="detail-value" id="detailIssueType">Plumbing</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Facility:</span>
+                        <span class="detail-value" id="detailFacility">Swimming Pool</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Reported By:</span>
+                        <span class="detail-value" id="detailReportedBy">Staff Member 1</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Date Reported:</span>
+                        <span class="detail-value" id="detailDateReported">15 Oct 2023 14:30</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Severity:</span>
+                        <span class="detail-value" id="detailSeverity">Medium</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Status:</span>
+                        <span class="detail-value" id="detailStatus">Pending</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Description:</span>
+                        <span class="detail-value" id="detailDescription">Water leakage near the pool pump area. Significant water accumulation observed.</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Staff Notes:</span>
+                        <span class="detail-value" id="detailStaffNotes">None</span>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="closeDetailsModal">Close</button>
+                <button class="btn btn-primary" id="updateIssueStatus">Update Status</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Note Modal -->
+<div class="modal-overlay" id="addNoteModal">
+    <div class="modal-container">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Add Staff Note</h3>
+                <button class="modal-close" id="closeNoteModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="staffNoteText">Note:</label>
+                    <textarea id="staffNoteText" class="form-control" rows="5" placeholder="Enter your note about this issue..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="cancelAddNote">Cancel</button>
+                <button class="btn btn-primary" id="saveStaffNote">Save Note</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Current issue being viewed/edited
+        let currentIssue = null;
+        
+        // View issue details
+        document.querySelectorAll('.view-issue').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const row = this.closest('tr');
+                currentIssue = {
+                    id: row.cells[0].textContent,
+                    type: row.cells[1].textContent,
+                    facility: row.cells[2].textContent,
+                    reportedBy: row.cells[3].textContent,
+                    dateReported: row.cells[4].textContent,
+                    severity: row.cells[5].textContent,
+                    status: row.cells[6].textContent
+                };
+                
+                // Update modal content
+                document.getElementById('detailIssueId').textContent = currentIssue.id;
+                document.getElementById('detailIssueType').textContent = currentIssue.type;
+                document.getElementById('detailFacility').textContent = currentIssue.facility;
+                document.getElementById('detailReportedBy').textContent = currentIssue.reportedBy;
+                document.getElementById('detailDateReported').textContent = currentIssue.dateReported;
+                document.getElementById('detailSeverity').textContent = currentIssue.severity;
+                document.getElementById('detailStatus').textContent = currentIssue.status;
+                
+                document.getElementById('issueDetailsModal').classList.add('active');
+            });
+        });
+
+        // Add note to issue
+        document.querySelectorAll('.add-note').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const row = this.closest('tr');
+                currentIssue = {
+                    id: row.cells[0].textContent,
+                    type: row.cells[1].textContent,
+                    facility: row.cells[2].textContent
+                };
+                
+                document.getElementById('addNoteModal').classList.add('active');
+            });
+        });
+
+        // Save staff note
+        document.getElementById('saveStaffNote').addEventListener('click', function() {
+            const noteText = document.getElementById('staffNoteText').value;
+            if (noteText.trim() === '') {
+                alert('Please enter a note before saving.');
+                return;
+            }
+            
+            // In a real app, you would save this to your database
+            alert(`Note added to issue ${currentIssue.id}:\n\n${noteText}`);
+            document.getElementById('addNoteModal').classList.remove('active');
+            document.getElementById('staffNoteText').value = '';
+        });
+
+        // Close modals
+        document.getElementById('closeIssueDetailsModal').addEventListener('click', function() {
+            document.getElementById('issueDetailsModal').classList.remove('active');
+        });
+
+        document.getElementById('closeDetailsModal').addEventListener('click', function() {
+            document.getElementById('issueDetailsModal').classList.remove('active');
+        });
+
+        document.getElementById('closeNoteModal').addEventListener('click', function() {
+            document.getElementById('addNoteModal').classList.remove('active');
+        });
+
+        document.getElementById('cancelAddNote').addEventListener('click', function() {
+            document.getElementById('addNoteModal').classList.remove('active');
+        });
+
+        // Update issue status
+        document.getElementById('updateIssueStatus').addEventListener('click', function() {
+            alert('Status update functionality would go here');
+        });
+    });
+</script>
