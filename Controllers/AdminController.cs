@@ -332,5 +332,11 @@ namespace HomeOwner.Controllers
             ViewBag.ActiveMenu = "ServiceRequests";
             return View("AdminServiceRequests");
         }
+
+        public IActionResult AdminIssue()
+        {
+            ViewBag.ActiveMenu = "FacilityIssue";
+            return View();
+        }
     }
 }

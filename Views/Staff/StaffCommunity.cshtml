@@ -1,8 +1,12 @@
+@model HomeOwner.Models.User
 @{
-    Layout = "~/Views/Shared/Dashboard_Layout.cshtml";
+    ViewData["Title"] = "Staff Community";
+    ViewData["Subtitle"] = "Staff Overview";
+    Layout = "~/Views/Shared/StaffLayout.cshtml";
+    ViewBag.ActiveMenu = "Community";
 }
 
-<link rel="stylesheet" href="~/css/homeowners/community.css"/>
+<link rel="stylesheet" href="~/css/staff/community.css"/>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 
 <div class="community-wrapper">

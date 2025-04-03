@@ -319,7 +319,7 @@
         <!-- User Profile with Dropdown -->
         <div class="user-profile" onclick="toggleProfileDropdown()">
                 <span style="text-transform: capitalize;">@user?.firstname @user?.lastname</span>
-            <img src="~/images/user-default-picture.jpg" alt="User profile" />
+                <img src="~/images/user-default-picture.jpg" alt="User profile" />
             <!-- Dropdown Menu -->
             <div class="profile-dropdown">
                 <a asp-controller="Homeowner" asp-action="UserProfile" class="dropdown-link">Settings</a>
@@ -329,6 +329,7 @@
                 </form>
             </div>
         </div>
+        
     </div>
 </nav>
 

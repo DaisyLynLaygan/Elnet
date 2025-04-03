@@ -10,59 +10,54 @@
 <body>
     <!-- Top Navigation Bar -->
     <nav class="navbar">
-        <div class="navbar-container">
-            <a href="/" class="logo">
-                <img src="/images/logo.png" alt="Company Logo">
-                <span>HomeSphere</span>
-            </a>
+        <a href="/" class="logo">
+            <img src="/images/logo.png" alt="Company Logo">
+            <span>HomeSphere</span>
+        </a>
 
-            <ul class="nav-menu">
-                <li class="nav-item @(ViewBag.ActiveMenu == "" ? "active" : "")">
-                    <a asp-controller="Staff" asp-action="StaffDashboard" class="nav-link">
-                        <span>Dashboard</span>
-                    </a>
-                </li>
-                <li class="nav-item @(ViewBag.ActiveMenu == "Feedback" ? "active" : "")">
-                    <a href="#" class="nav-link">
-                        <span>Staff Services</span>
-                    </a>
-                </li>
-                <li class="nav-item @(ViewBag.ActiveMenu == "Community" ? "active" : "")">
-                    <a href="#" class="nav-link">
-                        <span>Community</span>
-                    </a>
-                </li>
-                <li class="nav-item @(ViewBag.ActiveMenu == "Events" ? "active" : "")">
-                    <a href="#" class="nav-link">
-                        <span>Events</span>
-                    </a>
-                </li>
-            </ul>
+        <ul class="nav-menu">
+            <li class="nav-item @(ViewBag.ActiveMenu == "" ? "active" : "")">
+                <a asp-controller="Staff" asp-action="StaffDashboard" class="nav-link">
+                    <span>Dashboard</span>
+                </a>
+            </li>
+            <li class="nav-item @(ViewBag.ActiveMenu == "Feedback" ? "active" : "")">
+                <a asp-controller="Staff" asp-action="StaffServices" class="nav-link">
+                    <span>Staff Services</span>
+                </a>
+            </li>
+            <li class="nav-item @(ViewBag.ActiveMenu == "Community" ? "active" : "")">
+                <a asp-controller="Staff" asp-action="StaffCommunity" class="nav-link">
+                    <span>Community</span>
+                </a>
+            </li>
+            <li class="nav-item @(ViewBag.ActiveMenu == "Events" ? "active" : "")">
+                <a asp-controller="Staff" asp-action="StaffEvents" class="nav-link">
+                    <span>Events</span>
+                </a>
+            </li>
+        </ul>
 
-            <div class="user-hamburger-container">
-                <div class="user-profile">
-                    <span class="user-name">Kimperor</span>
-                    <div class="profile-dropdown">
-                        <a href="/Account/Profile" class="dropdown-link">
-                            <i class="fas fa-user"></i>
-                            <span>Profile</span>
-                        </a>
-                        <a href="/Account/Settings" class="dropdown-link">
-                            <i class="fas fa-cog"></i>
-                            <span>Settings</span>
-                        </a>
-                        <a href="/Account/Logout" class="dropdown-link">
-                            <i class="fas fa-sign-out-alt"></i>
-                            <span>Logout</span>
-                        </a>
-                    </div>
+        <div class="user-hamburger-container">
+            <div class="user-profile">
+                <img src="~/images/user-default-picture.jpg" alt="User profile" />
+                <span class="user-name">Kimperor</span>
+                <div class="profile-dropdown">
+                    <a href="/Account/Settings" class="dropdown-link">
+                        <i class="fas fa-cog"></i>
+                        <span>Settings</span>
+                    </a>
+                    <form asp-controller="Home" asp-action="LogOut" method="post" class="dropdown-link">
+                        <i class="fas fa-sign-out-alt"></i>
+                        <button type="submit" class="dropdown-link" style=" all: unset; cursor: pointer; color: inherit; text-decoration: none;">Log Out</button>
+                    </form>
                 </div>
-                <button class="hamburger">
-                    <span></span>
-                    <span></span>
-                    <span></span>
-                </button>
             </div>
+            <button class="hamburger">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
         </div>
     </nav>
 
@@ -76,5 +71,6 @@
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/js/staff/staff.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
+
 </body>
 </html>

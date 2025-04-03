@@ -1,0 +1,956 @@
+@model HomeOwner.Models.User
+@{
+    ViewData["Title"] = "Staff Services";
+    ViewData["Subtitle"] = "Manage Approved Bookings";
+    Layout = "~/Views/Shared/StaffLayout.cshtml";
+    ViewBag.ActiveMenu = "Staff Services";
+}
+
+<link rel="stylesheet" href="~/css/staff/services.css" />
+
+<div class="staff-services-container">
+    <!-- Header Section -->
+    <div class="services-header">
+    </div>
+
+    <!-- Tabs for different service types -->
+    <div class="services-tabs">
+        <div class="tab active" data-tab="facility">Facility Reservations</div>
+        <div class="tab" data-tab="maintenance">Service Maintenance</div>
+    </div>
+
+    <!-- Facility Reservations Section -->
+    <div class="service-section active" id="facility-section">
+        <div class="section-header">
+            <h2>Approved Facility Reservations</h2>
+            <div class="search-filter">
+                <input type="text" id="facility-search" placeholder="Search reservations...">
+                <select id="facility-filter">
+                    <option value="all">All Facilities</option>
+                    <option value="Function Hall">Function Hall</option>
+                    <option value="Sports Court">Sports Court</option>
+                    <option value="Swimming Pool">Swimming Pool</option>
+                    <option value="Fitness Gym">Fitness Gym</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="reservations-table-container">
+            <table class="reservations-table">
+                <thead>
+                    <tr>
+                        <th>Reservation ID</th>
+                        <th>Facility</th>
+                        <th>Resident</th>
+                        <th>Date & Time</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="facilityReservationsTable">
+                    <!-- Facility reservations will be loaded here -->
+                </tbody>
+            </table>
+        </div>
+
+        <div class="pagination-container">
+            <div class="pagination-info" id="facilityPaginationInfo"></div>
+            <div class="pagination-controls">
+                <button class="btn btn-outline" id="facilityPrevPageBtn" disabled>
+                    <i class="fas fa-chevron-left"></i> Previous
+                </button>
+                <div class="page-numbers" id="facilityPageNumbers"></div>
+                <button class="btn btn-outline" id="facilityNextPageBtn">
+                    Next <i class="fas fa-chevron-right"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Service Maintenance Section -->
+    <div class="service-section" id="maintenance-section">
+        <div class="section-header">
+            <h2>Approved Service Requests</h2>
+            <div class="search-filter">
+                <input type="text" id="maintenance-search" placeholder="Search requests...">
+                <select id="maintenance-filter">
+                    <option value="all">All Services</option>
+                    <option value="House Cleaning">House Cleaning</option>
+                    <option value="Garden Maintenance">Garden Maintenance</option>
+                    <option value="Handyman Services">Handyman Services</option>
+                    <option value="Safety Inspection">Safety Inspection</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="requests-table-container">
+            <table class="requests-table">
+                <thead>
+                    <tr>
+                        <th>Request ID</th>
+                        <th>Homeowner</th>
+                        <th>Service</th>
+                        <th>Scheduled Date</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="maintenanceRequestsTable">
+                    <!-- Maintenance requests will be loaded here -->
+                </tbody>
+            </table>
+        </div>
+
+        <div class="pagination-container">
+            <div class="pagination-info" id="maintenancePaginationInfo"></div>
+            <div class="pagination-controls">
+                <button class="btn btn-outline" id="maintenancePrevPageBtn" disabled>
+                    <i class="fas fa-chevron-left"></i> Previous
+                </button>
+                <div class="page-numbers" id="maintenancePageNumbers"></div>
+                <button class="btn btn-outline" id="maintenanceNextPageBtn">
+                    Next <i class="fas fa-chevron-right"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Details Modal for Facility Reservations -->
+<div class="modal-overlay" id="facilityDetailsModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Facility Reservation Details</h3>
+            <button class="close-modal">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="details-summary">
+                <h4 id="facilityDetailsId">Reservation #RES-2023-002</h4>
+                <div class="details-item">
+                    <span class="details-label">Status:</span>
+                    <span class="details-value" id="facilityDetailsStatus"><span class="status-badge status-approved">Approved</span></span>
+                </div>
+                <div class="details-item">
+                    <span class="details-label">Facility:</span>
+                    <span class="details-value" id="facilityDetailsFacility">Sports Court</span>
+                </div>
+                <div class="details-item">
+                    <span class="details-label">Resident:</span>
+                    <span class="details-value" id="facilityDetailsResident">Maria Garcia (Unit 205)</span>
+                </div>
+                <div class="details-item">
+                    <span class="details-label">Date:</span>
+                    <span class="details-value" id="facilityDetailsDate">16 Oct 2023</span>
+                </div>
+                <div class="details-item">
+                    <span class="details-label">Time:</span>
+                    <span class="details-value" id="facilityDetailsTime">09:00 - 11:00 (2 hours)</span>
+                </div>
+                <div class="details-item">
+                    <span class="details-label">Guests:</span>
+                    <span class="details-value" id="facilityDetailsGuests">15 people</span>
+                </div>
+                <div class="details-item">
+                    <span class="details-label">Purpose:</span>
+                    <span class="details-value" id="facilityDetailsPurpose">Badminton Tournament</span>
+                </div>
+            </div>
+            
+            <div class="staff-actions">
+                <h5>Staff Booking Acceptance</h5>
+                <div class="form-group">
+                    <label for="facilityStaffNotes">Notes for Resident:</label>
+                    <textarea id="facilityStaffNotes" placeholder="Add any notes for the resident about this reservation..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="facilityNotificationType">Notification Type:</label>
+                    <select id="facilityNotificationType">
+                        <option value="confirmation">Escort Confirmation</option>
+                        <option value="reminder">Reminder</option>
+                        <option value="instructions">Special Instructions</option>
+                        <option value="custom">Custom Message</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="facilityNotificationMessage">Message to Resident:</label>
+                    <textarea id="facilityNotificationMessage" placeholder="Enter message to notify the resident..."></textarea>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-outline close-modal-btn">Cancel</button>
+            <button class="btn btn-primary" id="acceptFacilityBookingBtn">
+                <i class="fas fa-check-circle"></i> Accept Booking
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Details Modal for Service Maintenance -->
+<div class="modal-overlay" id="maintenanceDetailsModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Service Request Details</h3>
+            <button class="close-modal">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="details-summary">
+                <h4 id="maintenanceDetailsId">Request #SR-2023-002</h4>
+                <div class="details-item">
+                    <span class="details-label">Status:</span>
+                    <span class="details-value" id="maintenanceDetailsStatus"><span class="status-badge status-approved">Approved</span></span>
+                </div>
+                <div class="details-item">
+                    <span class="details-label">Service:</span>
+                    <span class="details-value" id="maintenanceDetailsService">Garden Maintenance</span>
+                </div>
+                <div class="details-item">
+                    <span class="details-label">Homeowner:</span>
+                    <span class="details-value" id="maintenanceDetailsResident">Priya Sharma (Unit 5C)</span>
+                </div>
+                <div class="details-item">
+                    <span class="details-label">Scheduled Date:</span>
+                    <span class="details-value" id="maintenanceDetailsDate">26 Oct 2023</span>
+                </div>
+                <div class="details-item">
+                    <span class="details-label">Scheduled Time:</span>
+                    <span class="details-value" id="maintenanceDetailsTime">02:00 PM</span>
+                </div>
+                <div class="details-item">
+                    <span class="details-label">Payment Status:</span>
+                    <span class="details-value" id="maintenanceDetailsPayment"><span class="status-badge status-paid">Paid</span></span>
+                </div>
+                <div class="details-item">
+                    <span class="details-label">Special Instructions:</span>
+                    <span class="details-value" id="maintenanceDetailsInstructions">Please trim the hedges along the front walkway and remove weeds from the flower beds. The lawn needs mowing as well.</span>
+                </div>
+            </div>
+            
+            <div class="staff-actions">
+                <h5>Staff Booking Acceptance</h5>
+                <div class="form-group">
+                    <label for="maintenanceStaffNotes">Notes for Homeowner:</label>
+                    <textarea id="maintenanceStaffNotes" placeholder="Add any notes for the homeowner about this service..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="maintenanceNotificationType">Notification Type:</label>
+                    <select id="maintenanceNotificationType">
+                        <option value="confirmation">Service Confirmation</option>
+                        <option value="reminder">Reminder</option>
+                        <option value="instructions">Special Instructions</option>
+                        <option value="custom">Custom Message</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="maintenanceNotificationMessage">Message to Homeowner:</label>
+                    <textarea id="maintenanceNotificationMessage" placeholder="Enter message to notify the homeowner..."></textarea>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-outline close-modal-btn">Cancel</button>
+            <button class="btn btn-primary" id="acceptMaintenanceBookingBtn">
+                <i class="fas fa-check-circle"></i> Accept Booking
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- SweetAlert CSS -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // DOM Elements
+        const tabs = document.querySelectorAll('.tab');
+        const facilitySection = document.getElementById('facility-section');
+        const maintenanceSection = document.getElementById('maintenance-section');
+        
+        // Facility Reservation Elements
+        const facilityTableBody = document.getElementById('facilityReservationsTable');
+        const facilitySearch = document.getElementById('facility-search');
+        const facilityFilter = document.getElementById('facility-filter');
+        const facilityPrevBtn = document.getElementById('facilityPrevPageBtn');
+        const facilityNextBtn = document.getElementById('facilityNextPageBtn');
+        const facilityPageNumbers = document.getElementById('facilityPageNumbers');
+        const facilityPaginationInfo = document.getElementById('facilityPaginationInfo');
+        
+        // Service Maintenance Elements
+        const maintenanceTableBody = document.getElementById('maintenanceRequestsTable');
+        const maintenanceSearch = document.getElementById('maintenance-search');
+        const maintenanceFilter = document.getElementById('maintenance-filter');
+        const maintenancePrevBtn = document.getElementById('maintenancePrevPageBtn');
+        const maintenanceNextBtn = document.getElementById('maintenanceNextPageBtn');
+        const maintenancePageNumbers = document.getElementById('maintenancePageNumbers');
+        const maintenancePaginationInfo = document.getElementById('maintenancePaginationInfo');
+        
+        // Modal Elements
+        const facilityDetailsModal = document.getElementById('facilityDetailsModal');
+        const maintenanceDetailsModal = document.getElementById('maintenanceDetailsModal');
+        const closeModalButtons = document.querySelectorAll('.close-modal, .close-modal-btn');
+        
+        // Current selected items
+        let currentFacilityReservation = null;
+        let currentMaintenanceRequest = null;
+        
+        // Sample data - in a real app, this would come from an API
+        const facilityReservations = [
+            {
+                id: "RES-2023-001",
+                facility: "Function Hall",
+                resident: "John Smith (Unit 101)",
+                dateTime: "15 Oct 2023, 14:00-18:00",
+                date: "15 Oct 2023",
+                time: "14:00 - 18:00 (4 hours)",
+                status: "approved",
+                guests: "50 people",
+                purpose: "Wedding Anniversary",
+                amount: "$500.00",
+                staffNotes: "",
+                assignedStaff: null
+            },
+            {
+                id: "RES-2023-002",
+                facility: "Sports Court",
+                resident: "Maria Garcia (Unit 205)",
+                dateTime: "16 Oct 2023, 09:00-11:00",
+                date: "16 Oct 2023",
+                time: "09:00 - 11:00 (2 hours)",
+                status: "approved",
+                guests: "15 people",
+                purpose: "Badminton Tournament",
+                amount: "$100.00",
+                staffNotes: "",
+                assignedStaff: null
+            },
+            {
+                id: "RES-2023-006",
+                facility: "Sports Court",
+                resident: "Emily Wilson (Unit 315)",
+                dateTime: "20 Oct 2023, 15:00-17:00",
+                date: "20 Oct 2023",
+                time: "15:00 - 17:00 (2 hours)",
+                status: "approved",
+                guests: "12 people",
+                purpose: "Basketball Game",
+                amount: "$100.00",
+                staffNotes: "",
+                assignedStaff: null
+            },
+            {
+                id: "RES-2023-009",
+                facility: "Function Hall",
+                resident: "Daniel Anderson (Unit 305)",
+                dateTime: "23 Oct 2023, 12:00-16:00",
+                date: "23 Oct 2023",
+                time: "12:00 - 16:00 (4 hours)",
+                status: "approved",
+                guests: "60 people",
+                purpose: "Business Meeting",
+                amount: "$500.00",
+                staffNotes: "",
+                assignedStaff: null
+            }
+        ];
+        
+        const maintenanceRequests = [
+            {
+                id: "SR-2023-002",
+                user: {
+                    name: "Priya Sharma",
+                    unit: "Unit 5C",
+                    avatar: "https://randomuser.me/api/portraits/women/44.jpg",
+                    phone: "+1 (555) 987-6543",
+                    email: "priya.sharma@example.com"
+                },
+                service: {
+                    name: "Garden Maintenance",
+                    icon: "🌿",
+                    price: "$150.00",
+                    frequency: "Monthly"
+                },
+                date: {
+                    requested: "May 21, 2023",
+                    scheduled: "May 26, 2023",
+                    time: "02:00 PM"
+                },
+                status: "approved",
+                payment: "Paid",
+                instructions: "Please trim the hedges along the front walkway and remove weeds from the flower beds. The lawn needs mowing as well.",
+                staffNotes: "",
+                assignedStaff: null
+            },
+            {
+                id: "SR-2023-003",
+                user: {
+                    name: "Rahul Mehta",
+                    unit: "Unit 8A",
+                    avatar: "https://randomuser.me/api/portraits/men/67.jpg",
+                    phone: "+1 (555) 456-7890",
+                    email: "rahul.mehta@example.com"
+                },
+                service: {
+                    name: "Handyman Services",
+                    icon: "🔧",
+                    price: "$85.00",
+                    frequency: "One-time"
+                },
+                date: {
+                    requested: "May 22, 2023",
+                    scheduled: "May 27, 2023",
+                    time: "09:00 AM"
+                },
+                status: "approved",
+                payment: "Paid",
+                instructions: "Need help fixing a leaky faucet in the kitchen and installing new shelves in the living room.",
+                staffNotes: "",
+                assignedStaff: null
+            },
+            {
+                id: "SR-2023-011",
+                user: {
+                    name: "James White",
+                    unit: "Unit 207",
+                    avatar: "https://randomuser.me/api/portraits/men/55.jpg",
+                    phone: "+1 (555) 234-5678",
+                    email: "james.white@example.com"
+                },
+                service: {
+                    name: "HVAC Maintenance",
+                    icon: "❄️",
+                    price: "$120.00",
+                    frequency: "Seasonal"
+                },
+                date: {
+                    requested: "May 24, 2023",
+                    scheduled: "May 29, 2023",
+                    time: "03:00 PM"
+                },
+                status: "approved",
+                payment: "Paid",
+                instructions: "AC unit not cooling properly. Needs inspection and service.",
+                staffNotes: "",
+                assignedStaff: null
+            }
+        ];
+        
+        // Tab Switching
+        tabs.forEach(tab => {
+            tab.addEventListener('click', function() {
+                // Update active tab
+                tabs.forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+                
+                // Show corresponding section
+                const tabType = this.dataset.tab;
+                facilitySection.classList.remove('active');
+                maintenanceSection.classList.remove('active');
+                
+                if (tabType === 'facility') {
+                    facilitySection.classList.add('active');
+                } else {
+                    maintenanceSection.classList.add('active');
+                }
+            });
+        });
+        
+        // Initialize both tables
+        renderFacilityReservations();
+        renderMaintenanceRequests();
+        
+        // Facility Reservations Functions
+        function renderFacilityReservations(page = 1, searchTerm = '', filterValue = 'all') {
+            // Filter reservations based on search and filter
+            let filteredReservations = facilityReservations.filter(res => {
+                const matchesSearch = searchTerm === '' || 
+                    res.id.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                    res.resident.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                    res.facility.toLowerCase().includes(searchTerm.toLowerCase());
+                
+                const matchesFilter = filterValue === 'all' || res.facility === filterValue;
+                
+                return matchesSearch && matchesFilter;
+            });
+            
+            // Pagination logic
+            const itemsPerPage = 5;
+            const totalPages = Math.ceil(filteredReservations.length / itemsPerPage);
+            const startIndex = (page - 1) * itemsPerPage;
+            const paginatedReservations = filteredReservations.slice(startIndex, startIndex + itemsPerPage);
+            
+            // Clear table
+            facilityTableBody.innerHTML = '';
+            
+            // Populate table
+            paginatedReservations.forEach(reservation => {
+                const row = document.createElement('tr');
+                row.dataset.id = reservation.id;
+                
+                // Determine status display
+                let statusDisplay = capitalizeFirstLetter(reservation.status);
+                if (reservation.assignedStaff) {
+                    statusDisplay = "Assigned to Staff";
+                }
+                
+                row.innerHTML = `
+                    <td>${reservation.id}</td>
+                    <td>${reservation.facility}</td>
+                    <td>${reservation.resident}</td>
+                    <td>${reservation.dateTime}</td>
+                    <td><span class="status-badge ${reservation.assignedStaff ? 'status-in-progress' : 'status-approved'}">${statusDisplay}</span></td>
+                    <td>
+                        <div class="action-buttons">
+                            <button class="btn-icon view-details" title="View Details" data-action="view">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            ${!reservation.assignedStaff ? 
+                                `<button class="btn-icon" title="Accept Booking" data-action="accept">
+                                    <i class="fas fa-user-check"></i>
+                                </button>` : ''
+                            }
+                        </div>
+                    </td>
+                `;
+                
+                facilityTableBody.appendChild(row);
+                
+                // Add event listeners to action buttons
+                row.querySelectorAll('[data-action]').forEach(btn => {
+                    btn.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        const action = this.dataset.action;
+                        const reservationId = this.closest('tr').dataset.id;
+                        
+                        if (action === 'view') {
+                            showFacilityDetails(reservationId);
+                        } else if (action === 'accept') {
+                            showFacilityDetails(reservationId);
+                        }
+                    });
+                });
+            });
+            
+            // Update pagination controls
+            updatePaginationControls(
+                page, 
+                totalPages, 
+                filteredReservations.length, 
+                facilityPrevBtn, 
+                facilityNextBtn, 
+                facilityPageNumbers, 
+                facilityPaginationInfo,
+                'facility'
+            );
+            
+            // Add click event to rows
+            facilityTableBody.querySelectorAll('tr').forEach(row => {
+                row.addEventListener('click', function() {
+                    const reservationId = this.dataset.id;
+                    showFacilityDetails(reservationId);
+                });
+            });
+        }
+        
+        function showFacilityDetails(reservationId) {
+            const reservation = facilityReservations.find(r => r.id === reservationId);
+            if (!reservation) return;
+            
+            currentFacilityReservation = reservation;
+            
+            // Update modal content
+            document.getElementById('facilityDetailsId').textContent = `Reservation ${reservation.id}`;
+            document.getElementById('facilityDetailsStatus').innerHTML = 
+                `<span class="status-badge ${reservation.assignedStaff ? 'status-in-progress' : 'status-approved'}">${reservation.assignedStaff ? 'Assigned to Staff' : 'Approved'}</span>`;
+            document.getElementById('facilityDetailsFacility').textContent = reservation.facility;
+            document.getElementById('facilityDetailsResident').textContent = reservation.resident;
+            document.getElementById('facilityDetailsDate').textContent = reservation.date;
+            document.getElementById('facilityDetailsTime').textContent = reservation.time;
+            document.getElementById('facilityDetailsGuests').textContent = reservation.guests;
+            document.getElementById('facilityDetailsPurpose').textContent = reservation.purpose;
+            document.getElementById('facilityStaffNotes').value = reservation.staffNotes || '';
+            document.getElementById('facilityNotificationMessage').value = 
+                `Dear Resident,\n\nThis is to confirm that a staff member will accompany you to the ${reservation.facility} on ${reservation.date} at ${reservation.time}.\n\nThank you,\nStaff Team`;
+            
+            // Open modal
+            facilityDetailsModal.classList.add('active');
+        }
+        
+        // Service Maintenance Functions
+        function renderMaintenanceRequests(page = 1, searchTerm = '', filterValue = 'all') {
+            // Filter requests based on search and filter
+            let filteredRequests = maintenanceRequests.filter(req => {
+                const matchesSearch = searchTerm === '' || 
+                    req.id.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                    req.user.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                    req.service.name.toLowerCase().includes(searchTerm.toLowerCase());
+                
+                const matchesFilter = filterValue === 'all' || req.service.name === filterValue;
+                
+                return matchesSearch && matchesFilter;
+            });
+            
+            // Pagination logic
+            const itemsPerPage = 5;
+            const totalPages = Math.ceil(filteredRequests.length / itemsPerPage);
+            const startIndex = (page - 1) * itemsPerPage;
+            const paginatedRequests = filteredRequests.slice(startIndex, startIndex + itemsPerPage);
+            
+            // Clear table
+            maintenanceTableBody.innerHTML = '';
+            
+            // Populate table
+            paginatedRequests.forEach(request => {
+                const row = document.createElement('tr');
+                row.dataset.id = request.id;
+                
+                // Determine status display
+                let statusDisplay = capitalizeFirstLetter(request.status);
+                if (request.assignedStaff) {
+                    statusDisplay = "Assigned to Staff";
+                }
+                
+                row.innerHTML = `
+                    <td>${request.id}</td>
+                    <td>
+                        <div class="user-info">
+                            <img src="${request.user.avatar}" alt="User" class="user-avatar">
+                            <div class="user-details">
+                                <h4>${request.user.name}</h4>
+                                <p>${request.user.unit}</p>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="service-info">
+                            <div class="service-icon">${request.service.icon}</div>
+                            <span>${request.service.name}</span>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="date-time">
+                            <div class="date">${request.date.scheduled}</div>
+                            <div class="time">${request.date.time}</div>
+                        </div>
+                    </td>
+                    <td><span class="status-badge ${request.assignedStaff ? 'status-in-progress' : 'status-approved'}">${statusDisplay}</span></td>
+                    <td>
+                        <div class="action-buttons">
+                            <button class="btn-icon view-details" title="View Details" data-action="view">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            ${!request.assignedStaff ? 
+                                `<button class="btn-icon" title="Accept Booking" data-action="accept">
+                                    <i class="fas fa-user-check"></i>
+                                </button>` : ''
+                            }
+                        </div>
+                    </td>
+                `;
+                
+                maintenanceTableBody.appendChild(row);
+                
+                // Add event listeners to action buttons
+                row.querySelectorAll('[data-action]').forEach(btn => {
+                    btn.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        const action = this.dataset.action;
+                        const requestId = this.closest('tr').dataset.id;
+                        
+                        if (action === 'view') {
+                            showMaintenanceDetails(requestId);
+                        } else if (action === 'accept') {
+                            showMaintenanceDetails(requestId);
+                        }
+                    });
+                });
+            });
+            
+            // Update pagination controls
+            updatePaginationControls(
+                page, 
+                totalPages, 
+                filteredRequests.length, 
+                maintenancePrevBtn, 
+                maintenanceNextBtn, 
+                maintenancePageNumbers, 
+                maintenancePaginationInfo,
+                'maintenance'
+            );
+            
+            // Add click event to rows
+            maintenanceTableBody.querySelectorAll('tr').forEach(row => {
+                row.addEventListener('click', function() {
+                    const requestId = this.dataset.id;
+                    showMaintenanceDetails(requestId);
+                });
+            });
+        }
+        
+        function showMaintenanceDetails(requestId) {
+            const request = maintenanceRequests.find(r => r.id === requestId);
+            if (!request) return;
+            
+            currentMaintenanceRequest = request;
+            
+            // Update modal content
+            document.getElementById('maintenanceDetailsId').textContent = `Request ${request.id}`;
+            document.getElementById('maintenanceDetailsStatus').innerHTML = 
+                `<span class="status-badge ${request.assignedStaff ? 'status-in-progress' : 'status-approved'}">${request.assignedStaff ? 'Assigned to Staff' : 'Approved'}</span>`;
+            document.getElementById('maintenanceDetailsService').textContent = request.service.name;
+            document.getElementById('maintenanceDetailsResident').textContent = `${request.user.name} (${request.user.unit})`;
+            document.getElementById('maintenanceDetailsDate').textContent = request.date.scheduled;
+            document.getElementById('maintenanceDetailsTime').textContent = request.date.time;
+            document.getElementById('maintenanceDetailsPayment').innerHTML = 
+                `<span class="status-badge status-paid">Paid</span>`;
+            document.getElementById('maintenanceDetailsInstructions').textContent = request.instructions;
+            document.getElementById('maintenanceStaffNotes').value = request.staffNotes || '';
+            document.getElementById('maintenanceNotificationMessage').value = 
+                `Dear Homeowner,\n\nThis is to confirm that a staff member will perform the ${request.service.name} service on ${request.date.scheduled} at ${request.date.time} as scheduled.\n\nThank you,\nStaff Team`;
+            
+            // Open modal
+            maintenanceDetailsModal.classList.add('active');
+        }
+        
+        // Common Functions
+        function updatePaginationControls(
+            currentPage, 
+            totalPages, 
+            totalItems, 
+            prevBtn, 
+            nextBtn, 
+            pageNumbersContainer, 
+            paginationInfo,
+            type
+        ) {
+            // Update pagination info
+            const startItem = (currentPage - 1) * 5 + 1;
+            const endItem = Math.min(startItem + 4, totalItems);
+            paginationInfo.textContent = `Showing ${startItem}-${endItem} of ${totalItems} ${type === 'facility' ? 'reservations' : 'requests'}`;
+            
+            // Update previous/next buttons
+            prevBtn.disabled = currentPage === 1;
+            nextBtn.disabled = currentPage === totalPages;
+            
+            // Update page numbers
+            pageNumbersContainer.innerHTML = '';
+            
+            // Always show first page
+            if (currentPage > 2) {
+                addPageNumber(1, type);
+                if (currentPage > 3) {
+                    pageNumbersContainer.innerHTML += '<span class="page-ellipsis">...</span>';
+                }
+            }
+            
+            // Show current page and adjacent pages
+            for (let i = Math.max(1, currentPage - 1); i <= Math.min(totalPages, currentPage + 1); i++) {
+                addPageNumber(i, type);
+            }
+            
+            // Always show last page
+            if (currentPage < totalPages - 1) {
+                if (currentPage < totalPages - 2) {
+                    pageNumbersContainer.innerHTML += '<span class="page-ellipsis">...</span>';
+                }
+                addPageNumber(totalPages, type);
+            }
+            
+            function addPageNumber(pageNumber, type) {
+                const pageBtn = document.createElement('button');
+                pageBtn.className = `page-number ${pageNumber === currentPage ? 'active' : ''}`;
+                pageBtn.textContent = pageNumber;
+                pageBtn.addEventListener('click', () => {
+                    if (type === 'facility') {
+                        renderFacilityReservations(
+                            pageNumber, 
+                            facilitySearch.value, 
+                            facilityFilter.value
+                        );
+                    } else {
+                        renderMaintenanceRequests(
+                            pageNumber, 
+                            maintenanceSearch.value, 
+                            maintenanceFilter.value
+                        );
+                    }
+                });
+                pageNumbersContainer.appendChild(pageBtn);
+            }
+        }
+        
+        function capitalizeFirstLetter(string) {
+            return string.charAt(0).toUpperCase() + string.slice(1);
+        }
+        
+        // Event Listeners for Search and Filter
+        facilitySearch.addEventListener('input', function() {
+            renderFacilityReservations(1, this.value, facilityFilter.value);
+        });
+        
+        facilityFilter.addEventListener('change', function() {
+            renderFacilityReservations(1, facilitySearch.value, this.value);
+        });
+        
+        maintenanceSearch.addEventListener('input', function() {
+            renderMaintenanceRequests(1, this.value, maintenanceFilter.value);
+        });
+        
+        maintenanceFilter.addEventListener('change', function() {
+            renderMaintenanceRequests(1, maintenanceSearch.value, this.value);
+        });
+        
+        // Pagination Button Handlers
+        facilityPrevBtn.addEventListener('click', function() {
+            if (!this.disabled) {
+                const currentPage = parseInt(facilityPageNumbers.querySelector('.active')?.textContent || '1');
+                renderFacilityReservations(
+                    currentPage - 1, 
+                    facilitySearch.value, 
+                    facilityFilter.value
+                );
+            }
+        });
+        
+        facilityNextBtn.addEventListener('click', function() {
+            if (!this.disabled) {
+                const currentPage = parseInt(facilityPageNumbers.querySelector('.active')?.textContent || '1');
+                renderFacilityReservations(
+                    currentPage + 1, 
+                    facilitySearch.value, 
+                    facilityFilter.value
+                );
+            }
+        });
+        
+        maintenancePrevBtn.addEventListener('click', function() {
+            if (!this.disabled) {
+                const currentPage = parseInt(maintenancePageNumbers.querySelector('.active')?.textContent || '1');
+                renderMaintenanceRequests(
+                    currentPage - 1, 
+                    maintenanceSearch.value, 
+                    maintenanceFilter.value
+                );
+            }
+        });
+        
+        maintenanceNextBtn.addEventListener('click', function() {
+            if (!this.disabled) {
+                const currentPage = parseInt(maintenancePageNumbers.querySelector('.active')?.textContent || '1');
+                renderMaintenanceRequests(
+                    currentPage + 1, 
+                    maintenanceSearch.value, 
+                    maintenanceFilter.value
+                );
+            }
+        });
+        
+        // Accept Booking Buttons
+        document.getElementById('acceptFacilityBookingBtn').addEventListener('click', function() {
+            if (currentFacilityReservation) {
+                const staffNotes = document.getElementById('facilityStaffNotes').value;
+                const notificationType = document.getElementById('facilityNotificationType').value;
+                const notificationMessage = document.getElementById('facilityNotificationMessage').value;
+                
+                if (!notificationMessage.trim()) {
+                    alert('Please enter a notification message for the resident.');
+                    return;
+                }
+                
+                Swal.fire({
+                    title: 'Confirm Booking Acceptance',
+                    text: 'Are you sure you want to accept this facility booking and notify the resident?',
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonText: 'Yes, Accept Booking',
+                    cancelButtonText: 'Cancel',
+                    confirmButtonColor: '#6B4423',
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        // Update the reservation
+                        currentFacilityReservation.staffNotes = staffNotes;
+                        currentFacilityReservation.assignedStaff = "Current Staff"; // In real app, use actual staff ID/name
+                        currentFacilityReservation.status = "in-progress";
+                        
+                        // In a real app, here you would send the notification to the resident
+                        console.log('Notification to resident:', notificationMessage);
+                        
+                        // Show success message
+                        Swal.fire({
+                            title: 'Booking Accepted!',
+                            text: 'The facility booking has been accepted and the resident has been notified.',
+                            icon: 'success',
+                            confirmButtonColor: '#6B4423',
+                        }).then(() => {
+                            // Refresh the table and close modal
+                            renderFacilityReservations();
+                            facilityDetailsModal.classList.remove('active');
+                        });
+                    }
+                });
+            }
+        });
+        
+        document.getElementById('acceptMaintenanceBookingBtn').addEventListener('click', function() {
+            if (currentMaintenanceRequest) {
+                const staffNotes = document.getElementById('maintenanceStaffNotes').value;
+                const notificationType = document.getElementById('maintenanceNotificationType').value;
+                const notificationMessage = document.getElementById('maintenanceNotificationMessage').value;
+                
+                if (!notificationMessage.trim()) {
+                    alert('Please enter a notification message for the homeowner.');
+                    return;
+                }
+                
+                Swal.fire({
+                    title: 'Confirm Booking Acceptance',
+                    text: 'Are you sure you want to accept this service booking and notify the homeowner?',
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonText: 'Yes, Accept Booking',
+                    cancelButtonText: 'Cancel',
+                    confirmButtonColor: '#6B4423',
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        // Update the request
+                        currentMaintenanceRequest.staffNotes = staffNotes;
+                        currentMaintenanceRequest.assignedStaff = "Current Staff"; // In real app, use actual staff ID/name
+                        currentMaintenanceRequest.status = "in-progress";
+                        
+                        // In a real app, here you would send the notification to the homeowner
+                        console.log('Notification to homeowner:', notificationMessage);
+                        
+                        // Show success message
+                        Swal.fire({
+                            title: 'Booking Accepted!',
+                            text: 'The service booking has been accepted and the homeowner has been notified.',
+                            icon: 'success',
+                            confirmButtonColor: '#6B4423',
+                        }).then(() => {
+                            // Refresh the table and close modal
+                            renderMaintenanceRequests();
+                            maintenanceDetailsModal.classList.remove('active');
+                        });
+                    }
+                });
+            }
+        });
+        
+        // Close all modals
+        closeModalButtons.forEach(btn => {
+            btn.addEventListener('click', function() {
+                facilityDetailsModal.classList.remove('active');
+                maintenanceDetailsModal.classList.remove('active');
+            });
+        });
+        
+        // Close modal when clicking outside
+        document.querySelectorAll('.modal-overlay').forEach(modal => {
+            modal.addEventListener('click', function(e) {
+                if (e.target === this) {
+                    this.classList.remove('active');
+                }
+            });
+        });
+    });
+</script>

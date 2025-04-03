@@ -1,13 +1,12 @@
+@model HomeOwner.Models.ViewModel;
 @{
     Layout = "~/Views/Shared/Admin_Layout.cshtml";
     ViewData["Title"] = "Announcements";
     ViewData["Subtitle"] = "Admin Announcement";
-}
-@model HomeOwner.Models.ViewModel;
-
-@{
+    ViewBag.ActiveMenu = "Announcements";
     var announcement = Model.Announcements as List<Announcement>;
 }
+
 
 <link rel="stylesheet" href="~/css/admin/announcement.css" />
 
