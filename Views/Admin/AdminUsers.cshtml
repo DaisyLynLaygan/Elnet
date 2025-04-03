@@ -11,11 +11,11 @@
 }
 
 <link rel="stylesheet" href="~/css/admin/users.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
 
 <div class="user-management-container">
     <!-- Header Section -->
     <div class="user-header">
-
         <div class="header-actions">
             <div class="search-box">
                 <input type="text" placeholder="Search users..." class="search-input">
@@ -49,16 +49,12 @@
                 </tr>
             </thead>
             <tbody id="userTableBody">
-
-                <!-- Homeowner Example -->
-
                 @foreach (var user in users)
                 {
-
-                    <tr data-type=@user?.role.ToLower()>
+                    <tr data-type="@user?.role.ToLower()" data-user-id="@user.user_id">
                         <td data-label="Name">
                             <div class="user-info">
-                                <div class="avatar" style="background-color: #FFAB91;">JD</div>
+                                <div class="avatar" style="background-color: #FFAB91;">@user?.firstname[0]@user?.lastname[0]</div>
                                 <div class="user-details">
                                     <span class="name">@user?.firstname @user.lastname</span>
                                     <span class="phone">@user?.contact_no</span>
@@ -75,21 +71,19 @@
                         <td data-label="Last Active">2 hours ago</td>
                         <td data-label="Actions">
                             <div class="action-buttons">
-                                <button class="btn-icon edit" title="Edit" data-user-id=@user.user_id>
+                                <button class="btn-icon edit" title="Edit" data-user-id="@user.user_id">
                                     <i class="fas fa-edit"></i>
                                 </button>
-                                <button class="btn-icon view" title="View" data-user-id=@user.user_id>
+                                <button class="btn-icon view" title="View" data-user-id="@user.user_id">
                                     <i class="fas fa-eye"></i>
                                 </button>
-                                <button class="btn-icon delete" title="Delete" data-user-id=@user.user_id>
+                                <button class="btn-icon delete" title="Delete" data-user-id="@user.user_id">
                                     <i class="fas fa-trash-alt"></i>
                                 </button>
                             </div>
                         </td>
                     </tr>
                 }
-
-             
             </tbody>
         </table>
         
@@ -112,7 +106,7 @@
     <div class="modal-content">
         <div class="modal-header">
             <h3 class="modal-title">User Details</h3>
-            <button class="modal-close">&times;</button>
+            <button type="button" class="modal-close">&times;</button>
         </div>
         <div class="modal-body">
             <div class="user-info-modal">
@@ -147,7 +141,7 @@
             </div>
         </div>
         <div class="modal-footer">
-            <button class="btn btn-secondary modal-close-btn">Close</button>
+            <button type="button" class="btn btn-secondary modal-close-btn">Close</button>
         </div>
     </div>
 </div>
@@ -157,7 +151,7 @@
     <div class="modal-content">
         <div class="modal-header">
             <h3 class="modal-title">Edit User</h3>
-            <button class="modal-close">&times;</button>
+            <button type="button" class="modal-close">&times;</button>
         </div>
         <div class="modal-body">
             <form id="editUserForm">
@@ -217,113 +211,90 @@
             </form>
         </div>
         <div class="modal-footer">
-            <button class="btn btn-secondary modal-close-btn">Cancel</button>
-            <button class="btn btn-primary" id="saveChangesBtn">Save Changes</button>
+            <button type="button" class="btn btn-secondary modal-close-btn">Cancel</button>
+            <button type="button" class="btn btn-primary" id="saveChangesBtn">Save Changes</button>
         </div>
     </div>
 </div>
-
-<!-- Delete Confirmation Modal -->
-<form asp-action="HardDeleteUser" asp-controller="Admin">
-   <input type="hidden" name="Id" id="deleteUserId" value="" />
-<div class="modal-overlay" id="deleteModal">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h3 class="modal-title">Confirm Deletion</h3>
-            <button class="modal-close">&times;</button>
-        </div>
-        <div class="modal-body">
-            <p>Are you sure you want to delete <strong id="deleteUserName">John Doe</strong>? This action cannot be undone.</p>
-        </div>
-        <div class="modal-footer">
-            <button class="btn btn-secondary modal-close-btn">Cancel</button>
-            <button type="submit" class="btn btn-danger" id="confirmDeleteBtn">Delete User</button>
-        </div>
-    </div>
-</div>
-</form>
-
 
 <!-- Add User Modal -->
-<form asp-action="addUserModal" asp-controller="Admin" id="addUserForm">
 <div class="modal-overlay" id="addUserModal">
     <div class="modal-content">
         <div class="modal-header">
             <h3 class="modal-title">Add New User</h3>
-            <button class="modal-close">&times;</button>
+            <button type="button" class="modal-close">&times;</button>
         </div>
         <div class="modal-body">
+            <form id="addUserForm">
                 <div class="form-group">
-                    <label class="form-label" asp-for="newUser.username">Username</label>
-                    <input asp-for="newUser.username" type="text" class="form-control" id="username" required>
+                    <label class="form-label" for="username">Username</label>
+                    <input type="text" class="form-control" id="username" name="username" required>
                 </div>
                 <div class="form-group">
-                    <label class="form-label" asp-for="newUser.firstname">First Name</label>
-                    <input asp-for="newUser.firstname" type="text" class="form-control" id="firstname" required>
-                </div>
-                
-                <div class="form-group">
-                    <label class="form-label" asp-for="newUser.lastname">Last Name</label>
-                    <input asp-for="newUser.lastname" type="text" class="form-control" id="lastname" required>
+                    <label class="form-label" for="firstname">First Name</label>
+                    <input type="text" class="form-control" id="firstname" name="firstname" required>
                 </div>
                 
                 <div class="form-group">
-                    <label class="form-label" asp-for="newUser.email">Email</label>
-                    <input asp-for="newUser.email" type="email" class="form-control" id="email" required>
+                    <label class="form-label" for="lastname">Last Name</label>
+                    <input type="text" class="form-control" id="lastname" name="lastname" required>
                 </div>
                 
                 <div class="form-group">
-                    <label class="form-label" asp-for="newUser.contact_no">Phone</label>
-                    <input asp-for="newUser.contact_no" type="tel" class="form-control" id="contact_no">
+                    <label class="form-label" for="email">Email</label>
+                    <input type="email" class="form-control" id="email" name="email" required>
                 </div>
                 
                 <div class="form-group">
-                    <label asp-for="newUser.role" class="form-label">User Role</label>
+                    <label class="form-label" for="contact_no">Phone</label>
+                    <input type="tel" class="form-control" id="contact_no" name="contact_no">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">User Role</label>
                     <div class="select-role">
                         <div class="role-option">
-                            <input type="radio" id="addRoleHomeowner" asp-for="newUser.role" name="newUser.role" value="homeowner" checked>
+                            <input type="radio" id="addRoleHomeowner" name="role" value="homeowner" checked>
                             <label for="addRoleHomeowner">Homeowner</label>
                         </div>
                         <div class="role-option">
-                            <input type="radio" id="addRoleStaff" asp-for="newUser.role" name="newUser.role" value="staff">
+                            <input type="radio" id="addRoleStaff" name="role" value="staff">
                             <label for="addRoleStaff">Staff</label>
                         </div>
                         <div class="role-option">
-                            <input type="radio" id="addRoleAdmin" asp-for="newUser.role" name="newUser.role" value="admin">
+                            <input type="radio" id="addRoleAdmin" name="role" value="admin">
                             <label for="addRoleAdmin">Admin</label>
                         </div>
                     </div>
                 </div>
 
-                
                 <div class="form-group">
-                    <label class="form-label" asp-for="newUser.user_password">Password</label>
-                    <input asp-for="newUser.user_password" type="password" class="form-control" id="addPassword" required>
+                    <label class="form-label" for="user_password">Password</label>
+                    <input type="password" class="form-control" id="user_password" name="user_password" required>
                 </div>
                 
                 <div class="form-group">
-                    <label class="form-label" for="addConfirmPassword">Confirm Password</label>
-                    <input type="password" class="form-control" id="addConfirmPassword" required>
+                    <label class="form-label" for="confirmPassword">Confirm Password</label>
+                    <input type="password" class="form-control" id="confirmPassword" required>
                 </div>
-         
+            </form>
         </div>
         <div class="modal-footer">
-            <button class="btn btn-secondary modal-close-btn">Cancel</button>
-            <button class="btn btn-primary" id="createUserBtn" type="submit">Create User</button>
+            <button type="button" class="btn btn-secondary modal-close-btn">Cancel</button>
+            <button type="button" class="btn btn-primary" id="createUserBtn">Create User</button>
         </div>
     </div>
 </div>
-   </form>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         // Constants
         const USERS_PER_PAGE = 5;
         
-        // Modal functionality
+        // Modal elements
         const modals = {
             view: document.getElementById('viewModal'),
             edit: document.getElementById('editModal'),
-            delete: document.getElementById('deleteModal'),
             add: document.getElementById('addUserModal')
         };
         
@@ -332,7 +303,20 @@
         let currentFilter = 'all';
         let allUsers = Array.from(document.querySelectorAll('#userTableBody tr'));
         
-        // Open modal functions
+        // Show SweetAlert notification with callback
+        function showSweetAlert(message, type = 'success', callback = null) {
+            Swal.fire({
+                icon: type,
+                title: message,
+                showConfirmButton: true,
+            }).then((result) => {
+                if (result.isConfirmed && callback) {
+                    callback();
+                }
+            });
+        }
+
+        // Modal functions
         function openModal(modal) {
             document.body.style.overflow = 'hidden';
             modal.classList.add('active');
@@ -343,7 +327,7 @@
             modal.classList.remove('active');
         }
         
-        // Close modals when clicking X or close button
+        // Close modals
         document.querySelectorAll('.modal-close, .modal-close-btn').forEach(btn => {
             btn.addEventListener('click', function() {
                 const modal = this.closest('.modal-overlay');
@@ -351,7 +335,7 @@
             });
         });
         
-        // Close modal when clicking outside content
+        // Close modal when clicking outside
         document.querySelectorAll('.modal-overlay').forEach(modal => {
             modal.addEventListener('click', function(e) {
                 if (e.target === this) {
@@ -363,17 +347,14 @@
         // View user functionality
         document.querySelectorAll('.btn-icon.view').forEach(btn => {
             btn.addEventListener('click', function() {
-                const userId = this.getAttribute('data-user-id');
-                // In a real app, you would fetch user data here
-                // For demo, we'll use the data from the table row
                 const row = this.closest('tr');
                 
                 document.getElementById('viewName').textContent = row.querySelector('.name').textContent;
-                document.getElementById('viewEmail').textContent = row.cells[1].textContent;
+                document.getElementById('viewEmail').textContent = row.querySelector('[data-label="Email"]').textContent;
                 document.getElementById('viewPhone').textContent = row.querySelector('.phone').textContent;
-                document.getElementById('viewType').textContent = row.cells[2].textContent.trim();
-                document.getElementById('viewStatus').textContent = row.cells[3].textContent.trim();
-                document.getElementById('viewLastActive').textContent = row.cells[4].textContent;
+                document.getElementById('viewType').textContent = row.querySelector('[data-label="Type"]').textContent.trim();
+                document.getElementById('viewStatus').textContent = row.querySelector('[data-label="Status"]').textContent.trim();
+                document.getElementById('viewLastActive').textContent = row.querySelector('[data-label="Last Active"]').textContent;
                 document.getElementById('viewAvatar').textContent = 
                     row.querySelector('.name').textContent.split(' ').map(n => n[0]).join('');
                 
@@ -385,85 +366,179 @@
         document.querySelectorAll('.btn-icon.edit').forEach(btn => {
             btn.addEventListener('click', function() {
                 const userId = this.getAttribute('data-user-id');
-                // In a real app, you would fetch user data here
-                // For demo, we'll use the data from the table row
                 const row = this.closest('tr');
                 const nameParts = row.querySelector('.name').textContent.split(' ');
                 
                 document.getElementById('editUserId').value = userId;
                 document.getElementById('editFirstName').value = nameParts[0];
                 document.getElementById('editLastName').value = nameParts.slice(1).join(' ');
-                document.getElementById('editEmail').value = row.cells[1].textContent;
+                document.getElementById('editEmail').value = row.querySelector('[data-label="Email"]').textContent;
                 document.getElementById('editPhone').value = row.querySelector('.phone').textContent.replace(/\D/g, '');
                 
                 // Set role
-                const role = row.cells[2].textContent.trim().toLowerCase();
+                const role = row.querySelector('[data-label="Type"]').textContent.trim().toLowerCase();
                 document.getElementById(`editRole${role.charAt(0).toUpperCase() + role.slice(1)}`).checked = true;
                 
                 // Set status
-                const status = row.cells[3].textContent.trim().toLowerCase();
+                const status = row.querySelector('[data-label="Status"]').textContent.trim().toLowerCase();
                 document.getElementById(`editStatus${status.charAt(0).toUpperCase() + status.slice(1)}`).checked = true;
                 
                 openModal(modals.edit);
             });
         });
         
+        // Save changes button
+        document.getElementById('saveChangesBtn').addEventListener('click', function() {
+            const userId = document.getElementById('editUserId').value;
+            const userData = {
+                user_id: parseInt(userId),
+                firstname: document.getElementById('editFirstName').value,
+                lastname: document.getElementById('editLastName').value,
+                email: document.getElementById('editEmail').value,
+                contact_no: document.getElementById('editPhone').value,
+                role: document.querySelector('input[name="userRole"]:checked').value,
+                status: document.querySelector('input[name="userStatus"]:checked').value
+            };
+
+            fetch('/Admin/EditUser', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(userData)
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    showSweetAlert(data.message, 'success', function() {
+                        closeModal(modals.edit);
+                        window.location.reload();
+                    });
+                } else {
+                    showSweetAlert(data.message, 'error');
+                }
+            })
+            .catch(error => {
+                showSweetAlert('Error updating user: ' + error.message, 'error');
+            });
+        });
+
         // Delete user functionality
         document.querySelectorAll('.btn-icon.delete').forEach(btn => {
             btn.addEventListener('click', function() {
                 const userId = this.getAttribute('data-user-id');
                 const userName = this.closest('tr').querySelector('.name').textContent;
                 
-                document.getElementById('deleteUserName').textContent = userName;
-                document.getElementById('confirmDeleteBtn').setAttribute('data-user-id', userId);
-                 document.getElementById('deleteUserId').value = userId;
-                
-                openModal(modals.delete);
+                Swal.fire({
+                    title: 'Delete User?',
+                    text: `Are you sure you want to delete ${userName}? This action cannot be undone.`,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#3085d6',
+                    confirmButtonText: 'Yes, delete it!'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        fetch('/Admin/DeleteUser?id=' + userId, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            }
+                        })
+                        .then(response => {
+                            if (!response.ok) {
+                                throw new Error('Network response was not ok');
+                            }
+                            return response.json();
+                        })
+                        .then(data => {
+                            if (data.success) {
+                                showSweetAlert(data.message, 'success', function() {
+                                    // Remove the row from the table immediately
+                                    const row = document.querySelector(`tr[data-user-id="${userId}"]`);
+                                    if (row) {
+                                        row.remove();
+                                    }
+                                    // Update the table and pagination
+                                    allUsers = Array.from(document.querySelectorAll('#userTableBody tr'));
+                                    updateUserTable();
+                                    updatePagination();
+                                });
+                            } else {
+                                showSweetAlert(data.message, 'error');
+                            }
+                        })
+                        .catch(error => {
+                            showSweetAlert('Error deleting user: ' + error.message, 'error');
+                        });
+                    }
+                });
             });
         });
-        
+
         // Add new user button
         document.getElementById('addUserBtn').addEventListener('click', function() {
             document.getElementById('addUserForm').reset();
             openModal(modals.add);
         });
         
-        // Save changes button
-        document.getElementById('saveChangesBtn').addEventListener('click', function() {
-            // In a real app, you would save changes to the server here
-            alert('Changes saved! (This is a demo)');
-            closeModal(modals.edit);
-        });
-        
-        // Confirm delete button
-        document.getElementById('confirmDeleteBtn').addEventListener('click', function() {
-            const userId = this.getAttribute('data-user-id');
-            // In a real app, you would delete the user on the server here
-            alert(`User ${userId} deleted! (This is a demo)`);
-            closeModal(modals.delete);
-        });
-        
         // Create user button
         document.getElementById('createUserBtn').addEventListener('click', function() {
-            const form = document.getElementById('addUserForm');
-            if (form.checkValidity()) {
-                if (document.getElementById('addPassword').value !== document.getElementById('addConfirmPassword').value) {
-                    alert('Passwords do not match!');
-                    return;
-                }
-                
-                // In a real app, you would create the user on the server here
-                alert('User created! (This is a demo)');
-                closeModal(modals.add);
-            } else {
-                form.reportValidity();
+            const password = document.getElementById('user_password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            
+            if (password !== confirmPassword) {
+                showSweetAlert('Passwords do not match!', 'error');
+                return;
             }
+            
+            const userData = {
+                username: document.getElementById('username').value,
+                firstname: document.getElementById('firstname').value,
+                lastname: document.getElementById('lastname').value,
+                email: document.getElementById('email').value,
+                contact_no: document.getElementById('contact_no').value,
+                role: document.querySelector('input[name="role"]:checked').value,
+                user_password: password
+            };
+
+            fetch('/Admin/AddUser', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(userData)
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    showSweetAlert(data.message, 'success', function() {
+                        closeModal(modals.add);
+                        window.location.reload();
+                    });
+                } else {
+                    showSweetAlert(data.message, 'error');
+                }
+            })
+            .catch(error => {
+                showSweetAlert('Error creating user: ' + error.message, 'error');
+            });
         });
-        
+
         // Filter and pagination functions
         function filterUsers(type) {
             currentFilter = type;
-            currentPage = 1; // Reset to first page when filter changes
+            currentPage = 1;
             updateUserTable();
             updatePagination();
         }
@@ -474,20 +549,16 @@
                 ? allUsers 
                 : allUsers.filter(user => user.getAttribute('data-type') === currentFilter);
             
-            // Clear the table
             userTableBody.innerHTML = '';
             
-            // Calculate pagination
             const startIndex = (currentPage - 1) * USERS_PER_PAGE;
             const endIndex = startIndex + USERS_PER_PAGE;
             const usersToShow = filteredUsers.slice(startIndex, endIndex);
             
-            // Add filtered and paginated users to the table
             usersToShow.forEach(user => {
                 userTableBody.appendChild(user);
             });
             
-            // Show empty message if no users
             if (filteredUsers.length === 0) {
                 const emptyRow = document.createElement('tr');
                 emptyRow.innerHTML = `<td colspan="6" class="empty-message">No users found</td>`;
@@ -496,26 +567,20 @@
         }
         
         function updatePagination() {
-            const paginationContainer = document.querySelector('.pagination');
             const filteredUsers = currentFilter === 'all' 
                 ? allUsers 
                 : allUsers.filter(user => user.getAttribute('data-type') === currentFilter);
             
             const totalPages = Math.ceil(filteredUsers.length / USERS_PER_PAGE);
             
-            // Clear existing pagination buttons (except prev/next)
-            const existingPageButtons = document.querySelectorAll('.pagination-btn[data-page]');
-            existingPageButtons.forEach(btn => btn.remove());
+            document.querySelectorAll('.pagination-btn[data-page]').forEach(btn => btn.remove());
             
-            // Add page buttons
             const prevBtn = document.getElementById('prevPage');
             const nextBtn = document.getElementById('nextPage');
             
-            // Update prev/next buttons
             prevBtn.disabled = currentPage === 1;
             nextBtn.disabled = currentPage === totalPages || totalPages === 0;
             
-            // Add page number buttons
             for (let i = 1; i <= totalPages; i++) {
                 const pageBtn = document.createElement('button');
                 pageBtn.className = `pagination-btn ${i === currentPage ? 'active' : ''}`;
@@ -537,9 +602,7 @@
             tab.addEventListener('click', function() {
                 document.querySelector('.tab.active').classList.remove('active');
                 this.classList.add('active');
-                
-                const filterType = this.dataset.tab;
-                filterUsers(filterType);
+                filterUsers(this.dataset.tab);
             });
         });
         

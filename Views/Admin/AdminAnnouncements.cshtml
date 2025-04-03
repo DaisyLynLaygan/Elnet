@@ -2,7 +2,6 @@
     Layout = "~/Views/Shared/Admin_Layout.cshtml";
     ViewData["Title"] = "Announcements";
     ViewData["Subtitle"] = "Admin Announcement";
-
 }
 @model HomeOwner.Models.ViewModel;
 
@@ -10,12 +9,10 @@
     var announcement = Model.Announcements as List<Announcement>;
 }
 
-
 <link rel="stylesheet" href="~/css/admin/announcement.css" />
 
 <div class="dashboard-content">
     <div class="announcements-container">
-        <!-- Header with create button and search -->
         <div class="announcements-header">
             <h2 class="section-title">Announcements</h2>
             <div class="announcements-actions">
@@ -29,7 +26,6 @@
             </div>
         </div>
 
-        <!-- Announcements Table -->
         <div class="announcements-table-container">
             <table class="announcements-table">
                 <thead>
@@ -44,28 +40,29 @@
                     </tr>
                 </thead>
                 <tbody>
-                @foreach (var announcements in announcement)
+                @if (announcement != null)
                 {
-                    <tr data-id="@announcements.announcement_id">
-                        <td data-cell="Title">@announcements.title</td>
-                        <td class="truncate" data-cell="Content">@announcements.content</td>
-                        <td data-cell="Author">@announcements.author</td>
-                        <td data-date="2023-05-15" data-cell="Posted">@announcements.start_date?.ToString("MMM dd, yyyy")</td>
-                        <td data-date="2023-05-30" data-cell="Expires">@announcements.end_date?.ToString("MMM dd, yyyy")</td>
-                        <td data-cell="Status"><span class="status-badge active">@announcements.status</span></td>
-                        <td class="actions" data-cell="Actions">
-                            <button class="btn-icon edit" title="Edit"><i class="fas fa-edit"></i></button>
-                            <button class="btn-icon delete" title="Delete"><i class="fas fa-trash-alt"></i></button>
-                            <button class="btn-icon view" title="View"><i class="fas fa-eye"></i></button>
-                        </td>
-                    </tr>
+                    @foreach (var announcements in announcement)
+                    {
+                        <tr data-id="@announcements.announcement_id">
+                            <td data-cell="Title">@announcements.title</td>
+                            <td class="truncate" data-cell="Content">@announcements.content</td>
+                            <td data-cell="Author">@announcements.author</td>
+                            <td data-date="@announcements.start_date?.ToString("yyyy-MM-dd")" data-cell="Posted">@announcements.start_date?.ToString("MMM dd, yyyy")</td>
+                            <td data-date="@announcements.end_date?.ToString("yyyy-MM-dd")" data-cell="Expires">@announcements.end_date?.ToString("MMM dd, yyyy")</td>
+                            <td data-cell="Status"><span class="status-badge active">@announcements.status</span></td>
+                            <td class="actions" data-cell="Actions">
+                                <button class="btn-icon edit" title="Edit"><i class="fas fa-edit"></i></button>
+                                <button class="btn-icon delete" title="Delete"><i class="fas fa-trash-alt"></i></button>
+                                <button class="btn-icon view" title="View"><i class="fas fa-eye"></i></button>
+                            </td>
+                        </tr>
                     }
-                  
+                }
                 </tbody>
             </table>
         </div>
 
-        <!-- Pagination -->
         <div class="pagination">
             <button class="page-btn disabled"><i class="fas fa-chevron-left"></i></button>
             <button class="page-btn active">1</button>
@@ -76,69 +73,113 @@
     </div>
 </div>
 
-<!-- Create/Edit Announcement Modal -->
-  <form asp-action="AddAnnouncement" asp-controller="Admin" id="announcementForm">
+<!-- Create Announcement Modal -->
 <div class="modal" id="createAnnouncementModal">
     <div class="modal-dialog modal-lg">
-      
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">Create New Announcement</h5>
                 <button type="button" class="close" id="closeCreateModal">&times;</button>
             </div>
             <div class="modal-body">
-               
-                    <input type="hidden" id="announcementId" value="">
-                    <div class="form-group">
-                        <label asp-for="newAnnouncement.title">Title</label>
-                        <input asp-for="newAnnouncement.title" type="text" class="form-control" id="announcementTitle" placeholder="Enter announcement title" required>
-                    </div>
-                    <div class="form-group">
-                        <label asp-for="newAnnouncement.content">Content</label>
-                        <textarea asp-for="newAnnouncement.content" class="form-control" id="announcementContent" rows="5" placeholder="Enter announcement content" required></textarea>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label asp-for="newAnnouncement.start_date">Start Date</label>
-                                <input  asp-for="newAnnouncement.start_date" type="date" class="form-control" id="announcementStartDate" required>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label  asp-for="newAnnouncement.end_date">End Date</label>
-                                <input  asp-for="newAnnouncement.end_date" type="date" class="form-control" id="announcementEndDate">
-                                <small class="form-text text-muted">Leave blank for ongoing announcements</small>
-                            </div>
+                <div class="form-group">
+                    <label for="createAnnouncementTitle">Title</label>
+                    <input type="text" class="form-control" id="createAnnouncementTitle" placeholder="Enter announcement title" required>
+                </div>
+                <div class="form-group">
+                    <label for="createAnnouncementContent">Content</label>
+                    <textarea class="form-control" id="createAnnouncementContent" rows="5" placeholder="Enter announcement content" required></textarea>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="createAnnouncementStartDate">Start Date</label>
+                            <input type="date" class="form-control" id="createAnnouncementStartDate" required>
                         </div>
                     </div>
-                   <div class="form-group">
-                        <label asp-for="newAnnouncement.priority">Priority</label>
-                        <select asp-for="newAnnouncement.priority" class="form-control">
-                            <option value="normal">Normal</option>
-                            <option value="high">High</option>
-                            <option value="urgent">Urgent</option>
-                        </select>
-                        <span asp-validation-for="newAnnouncement.priority" class="text-danger"></span>
-                    </div>
-                    <div class="form-group">
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" id="sendNotification">
-                            <label class="form-check-label" for="sendNotification">
-                                Send email notification to residents
-                            </label>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="createAnnouncementEndDate">End Date</label>
+                            <input type="date" class="form-control" id="createAnnouncementEndDate">
+                            <small class="form-text text-muted">Leave blank for ongoing announcements</small>
                         </div>
                     </div>
-           
+                </div>
+                <div class="form-group">
+                    <label for="createAnnouncementPriority">Priority</label>
+                    <select class="form-control" id="createAnnouncementPriority">
+                        <option value="normal">Normal</option>
+                        <option value="high">High</option>
+                        <option value="urgent">Urgent</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="createSendNotification">
+                        <label class="form-check-label" for="createSendNotification">
+                            Send email notification to residents
+                        </label>
+                    </div>
+                </div>
             </div>
             <div class="modal-footer">
-                <button type="submit" class="btn btn-primary" id="saveAnnouncement">Publish Announcement</button>
+                <button type="button" class="btn btn-primary" id="submitCreateAnnouncement">Publish Announcement</button>
+                <button type="button" class="btn btn-secondary" id="cancelCreateAnnouncement">Cancel</button>
             </div>
         </div>
-      
     </div>
 </div>
-     </form>
+
+<!-- Edit Announcement Modal -->
+<div class="modal" id="editAnnouncementModal">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Edit Announcement</h5>
+                <button type="button" class="close" id="closeEditModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="editAnnouncementId">
+                <div class="form-group">
+                    <label for="editAnnouncementTitle">Title</label>
+                    <input type="text" class="form-control" id="editAnnouncementTitle" required>
+                </div>
+                <div class="form-group">
+                    <label for="editAnnouncementContent">Content</label>
+                    <textarea class="form-control" id="editAnnouncementContent" rows="5" required></textarea>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="editAnnouncementStartDate">Start Date</label>
+                            <input type="date" class="form-control" id="editAnnouncementStartDate" required>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="editAnnouncementEndDate">End Date</label>
+                            <input type="date" class="form-control" id="editAnnouncementEndDate">
+                            <small class="form-text text-muted">Leave blank for ongoing announcements</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="editAnnouncementPriority">Priority</label>
+                    <select class="form-control" id="editAnnouncementPriority">
+                        <option value="normal">Normal</option>
+                        <option value="high">High</option>
+                        <option value="urgent">Urgent</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" id="submitEditAnnouncement">Update Announcement</button>
+                <button type="button" class="btn btn-secondary" id="cancelEditAnnouncement">Cancel</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- View Announcement Modal -->
 <div class="modal" id="viewAnnouncementModal">
     <div class="modal-dialog modal-lg">
@@ -148,23 +189,14 @@
                 <button type="button" class="close" id="closeViewModal">&times;</button>
             </div>
             <div class="modal-body">
-                <h4 id="viewAnnouncementTitle" class="mb-3">Community Meeting</h4>
+                <h4 id="viewAnnouncementTitle" class="mb-3"></h4>
                 <div class="announcement-meta mb-4">
-                    <span class="meta-item"><i class="fas fa-user"></i> <span id="viewAnnouncementAuthor">John Smith</span></span>
-                    <span class="meta-item"><i class="fas fa-calendar-alt"></i> Posted: <span id="viewAnnouncementDate">May 15, 2023</span></span>
-                    <span class="meta-item"><i class="fas fa-clock"></i> Expires: <span id="viewAnnouncementExpiry">May 30, 2023</span></span>
-                    <span class="meta-item"><i class="fas fa-bell"></i> Priority: <span id="viewAnnouncementPriority" class="badge badge-primary">Normal</span></span>
+                    <span class="meta-item"><i class="fas fa-user"></i> <span id="viewAnnouncementAuthor"></span></span>
+                    <span class="meta-item"><i class="fas fa-calendar-alt"></i> Posted: <span id="viewAnnouncementDate"></span></span>
+                    <span class="meta-item"><i class="fas fa-clock"></i> Expires: <span id="viewAnnouncementExpiry"></span></span>
+                    <span class="meta-item"><i class="fas fa-bell"></i> Priority: <span id="viewAnnouncementPriority" class="badge"></span></span>
                 </div>
-                <div class="announcement-content" id="viewAnnouncementContent">
-                    <p>Monthly HOA meeting scheduled for next Tuesday at 7 PM in the clubhouse. Agenda items include:</p>
-                    <ul>
-                        <li>Budget review for Q2</li>
-                        <li>Landscaping proposals</li>
-                        <li>Community event planning</li>
-                        <li>Open forum for resident concerns</li>
-                    </ul>
-                    <p>All residents are encouraged to attend. Light refreshments will be served.</p>
-                </div>
+                <div class="announcement-content" id="viewAnnouncementContent"></div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" id="closeViewModalBtn">Close</button>
@@ -173,4 +205,5 @@
     </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="~/js/admin/announcements.js"></script>

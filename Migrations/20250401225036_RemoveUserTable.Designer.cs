@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace HomeOwner.Migrations
 {
     [DbContext(typeof(HomeOwnerContext))]
-    [Migration("20250401195319_addedAnnouncement")]
-    partial class addedAnnouncement
+    [Migration("20250401225036_RemoveUserTable")]
+    partial class RemoveUserTable
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

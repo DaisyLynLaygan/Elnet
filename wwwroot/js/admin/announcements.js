@@ -1,303 +1,309 @@
 document.addEventListener('DOMContentLoaded', function() {
     // Modal elements
-    const createModal = document.getElementById('createAnnouncementModal');
-    const viewModal = document.getElementById('viewAnnouncementModal');
+    const modals = {
+        create: document.getElementById('createAnnouncementModal'),
+        view: document.getElementById('viewAnnouncementModal'),
+        edit: document.getElementById('editAnnouncementModal')
+    };
     
-    // Show Create Modal
-    document.getElementById('createAnnouncementBtn').addEventListener('click', function() {
-        // Reset form and set to create mode
-        document.getElementById('announcementForm').reset();
-        document.getElementById('announcementId').value = '';
-        document.querySelector('#createAnnouncementModal .modal-title').textContent = 'Create New Announcement';
-        document.getElementById('saveAnnouncement').textContent = 'Publish Announcement';
-        
-        // Set today's date
-        const today = new Date().toISOString().split('T')[0];
-        document.getElementById('announcementStartDate').value = today;
-        
-        createModal.style.display = 'block';
+    // Current announcement being edited/deleted
+    let currentAnnouncementId = null;
+
+    // Show SweetAlert notification
+    function showAlert(message, type = 'success', callback = null) {
+        return Swal.fire({
+            icon: type,
+            title: message,
+            showConfirmButton: true,
+            timer: 3000
+        }).then((result) => {
+            if (callback && (result.isConfirmed || result.isDismissed)) {
+                callback();
+            }
+        });
+    }
+
+    // Modal functions
+    function openModal(modal) {
+        modal.style.display = 'block';
         document.body.classList.add('modal-open');
-    });
+    }
     
-    // Close Create Modal
-    document.getElementById('closeCreateModal').addEventListener('click', function() {
-        createModal.style.display = 'none';
+    function closeModal(modal) {
+        modal.style.display = 'none';
         document.body.classList.remove('modal-open');
+    }
+    
+    // Close modals when clicking X or close button
+    document.getElementById('closeCreateModal').addEventListener('click', () => closeModal(modals.create));
+    document.getElementById('closeEditModal').addEventListener('click', () => closeModal(modals.edit));
+    document.getElementById('closeViewModal').addEventListener('click', () => closeModal(modals.view));
+    document.getElementById('closeViewModalBtn').addEventListener('click', () => closeModal(modals.view));
+    
+    // Close modal when clicking outside
+    document.querySelectorAll('.modal').forEach(modal => {
+        modal.addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeModal(this);
+            }
+        });
     });
     
-    // View Announcement Button Click
+    // Create announcement button
+    document.getElementById('createAnnouncementBtn').addEventListener('click', function() {
+        resetCreateForm();
+        openModal(modals.create);
+    });
+    
+    // Cancel buttons
+    document.getElementById('cancelCreateAnnouncement').addEventListener('click', () => {
+        closeModal(modals.create);
+    });
+    
+    document.getElementById('cancelEditAnnouncement').addEventListener('click', () => {
+        closeModal(modals.edit);
+    });
+    
+    // View announcement functionality
     document.querySelectorAll('.btn-icon.view').forEach(btn => {
         btn.addEventListener('click', function() {
             const row = this.closest('tr');
-            const title = row.cells[0].textContent;
-            const content = row.cells[1].textContent.replace('...', '');
-            const author = row.cells[2].textContent;
-            const date = row.cells[3].textContent;
-            const expiry = row.cells[4].textContent;
-            
-            document.getElementById('viewAnnouncementTitle').textContent = title;
-            document.getElementById('viewAnnouncementContent').textContent = content;
-            document.getElementById('viewAnnouncementAuthor').textContent = author;
-            document.getElementById('viewAnnouncementDate').textContent = date;
-            document.getElementById('viewAnnouncementExpiry').textContent = expiry;
-            
-            viewModal.style.display = 'block';
-            document.body.classList.add('modal-open');
+            populateViewModal(row);
+            openModal(modals.view);
         });
     });
     
-    // Close View Modal
-    document.getElementById('closeViewModal').addEventListener('click', function() {
-        viewModal.style.display = 'none';
-        document.body.classList.remove('modal-open');
-    });
-    
-    document.getElementById('closeViewModalBtn').addEventListener('click', function() {
-        viewModal.style.display = 'none';
-        document.body.classList.remove('modal-open');
-    });
-    
-    // Close modals when clicking outside
-    window.addEventListener('click', function(event) {
-        if (event.target === createModal) {
-            createModal.style.display = 'none';
-            document.body.classList.remove('modal-open');
-        }
-        if (event.target === viewModal) {
-            viewModal.style.display = 'none';
-            document.body.classList.remove('modal-open');
-        }
-    });
-
-    // Save Announcement Button
-    document.getElementById('saveAnnouncement').addEventListener('click', function() {
-        const form = document.getElementById('announcementForm');
-        if (form.checkValidity()) {
-            const isEditMode = document.getElementById('announcementId').value !== '';
-            const action = isEditMode ? 'updated' : 'created';
-            
-            // In a real app, you would send this data to the server here
-            const announcementData = {
-                id: document.getElementById('announcementId').value || Date.now().toString(),
-                title: document.getElementById('announcementTitle').value,
-                content: document.getElementById('announcementContent').value,
-                startDate: document.getElementById('announcementStartDate').value,
-                endDate: document.getElementById('announcementEndDate').value || 'Ongoing',
-                priority: document.getElementById('announcementPriority').value,
-                notify: document.getElementById('sendNotification').checked
-            };
-            
-            console.log('Announcement data:', announcementData); // For debugging
-            
-            alert(`Announcement ${action} successfully!`);
-            createModal.style.display = 'none';
-            document.body.classList.remove('modal-open');
-            
-            if (isEditMode) {
-                // Update the table row with new data
-                updateAnnouncementInTable(announcementData);
-            } else {
-                // Add new announcement to table
-                addAnnouncementToTable(announcementData);
-            }
-            
-            form.reset();
-        } else {
-            form.reportValidity();
-        }
-    });
-
-    // Delete Button
-    document.querySelectorAll('.btn-icon.delete').forEach(btn => {
-        btn.addEventListener('click', function() {
-            if (confirm('Are you sure you want to delete this announcement?')) {
-                const row = this.closest('tr');
-                const announcementId = row.getAttribute('data-id');
-                
-                // In a real app, you would send a delete request to the server here
-                console.log('Deleting announcement with ID:', announcementId);
-                
-                row.style.opacity = '0.5';
-                setTimeout(() => {
-                    row.remove();
-                    alert('Announcement deleted successfully!');
-                }, 300);
-            }
-        });
-    });
-
-    // Edit Button
+    // Edit announcement functionality
     document.querySelectorAll('.btn-icon.edit').forEach(btn => {
-        btn.addEventListener('click', function() {
+        btn.addEventListener('click', function(e) {
+            e.stopPropagation();
             const row = this.closest('tr');
-            const announcementId = row.getAttribute('data-id');
-            const title = row.cells[0].textContent;
-            const content = row.cells[1].textContent.replace('...', '');
-            const startDate = row.querySelector('td[data-date]').getAttribute('data-date');
-            const endDate = row.querySelectorAll('td[data-date]')[1].getAttribute('data-date');
-            const status = row.cells[5].textContent.trim();
-            
-            // Set modal to edit mode
-            document.querySelector('#createAnnouncementModal .modal-title').textContent = 'Edit Announcement';
-            document.getElementById('saveAnnouncement').textContent = 'Update Announcement';
-            document.getElementById('announcementId').value = announcementId;
-            
-            // Populate form fields
-            document.getElementById('announcementTitle').value = title;
-            document.getElementById('announcementContent').value = content;
-            document.getElementById('announcementStartDate').value = startDate;
-            document.getElementById('announcementEndDate').value = endDate;
-            
-            // Set priority based on status (simplified)
-            if (status === 'Active') {
-                document.getElementById('announcementPriority').value = 'high';
-            } else {
-                document.getElementById('announcementPriority').value = 'normal';
-            }
-            
-            // Show modal
-            createModal.style.display = 'block';
-            document.body.classList.add('modal-open');
+            currentAnnouncementId = row.getAttribute('data-id');
+            getAnnouncementForEdit(currentAnnouncementId);
         });
     });
-
-    // Helper function to update announcement in table
-    function updateAnnouncementInTable(data) {
-        const row = document.querySelector(`tr[data-id="${data.id}"]`);
-        if (row) {
-            row.cells[0].textContent = data.title;
-            row.cells[1].textContent = data.content.length > 50 ? 
-                data.content.substring(0, 50) + '...' : data.content;
+    
+    // Delete announcement functionality
+    document.querySelectorAll('.btn-icon.delete').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            const row = this.closest('tr');
+            currentAnnouncementId = row.getAttribute('data-id');
+            const announcementTitle = row.querySelector('[data-cell="Title"]').textContent;
             
-            // Format dates for display
-            const startDate = new Date(data.startDate);
-            const endDate = data.endDate === 'Ongoing' ? 'Ongoing' : new Date(data.endDate);
-            
-            row.querySelector('td[data-date]').textContent = formatDateForDisplay(startDate);
-            row.querySelector('td[data-date]').setAttribute('data-date', data.startDate);
-            
-            const endDateCell = row.querySelectorAll('td[data-date]')[1];
-            endDateCell.textContent = data.endDate === 'Ongoing' ? 'Ongoing' : formatDateForDisplay(endDate);
-            endDateCell.setAttribute('data-date', data.endDate);
-            
-            // Update status
-            const today = new Date();
-            const statusCell = row.cells[5];
-            if (data.endDate === 'Ongoing' || new Date(data.endDate) > today) {
-                statusCell.innerHTML = '<span class="status-badge active">Active</span>';
-            } else {
-                statusCell.innerHTML = '<span class="status-badge expired">Expired</span>';
+            showDeleteConfirmation(announcementTitle);
+        });
+    });
+    
+    // Create announcement form submission
+    document.getElementById('submitCreateAnnouncement').addEventListener('click', function() {
+        saveAnnouncement();
+    });
+    
+    // Edit announcement form submission
+    document.getElementById('submitEditAnnouncement').addEventListener('click', function() {
+        updateAnnouncement();
+    });
+    
+    // Helper functions
+    function resetCreateForm() {
+        document.getElementById('createAnnouncementTitle').value = '';
+        document.getElementById('createAnnouncementContent').value = '';
+        document.getElementById('createAnnouncementPriority').value = 'normal';
+        document.getElementById('createSendNotification').checked = false;
+        
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('createAnnouncementStartDate').value = today;
+        document.getElementById('createAnnouncementEndDate').value = '';
+    }
+    
+    function populateViewModal(row) {
+        document.getElementById('viewAnnouncementTitle').textContent = 
+            row.querySelector('[data-cell="Title"]').textContent;
+        document.getElementById('viewAnnouncementContent').textContent = 
+            row.querySelector('[data-cell="Content"]').textContent;
+        document.getElementById('viewAnnouncementAuthor').textContent = 
+            row.querySelector('[data-cell="Author"]').textContent;
+        document.getElementById('viewAnnouncementDate').textContent = 
+            row.querySelector('[data-cell="Posted"]').textContent;
+        document.getElementById('viewAnnouncementExpiry').textContent = 
+            row.querySelector('[data-cell="Expires"]').textContent;
+        
+        const priority = row.querySelector('[data-cell="Status"]').textContent.trim().toLowerCase();
+        const priorityBadge = document.getElementById('viewAnnouncementPriority');
+        priorityBadge.textContent = priority;
+        priorityBadge.className = 'badge ' + 
+            (priority === 'urgent' ? 'badge-danger' : 
+             priority === 'high' ? 'badge-warning' : 'badge-primary');
+    }
+    
+    function getAnnouncementForEdit(id) {
+        fetch('/Admin/GetAnnouncement', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ id: id })
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
             }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                document.getElementById('editAnnouncementId').value = data.announcement.announcement_id;
+                document.getElementById('editAnnouncementTitle').value = data.announcement.title;
+                document.getElementById('editAnnouncementContent').value = data.announcement.content;
+                document.getElementById('editAnnouncementStartDate').value = data.announcement.start_date;
+                document.getElementById('editAnnouncementEndDate').value = data.announcement.end_date || '';
+                document.getElementById('editAnnouncementPriority').value = data.announcement.priority;
+                
+                openModal(modals.edit);
+            } else {
+                showAlert(data.message || 'Announcement not found', 'error');
+            }
+        })
+        .catch(error => {
+            showAlert('Error fetching announcement: ' + error.message, 'error');
+        });
+    }
+    
+    function showDeleteConfirmation(title) {
+        Swal.fire({
+            title: 'Delete Announcement?',
+            html: `Are you sure you want to delete <strong>"${title}"</strong>?`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Yes, delete it!'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                deleteAnnouncement(currentAnnouncementId);
+            }
+        });
+    }
+    
+    function saveAnnouncement() {
+        const title = document.getElementById('createAnnouncementTitle').value;
+        const content = document.getElementById('createAnnouncementContent').value;
+        const startDate = document.getElementById('createAnnouncementStartDate').value;
+        
+        if (!title || !content || !startDate) {
+            showAlert('Title, content and start date are required', 'error');
+            return;
         }
-    }
 
-    // Helper function to add new announcement to table
-    function addAnnouncementToTable(data) {
-        const tbody = document.querySelector('.announcements-table tbody');
-        const newId = data.id;
-        
-        const newRow = document.createElement('tr');
-        newRow.setAttribute('data-id', newId);
-        
-        // Format dates for display
-        const startDate = new Date(data.startDate);
-        const endDate = data.endDate === 'Ongoing' ? 'Ongoing' : new Date(data.endDate);
-        
-        // Determine status
-        const today = new Date();
-        const isActive = data.endDate === 'Ongoing' || new Date(data.endDate) > today;
-        
-        newRow.innerHTML = `
-            <td>${data.title}</td>
-            <td class="truncate">${data.content.length > 50 ? data.content.substring(0, 50) + '...' : data.content}</td>
-            <td>Current User</td>
-            <td data-date="${data.startDate}">${formatDateForDisplay(startDate)}</td>
-            <td data-date="${data.endDate}">${data.endDate === 'Ongoing' ? 'Ongoing' : formatDateForDisplay(endDate)}</td>
-            <td><span class="status-badge ${isActive ? 'active' : 'expired'}">${isActive ? 'Active' : 'Expired'}</span></td>
-            <td class="actions">
-                <button class="btn-icon edit" title="Edit"><i class="fas fa-edit"></i></button>
-                <button class="btn-icon delete" title="Delete"><i class="fas fa-trash-alt"></i></button>
-                <button class="btn-icon view" title="View"><i class="fas fa-eye"></i></button>
-            </td>
-        `;
-        
-        tbody.insertBefore(newRow, tbody.firstChild);
-        
-        // Reattach event listeners to new buttons
-        attachEventListenersToRow(newRow);
-    }
+        const formData = {
+            title: title,
+            content: content,
+            start_date: startDate,
+            end_date: document.getElementById('createAnnouncementEndDate').value || null,
+            priority: document.getElementById('createAnnouncementPriority').value
+        };
 
-    // Helper function to format date for display
-    function formatDateForDisplay(date) {
-        const options = { year: 'numeric', month: 'short', day: 'numeric' };
-        return date.toLocaleDateString('en-US', options);
-    }
-
-    // Helper function to attach event listeners to a table row
-    function attachEventListenersToRow(row) {
-        row.querySelector('.btn-icon.view').addEventListener('click', function() {
-            const row = this.closest('tr');
-            const title = row.cells[0].textContent;
-            const content = row.cells[1].textContent.replace('...', '');
-            const author = row.cells[2].textContent;
-            const date = row.cells[3].textContent;
-            const expiry = row.cells[4].textContent;
-            
-            document.getElementById('viewAnnouncementTitle').textContent = title;
-            document.getElementById('viewAnnouncementContent').textContent = content;
-            document.getElementById('viewAnnouncementAuthor').textContent = author;
-            document.getElementById('viewAnnouncementDate').textContent = date;
-            document.getElementById('viewAnnouncementExpiry').textContent = expiry;
-            
-            viewModal.style.display = 'block';
-            document.body.classList.add('modal-open');
-        });
-        
-        row.querySelector('.btn-icon.edit').addEventListener('click', function() {
-            const row = this.closest('tr');
-            const announcementId = row.getAttribute('data-id');
-            const title = row.cells[0].textContent;
-            const content = row.cells[1].textContent.replace('...', '');
-            const startDate = row.querySelector('td[data-date]').getAttribute('data-date');
-            const endDate = row.querySelectorAll('td[data-date]')[1].getAttribute('data-date');
-            const status = row.cells[5].textContent.trim();
-            
-            document.querySelector('#createAnnouncementModal .modal-title').textContent = 'Edit Announcement';
-            document.getElementById('saveAnnouncement').textContent = 'Update Announcement';
-            document.getElementById('announcementId').value = announcementId;
-            
-            document.getElementById('announcementTitle').value = title;
-            document.getElementById('announcementContent').value = content;
-            document.getElementById('announcementStartDate').value = startDate;
-            document.getElementById('announcementEndDate').value = endDate;
-            
-            if (status === 'Active') {
-                document.getElementById('announcementPriority').value = 'high';
+        fetch('/Admin/AddAnnouncement', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(formData)
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                closeModal(modals.create);
+                showAlert(data.message, 'success', () => {
+                    window.location.reload();
+                });
             } else {
-                document.getElementById('announcementPriority').value = 'normal';
+                showAlert(data.message || 'Failed to create announcement', 'error');
             }
-            
-            createModal.style.display = 'block';
-            document.body.classList.add('modal-open');
-        });
-        
-        row.querySelector('.btn-icon.delete').addEventListener('click', function() {
-            if (confirm('Are you sure you want to delete this announcement?')) {
-                const row = this.closest('tr');
-                const announcementId = row.getAttribute('data-id');
-                
-                console.log('Deleting announcement with ID:', announcementId);
-                
-                row.style.opacity = '0.5';
-                setTimeout(() => {
-                    row.remove();
-                    alert('Announcement deleted successfully!');
-                }, 300);
-            }
+        })
+        .catch(error => {
+            showAlert('Error creating announcement: ' + error.message, 'error');
         });
     }
+    
+    function updateAnnouncement() {
+        const title = document.getElementById('editAnnouncementTitle').value;
+        const content = document.getElementById('editAnnouncementContent').value;
+        const startDate = document.getElementById('editAnnouncementStartDate').value;
+        
+        if (!title || !content || !startDate) {
+            showAlert('Title, content and start date are required', 'error');
+            return;
+        }
 
-    // Initialize date pickers with today's date
-    const today = new Date().toISOString().split('T')[0];
-    document.getElementById('announcementStartDate').value = today;
+        const formData = {
+            announcement_id: parseInt(document.getElementById('editAnnouncementId').value),
+            title: title,
+            content: content,
+            start_date: startDate,
+            end_date: document.getElementById('editAnnouncementEndDate').value || null,
+            priority: document.getElementById('editAnnouncementPriority').value
+        };
+
+        fetch('/Admin/EditAnnouncement', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(formData)
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                closeModal(modals.edit);
+                showAlert(data.message, 'success', () => {
+                    window.location.reload();
+                });
+            } else {
+                showAlert(data.message || 'Failed to update announcement', 'error');
+            }
+        })
+        .catch(error => {
+            showAlert('Error updating announcement: ' + error.message, 'error');
+        });
+    }
+    
+    function deleteAnnouncement(id) {
+        fetch('/Admin/DeleteAnnouncement', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ id: id })
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                showAlert(data.message, 'success', () => {
+                    window.location.reload();
+                });
+            } else {
+                showAlert(data.message || 'Failed to delete announcement', 'error');
+            }
+        })
+        .catch(error => {
+            showAlert('Error deleting announcement: ' + error.message, 'error');
+        });
+    }
 });
