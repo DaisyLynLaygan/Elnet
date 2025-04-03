@@ -9,7 +9,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Current announcement being edited/deleted
     let currentAnnouncementId = null;
 
-    // Show SweetAlert notification
+    // Show SweetAlert notification with callback
     function showAlert(message, type = 'success', callback = null) {
         return Swal.fire({
             icon: type,
@@ -17,7 +17,7 @@ document.addEventListener('DOMContentLoaded', function() {
             showConfirmButton: true,
             timer: 3000
         }).then((result) => {
-            if (callback && (result.isConfirmed || result.isDismissed)) {
+            if (callback && result.isConfirmed) {
                 callback();
             }
         });
@@ -189,17 +189,16 @@ document.addEventListener('DOMContentLoaded', function() {
     function saveAnnouncement() {
         const title = document.getElementById('createAnnouncementTitle').value;
         const content = document.getElementById('createAnnouncementContent').value;
-        const startDate = document.getElementById('createAnnouncementStartDate').value;
         
-        if (!title || !content || !startDate) {
-            showAlert('Title, content and start date are required', 'error');
+        if (!title || !content) {
+            showAlert('Title and content are required', 'error');
             return;
         }
 
         const formData = {
             title: title,
             content: content,
-            start_date: startDate,
+            start_date: document.getElementById('createAnnouncementStartDate').value,
             end_date: document.getElementById('createAnnouncementEndDate').value || null,
             priority: document.getElementById('createAnnouncementPriority').value
         };
@@ -220,7 +219,7 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(data => {
             if (data.success) {
                 closeModal(modals.create);
-                showAlert(data.message, 'success', () => {
+                showAlert('Announcement published successfully!', 'success', () => {
                     window.location.reload();
                 });
             } else {
@@ -235,10 +234,9 @@ document.addEventListener('DOMContentLoaded', function() {
     function updateAnnouncement() {
         const title = document.getElementById('editAnnouncementTitle').value;
         const content = document.getElementById('editAnnouncementContent').value;
-        const startDate = document.getElementById('editAnnouncementStartDate').value;
         
-        if (!title || !content || !startDate) {
-            showAlert('Title, content and start date are required', 'error');
+        if (!title || !content) {
+            showAlert('Title and content are required', 'error');
             return;
         }
 
@@ -246,7 +244,7 @@ document.addEventListener('DOMContentLoaded', function() {
             announcement_id: parseInt(document.getElementById('editAnnouncementId').value),
             title: title,
             content: content,
-            start_date: startDate,
+            start_date: document.getElementById('editAnnouncementStartDate').value,
             end_date: document.getElementById('editAnnouncementEndDate').value || null,
             priority: document.getElementById('editAnnouncementPriority').value
         };
@@ -267,11 +265,11 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(data => {
             if (data.success) {
                 closeModal(modals.edit);
-                showAlert(data.message, 'success', () => {
+                showAlert('Announcement updated successfully!', 'success', () => {
                     window.location.reload();
                 });
             } else {
-                showAlert(data.message || 'Failed to update announcement', 'error');
+                showAlert(data.message || 'Announcement not found or update failed', 'error');
             }
         })
         .catch(error => {
@@ -295,11 +293,11 @@ document.addEventListener('DOMContentLoaded', function() {
         })
         .then(data => {
             if (data.success) {
-                showAlert(data.message, 'success', () => {
+                showAlert('Announcement deleted successfully!', 'success', () => {
                     window.location.reload();
                 });
             } else {
-                showAlert(data.message || 'Failed to delete announcement', 'error');
+                showAlert(data.message || 'Announcement not found or delete failed', 'error');
             }
         })
         .catch(error => {
