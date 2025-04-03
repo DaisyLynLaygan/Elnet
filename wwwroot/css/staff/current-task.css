@@ -1,0 +1,255 @@
+.current-task-container {
+    padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.task-header {
+    margin-bottom: 30px;
+}
+
+.task-header h1 {
+    color: var(--primary);
+    margin-bottom: 5px;
+}
+
+.task-header p {
+    color: var(--text-gray);
+}
+
+.task-filters {
+    margin-bottom: 20px;
+}
+
+.filter-tabs {
+    display: flex;
+    border-bottom: 1px solid var(--medium-gray);
+}
+
+.filter-tab {
+    padding: 8px 16px;
+    cursor: pointer;
+    margin-right: 5px;
+    border-radius: var(--border-radius) var(--border-radius) 0 0;
+    transition: all 0.3s ease;
+    color: var(--text-gray);
+    font-weight: 500;
+}
+
+.filter-tab.active {
+    background-color: var(--primary);
+    color: white;
+}
+
+.filter-tab:hover:not(.active) {
+    background-color: var(--primary-light);
+    color: var(--text-dark);
+}
+
+.task-category {
+    margin-bottom: 30px;
+    background: white;
+    border-radius: var(--border-radius);
+    padding: 20px;
+    box-shadow: var(--shadow);
+}
+
+.task-category h2 {
+    color: var(--primary);
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.task-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.task-table th {
+    background-color: var(--primary-light);
+    padding: 12px 15px;
+    text-align: left;
+    color: var(--text-dark);
+    font-weight: 600;
+}
+
+.task-table td {
+    padding: 12px 15px;
+    border-bottom: 1px solid var(--medium-gray);
+    vertical-align: middle;
+}
+
+.task-table tr:last-child td {
+    border-bottom: none;
+}
+
+.task-table tr:hover {
+    background-color: rgba(0, 0, 0, 0.02);
+}
+
+.status-badge {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.status-badge.status-in-progress {
+    background-color: #FFA000;
+    color: white;
+}
+
+.status-badge.status-completed {
+    background-color: #4CAF50;
+    color: white;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 8px;
+}
+
+.btn-icon {
+    background: none;
+    border: 1px solid var(--medium-gray);
+    border-radius: 4px;
+    padding: 5px 8px;
+    cursor: pointer;
+    color: var(--text-gray);
+    transition: all 0.2s ease;
+}
+
+.btn-icon:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+.btn-icon.view-details {
+    color: var(--primary);
+    border-color: var(--primary-light);
+}
+
+.btn-icon.done-btn {
+    color: #4CAF50;
+    border-color: #4CAF50;
+}
+
+.btn-icon.done-btn:hover {
+    background-color: #E8F5E9;
+}
+
+/* Modal styles */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+}
+
+.modal-overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.modal-content {
+    background-color: white;
+    border-radius: var(--border-radius);
+    width: 90%;
+    max-width: 600px;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+    transform: translateY(-20px);
+    transition: all 0.3s ease;
+}
+
+.modal-overlay.active .modal-content {
+    transform: translateY(0);
+}
+
+.modal-header {
+    padding: 20px;
+    border-bottom: 1px solid var(--medium-gray);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-header h3 {
+    margin: 0;
+    color: var(--text-dark);
+}
+
+.close-modal {
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: var(--text-gray);
+    padding: 0;
+    line-height: 1;
+}
+
+.modal-body {
+    padding: 20px;
+}
+
+.modal-footer {
+    padding: 15px 20px;
+    border-top: 1px solid var(--medium-gray);
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+.btn {
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.btn-outline {
+    background: white;
+    border: 1px solid var(--medium-gray);
+    color: var(--text-dark);
+}
+
+.btn-outline:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+.btn-success {
+    background-color: #4CAF50;
+    border: 1px solid #4CAF50;
+    color: white;
+}
+
+.btn-success:hover {
+    background-color: #3d8b40;
+    border-color: #3d8b40;
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+    .task-table {
+        display: block;
+        overflow-x: auto;
+    }
+    
+    .action-buttons {
+        flex-wrap: wrap;
+    }
+}

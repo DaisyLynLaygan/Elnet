@@ -30,7 +30,15 @@ namespace HomeOwner.Controllers
             ViewContents();
             return View();
         }
+
         public IActionResult StaffEvents()
+        {
+            ViewContents();
+            return View();
+        }
+
+        // Add this new action for Current Tasks
+        public IActionResult StaffCurrentTask()
         {
             ViewContents();
             return View();

@@ -26,6 +26,12 @@
                     <span>Staff Services</span>
                 </a>
             </li>
+             <li class="nav-item @(ViewBag.ActiveMenu == "StaffCurrentTask" ? "active" : "")">
+                <a asp-controller="Staff" asp-action="StaffCurrentTask" class="nav-link">
+                    <span>Task</span>
+                </a>
+            </li>
+
             <li class="nav-item @(ViewBag.ActiveMenu == "Community" ? "active" : "")">
                 <a asp-controller="Staff" asp-action="StaffCommunity" class="nav-link">
                     <span>Community</span>
