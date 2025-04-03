@@ -1,276 +1,53 @@
-/* Modal Styles */
-.modal {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
-    z-index: 1100;
-    display: none;
-    overflow-y: auto;
-}
 
-.modal.show {
-    display: block;
-}
+        public IActionResult Documents()
+        {
+            ViewContents();
+            ViewBag.ActiveMenu = "Documents";
+            return View("AdminDocuments");
+        }
 
-.modal-dialog {
-    max-width: 800px;
-    margin: 1.75rem auto;
-    position: relative;
-    width: auto;
-}
+        public IActionResult Reservations()
+        {
+            ViewContents();
+            ViewBag.ActiveMenu = "Reservations";
+            return View("AdminReservations");
+        }
 
-.modal-dialog-centered {
-    display: flex;
-    align-items: center;
-    min-height: calc(100% - 3.5rem);
-}
+        public IActionResult Polls()
+        {
+            ViewContents();
+            ViewBag.ActiveMenu = "Polls";
+            return View("AdminPolls");
+        }
 
-.modal-content {
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-    background-color: var(--white);
-    background-clip: padding-box;
-    border: 1px solid rgba(0, 0, 0, 0.2);
-    border-radius: var(--border-radius);
-    outline: 0;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-}
-
-.modal-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 1rem 1.5rem;
-    border-bottom: 1px solid var(--medium-gray);
-}
-
-.modal-title {
-    margin: 0;
-    line-height: 1.5;
-    color: var(--primary-dark);
-    font-size: 1.25rem;
-}
-
-.close {
-    float: right;
-    font-size: 1.5rem;
-    font-weight: 700;
-    line-height: 1;
-    color: #000;
-    text-shadow: 0 1px 0 #fff;
-    opacity: 0.5;
-    background: transparent;
-    border: 0;
-    cursor: pointer;
-    padding: 0;
-    margin: 0;
-}
-
-.close:hover {
-    opacity: 0.75;
-}
-
-.modal-body {
-    position: relative;
-    flex: 1 1 auto;
-    padding: 1.5rem;
-    overflow-y: auto;
-    max-height: calc(100vh - 200px);
-}
-
-.modal-footer {
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    padding: 1rem 1.5rem;
-    border-top: 1px solid var(--medium-gray);
-}
+        public IActionResult Events()
+        {
+            ViewContents();
+            ViewBag.ActiveMenu = "Events";
+            return View("AdminEvents");
+        }
 
 
-.form-group {
-    margin-bottom: 1.25rem;
-}
+      
 
-.form-control {
-    width: 100%;
-    padding: 0.5rem 1rem;
-    border: 1px solid var(--medium-gray);
-    border-radius: var(--border-radius);
-    transition: all var(--transition-speed) ease;
-    font-size: 1rem;
-}
+        public  IActionResult  AdminUsers()
+        {
+            ViewContents();
 
-.form-control:focus {
-    border-color: var(--primary-light);
-    outline: none;
-    box-shadow: 0 0 0 3px rgba(109, 76, 65, 0.1);
-}
+            ViewBag.ActiveMenu = "Users";
+            return View(GetUser());
+        }
 
-textarea.form-control {
-    min-height: 120px;
-    resize: vertical;
-}
+        public IActionResult Feedback()
+        {
+            ViewContents();
+            ViewBag.ActiveMenu = "Feedback";
+            return View("AdminFeedback");
+        }
 
-.form-check {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-.form-check-input {
-    width: 18px;
-    height: 18px;
-}
-
-/* View Announcement Modal Specific */
-.announcement-meta {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 1.5rem;
-    color: var(--text-gray);
-    font-size: 0.9rem;
-    margin-bottom: 1.5rem;
-}
-
-.meta-item {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-.announcement-content {
-    line-height: 1.6;
-}
-
-.announcement-content p {
-    margin-bottom: 1rem;
-}
-
-.announcement-content ul {
-    margin-bottom: 1rem;
-    padding-left: 1.5rem;
-}
-
-.badge {
-    display: inline-block;
-    padding: 0.25em 0.4em;
-    font-size: 75%;
-    font-weight: 700;
-    line-height: 1;
-    text-align: center;
-    white-space: nowrap;
-    vertical-align: baseline;
-    border-radius: 0.25rem;
-}
-
-.badge-primary {
-    color: #fff;
-    background-color: var(--primary);
-}
-
-/* Responsive Adjustments */
-@media (max-width: 768px) {
-    /* Make the table behave like a block element for better mobile support */
-    .announcements-table-container {
-        overflow-x: auto;  /* Enable horizontal scrolling */
-        -webkit-overflow-scrolling: touch;
-        padding-bottom: 1rem;  /* Ensure space for the scrollbar */
-    }
-
-    .announcements-table {
-        display: block;  /* Make table a block element */
-        width: 100%;  /* Ensure it takes up the full width */
-    }
-
-    .announcements-table thead {
-        display: block;  /* Ensure the header stays fixed while scrolling */
-        width: 100%;
-    }
-
-    .announcements-table tbody {
-        display: block;  /* Allow the body to scroll horizontally */
-        width: 100%;
-        overflow-x: auto;  /* Enable horizontal scroll for the body */
-    }
-
-    .announcements-table tr {
-        display: block;  /* Display rows as block elements */
-        width: 100%;
-        overflow: hidden; /* Ensure content within rows doesn't overflow */
-        white-space: nowrap;  /* Prevent wrapping within rows */
-    }
-
-    .announcements-table th,
-    .announcements-table td {
-        display: block;  /* Make each cell behave as a block element */
-        padding: 0.5rem;  /* Add some space to cells */
-        width: 100%;  /* Ensure each cell takes full width */
-        box-sizing: border-box;  /* Prevent content from spilling over */
-        overflow: hidden;
-        text-overflow: ellipsis;  /* Truncate text with ellipsis */
-    }
-
-    .announcements-table td {
-        white-space: nowrap;  /* Prevent text from wrapping in cells */
-    }
-
-    .announcements-header {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-
-    .announcements-actions {
-        width: 100%;
-        justify-content: space-between;
-    }
-
-    .search-input {
-        width: 200px;
-    }
-
-    .modal-body {
-        padding: 1rem;
-    }
-
-    .modal-header,
-    .modal-footer {
-        padding: 1rem;
-    }
-}
-
-@media (max-width: 576px) {
-    .search-input {
-        width: 100%;
-    }
-
-    .modal-dialog {
-        margin: 0.5rem auto;
-    }
-
-    .modal-content {
-        border-radius: 0;
-    }
-
-    .announcement-meta {
-        flex-direction: column;
-        gap: 0.75rem;
-    }
-
-    .form-group {
-        margin-bottom: 1rem;
-    }
-
-    .btn {
-        padding: 0.5rem;
-    }
-}
-
-/* Modal open state for body */
-.modal-open {
-    overflow: hidden;
-}
+        public IActionResult ServiceRequests()
+        {
+            ViewContents();
+            ViewBag.ActiveMenu = "ServiceRequests";
+            return View("AdminServiceRequests");
+        }
