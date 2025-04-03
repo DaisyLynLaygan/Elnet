@@ -1,10 +1,544 @@
 @model HomeOwner.Models.User
 @{
-    var user = ViewBag.CurrentUser as User; 
+    ViewData["Title"] = "Staff Dashboard";
+    ViewData["Subtitle"] = "Staff Overview";
+    Layout = "~/Views/Shared/StaffLayout.cshtml";
+    ViewBag.ActiveMenu = "Dashboard";
 }
-@{
-    Layout = "~/Views/Shared/Dashboard_Layout.cshtml";
-}
+<link rel="stylesheet" href="~/css/staff/staffdashboard.css" asp-append-version="true" />
 
+<div class="dashboard-container">
+    <div class="dashboard-header">
+        <h1>Welcome back, @(ViewBag.CurrentUser?.firstname)!</h1>
+        <p>Here's what's happening in your community today</p>
+    </div>
 
-<h1>Staff Dashboard</h1>
+    <div class="dashboard-cards">
+        <div class="card">
+            <div class="card-body">
+                <div class="card-icon" style="background-color: #2ecc71;">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <div class="card-info">
+                    <h3>@ViewBag.CompletedServices</h3>
+                    <p>Services Completed</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-body">
+                <div class="card-icon" style="background-color: #f39c12;">
+                    <i class="fas fa-tasks"></i>
+                </div>
+                <div class="card-info">
+                    <h3>@ViewBag.PendingTasks</h3>
+                    <p>Pending Tasks</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-body">
+                <div class="card-icon" style="background-color: #e74c3c;">
+                    <i class="fas fa-exclamation-circle"></i>
+                </div>
+                <div class="card-info">
+                    <h3>@ViewBag.UrgentRequests</h3>
+                    <p>Urgent Requests</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-body">
+                <div class="card-icon" style="background-color: #3498db;">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <div class="card-info">
+                    <h3>@ViewBag.InProgress</h3>
+                    <p>In Progress</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="dashboard-content">
+        <div class="charts-section">
+            <div class="chart-container">
+                <div class="chart-header">
+                    <h6>Homeowners Service Requests</h6>
+                    <small>Last 6 months</small>
+                </div>
+                <div class="chart-placeholder">
+                    <canvas id="serviceRequestsChart"></canvas>
+                </div>
+            </div>
+
+            <div class="chart-container">
+                <div class="chart-header">
+                    <h6>Your Service Completion Rate</h6>
+                    <small>Current month</small>
+                </div>
+                <div class="chart-placeholder">
+                    <canvas id="completionRateChart"></canvas>
+                </div>
+            </div>
+
+            <div class="activity-card">
+                <div class="card-header">
+                    <h5>Recent Activities</h5>
+                    <small><i class="fas fa-sync-alt"></i> Updated just now</small>
+                </div>
+                <div class="card-body">
+                    <div class="activity-list">
+                        <div class="activity-item">
+                            <i class="fas fa-circle activity-icon"></i>
+                            <div class="activity-content">
+                                <p><strong>Maria Santos</strong> completed Function Hall maintenance</p>
+                                <small>2 hours ago</small>
+                            </div>
+                        </div>
+                        <div class="activity-item">
+                            <i class="fas fa-circle activity-icon"></i>
+                            <div class="activity-content">
+                                <p><strong>Juan Dela Cruz</strong> approved Sports Court repair request</p>
+                                <small>5 hours ago</small>
+                            </div>
+                        </div>
+                        <div class="activity-item">
+                            <i class="fas fa-circle activity-icon"></i>
+                            <div class="activity-content">
+                                <p><strong>Anna Reyes</strong> created new Garden Maintenance schedule</p>
+                                <small>Yesterday, 3:45 PM</small>
+                            </div>
+                        </div>
+                        <div class="activity-item">
+                            <i class="fas fa-circle activity-icon"></i>
+                            <div class="activity-content">
+                                <p><strong>Carlos Gomez</strong> resolved HVAC issue in Clubhouse</p>
+                                <small>Yesterday, 11:20 AM</small>
+                            </div>
+                        </div>
+                        <div class="activity-item">
+                            <i class="fas fa-circle activity-icon"></i>
+                            <div class="activity-content">
+                                <p><strong>Luis Fernandez</strong> completed Safety Inspection</p>
+                                <small>2 days ago</small>
+                            </div>
+                        </div>
+                        <div class="activity-item">
+                            <i class="fas fa-circle activity-icon"></i>
+                            <div class="activity-content">
+                                <p><strong>Emma Watson</strong> scheduled Deep Cleaning for common areas</p>
+                                <small>3 days ago</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="sidebar-section">
+            <div class="quick-actions-card">
+                <div class="card-header">
+                    <h5>Quick Actions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="quick-actions">
+                        <button class="btn btn-primary" id="createTrashSchedule">
+                            <i class="fas fa-trash-alt"></i> Create Trash Schedule
+                        </button>
+                        <button class="btn btn-warning" id="reportIssue">
+                            <i class="fas fa-tools"></i> Report Issue
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="activity-card upcoming-tasks-card">
+                <div class="card-header">
+                    <h5>Upcoming Tasks</h5>
+                    <small>Next 7 days</small>
+                </div>
+                <div class="card-body">
+                    <div class="activity-list upcoming-tasks">
+                        <div class="activity-item">
+                            <i class="fas fa-circle activity-icon" style="color: #e74c3c;"></i>
+                            <div class="activity-content">
+                                <p><strong>Garden Maintenance</strong> - Community Park</p>
+                                <small>Tomorrow, 7:00 AM</small>
+                            </div>
+                        </div>
+                        <div class="activity-item">
+                            <i class="fas fa-circle activity-icon" style="color: #f39c12;"></i>
+                            <div class="activity-content">
+                                <p><strong>HVAC Maintenance</strong> - Clubhouse</p>
+                                <small>Friday, 10:00 AM</small>
+                            </div>
+                        </div>
+                        <div class="activity-item">
+                            <i class="fas fa-circle activity-icon" style="color: #3498db;"></i>
+                            <div class="activity-content">
+                                <p><strong>Safety Inspection</strong> - All Facilities</p>
+                                <small>Next Monday, 8:00 AM</small>
+                            </div>
+                        </div>
+                        <div class="activity-item">
+                            <i class="fas fa-circle activity-icon" style="color: #9b59b6;"></i>
+                            <div class="activity-content">
+                                <p><strong>Deep Cleaning</strong> - Function Hall</p>
+                                <small>Next Tuesday, 9:00 AM</small>
+                            </div>
+                        </div>
+                        <div class="activity-item">
+                            <i class="fas fa-circle activity-icon" style="color: #2ecc71;"></i>
+                            <div class="activity-content">
+                                <p><strong>Handyman Services</strong> - Playground Equipment</p>
+                                <small>Next Wednesday, 1:00 PM</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Create Trash Schedule Modal -->
+<div class="modal-overlay" id="trashScheduleModal">
+    <div class="modal-container">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Create New Trash Collection Schedule</h3>
+                <button class="modal-close" id="closeTrashScheduleModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="trashScheduleForm">
+                    <div class="form-group">
+                        <label for="scheduleType">Schedule Type</label>
+                        <select class="form-control" id="scheduleType" required>
+                            <option value="" selected disabled>Select type</option>
+                            <option value="regular">Regular Trash Collection</option>
+                            <option value="recycling">Recycling Collection</option>
+                            <option value="hazardous">Hazardous Waste Collection</option>
+                            <option value="bulk">Bulk Item Collection</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="scheduleDate">Collection Date</label>
+                        <input type="date" class="form-control" id="scheduleDate" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="scheduleTime">Collection Time</label>
+                        <input type="time" class="form-control" id="scheduleTime" required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="cancelTrashSchedule">Cancel</button>
+                <button class="btn btn-primary" id="submitTrashSchedule">Create Schedule</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Report Issue Modal -->
+<div class="modal-overlay" id="reportIssueModal">
+    <div class="modal-container">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Report New Issue</h3>
+                <button class="modal-close" id="closeReportIssueModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="reportIssueForm">
+                    <div class="form-group">
+                        <label for="issueType">Issue Type</label>
+                        <select class="form-control" id="issueType" required>
+                            <option value="" selected disabled>Select issue type</option>
+                            <option value="plumbing">Plumbing</option>
+                            <option value="electrical">Electrical</option>
+                            <option value="structural">Structural</option>
+                            <option value="appliance">Appliance</option>
+                            <option value="security">Security</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="facilityLocation">Facility</label>
+                        <select class="form-control" id="facilityLocation" required>
+                            <option value="" selected disabled>Select facility</option>
+                            <option value="function_hall">Function Hall</option>
+                            <option value="sports_court">Sports Court</option>
+                            <option value="swimming_pool">Swimming Pool</option>
+                            <option value="gym">Gym</option>
+                            <option value="clubhouse">Clubhouse</option>
+                            <option value="playground">Playground</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="issueSeverity">Severity</label>
+                        <select class="form-control" id="issueSeverity" required>
+                            <option value="low">Low (Non-urgent)</option>
+                            <option value="medium" selected>Medium (Normal priority)</option>
+                            <option value="high">High (Urgent)</option>
+                            <option value="critical">Critical (Emergency)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="issueDescription">Description</label>
+                        <textarea class="form-control" id="issueDescription" rows="4" required></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="cancelReportIssue">Cancel</button>
+                <button class="btn btn-warning" id="submitIssueReport">Report Issue</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Homeowners Service Requests Chart - Temp Data
+            const serviceRequestsCtx = document.getElementById('serviceRequestsChart').getContext('2d');
+            const serviceRequestsChart = new Chart(serviceRequestsCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                    datasets: [
+                        {
+                            label: 'Facilities Services',
+                            data: [12, 18, 15, 9, 14, 20],
+                            backgroundColor: '#6D4C41',
+                            borderColor: '#4E342E',
+                            borderWidth: 1,
+                            borderRadius: 4,
+                            barThickness: 'flex',
+                            maxBarThickness: 30
+                        },
+                        {
+                            label: 'Maintenance Services',
+                            data: [8, 12, 10, 5, 9, 15],
+                            backgroundColor: '#8D6E63',
+                            borderColor: '#6D4C41',
+                            borderWidth: 1,
+                            borderRadius: 4,
+                            barThickness: 'flex',
+                            maxBarThickness: 30
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.05)'
+                            },
+                            title: {
+                                display: true,
+                                text: 'Number of Requests'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            },
+                            stacked: true
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                usePointStyle: true,
+                                pointStyle: 'circle'
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: '#6D4C41',
+                            titleFont: {
+                                weight: 'bold'
+                            },
+                            bodyFont: {
+                                weight: 'normal'
+                            },
+                            padding: 12,
+                            cornerRadius: 8,
+                            mode: 'index',
+                            intersect: false
+                        }
+                    }
+                }
+            });
+
+            // Staff Completion Rate Chart - Temp Data
+            const completionRateCtx = document.getElementById('completionRateChart').getContext('2d');
+            const completionRateChart = new Chart(completionRateCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Completed', 'Pending', 'In Progress'],
+                    datasets: [{
+                        data: [18, 7, 5],
+                        backgroundColor: [
+                            '#2ecc71', // Green for completed
+                            '#f39c12', // Orange for pending
+                            '#3498db'  // Blue for in progress
+                        ],
+                        borderWidth: 0,
+                        hoverOffset: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '70%',
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                padding: 20,
+                                usePointStyle: true,
+                                pointStyle: 'circle',
+                                font: {
+                                    weight: '500'
+                                }
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: '#6D4C41',
+                            titleFont: {
+                                weight: 'bold'
+                            },
+                            bodyFont: {
+                                weight: 'normal'
+                            },
+                            padding: 12,
+                            cornerRadius: 8,
+                            callbacks: {
+                                label: function(context) {
+                                    const label = context.label || '';
+                                    const value = context.raw || 0;
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const percentage = Math.round((value / total) * 100);
+                                    return `${label}: ${value} (${percentage}%)`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Modal functionality
+            const trashScheduleModal = document.getElementById('trashScheduleModal');
+            const reportIssueModal = document.getElementById('reportIssueModal');
+
+            // Open/Close Trash Schedule Modal
+            document.getElementById('createTrashSchedule').addEventListener('click', function() {
+                trashScheduleModal.style.display = 'flex';
+                document.body.style.overflow = 'hidden';
+            });
+
+            document.getElementById('closeTrashScheduleModal').addEventListener('click', function() {
+                trashScheduleModal.style.display = 'none';
+                document.body.style.overflow = 'auto';
+            });
+
+            document.getElementById('cancelTrashSchedule').addEventListener('click', function() {
+                trashScheduleModal.style.display = 'none';
+                document.body.style.overflow = 'auto';
+            });
+
+            // Open/Close Report Issue Modal
+            document.getElementById('reportIssue').addEventListener('click', function() {
+                reportIssueModal.style.display = 'flex';
+                document.body.style.overflow = 'hidden';
+            });
+
+            document.getElementById('closeReportIssueModal').addEventListener('click', function() {
+                reportIssueModal.style.display = 'none';
+                document.body.style.overflow = 'auto';
+            });
+
+            document.getElementById('cancelReportIssue').addEventListener('click', function() {
+                reportIssueModal.style.display = 'none';
+                document.body.style.overflow = 'auto';
+            });
+
+            // Close modals when clicking outside
+            window.addEventListener('click', function(event) {
+                if (event.target === trashScheduleModal) {
+                    trashScheduleModal.style.display = 'none';
+                    document.body.style.overflow = 'auto';
+                }
+                if (event.target === reportIssueModal) {
+                    reportIssueModal.style.display = 'none';
+                    document.body.style.overflow = 'auto';
+                }
+            });
+
+            // Form Submissions
+            document.getElementById('submitTrashSchedule').addEventListener('click', function() {
+                const form = document.getElementById('trashScheduleForm');
+                if (form.checkValidity()) {
+                    // Here you would typically send the data to the server
+                    const formData = {
+                        type: document.getElementById('scheduleType').value,
+                        date: document.getElementById('scheduleDate').value,
+                        time: document.getElementById('scheduleTime').value
+                    };
+                    
+                    console.log('Submitting trash schedule:', formData);
+                    
+                    // Simulate successful submission
+                    alert('Trash collection schedule created successfully!');
+                    trashScheduleModal.style.display = 'none';
+                    document.body.style.overflow = 'auto';
+                    
+                    // Reset form
+                    form.reset();
+                } else {
+                    form.reportValidity();
+                }
+            });
+
+            document.getElementById('submitIssueReport').addEventListener('click', function() {
+                const form = document.getElementById('reportIssueForm');
+                if (form.checkValidity()) {
+                    // Here you would typically send the data to the server
+                    const formData = {
+                        type: document.getElementById('issueType').value,
+                        facility: document.getElementById('facilityLocation').value,
+                        severity: document.getElementById('issueSeverity').value,
+                        description: document.getElementById('issueDescription').value
+                    };
+                    
+                    console.log('Submitting issue report:', formData);
+                    
+                    // Simulate successful submission
+                    alert('Issue reported successfully! Our team will address it soon.');
+                    reportIssueModal.style.display = 'none';
+                    document.body.style.overflow = 'auto';
+                    
+                    // Reset form
+                    form.reset();
+                } else {
+                    form.reportValidity();
+                }
+            });
+
+            // Responsive adjustments
+            function handleResize() {
+                serviceRequestsChart.resize();
+                completionRateChart.resize();
+            }
+
+            window.addEventListener('resize', handleResize);
+        });
+    </script>
