@@ -74,9 +74,7 @@
                     </div>
                     <div class="facility-details">
                         <h4 class="facility-name">Function Hall</h4>
-                        <p class="facility-price">Starting at $500/event</p>
                         <div class="facility-meta">
-                            <span><i class="fas fa-users"></i> 50-100 people</span>
                         </div>
                         <div class="facility-actions">
                             <button class="toggle-availability available">
@@ -93,9 +91,7 @@
                     </div>
                     <div class="facility-details">
                         <h4 class="facility-name">Sports Court</h4>
-                        <p class="facility-price">$50/hour</p>
                         <div class="facility-meta">
-                            <span><i class="fas fa-users"></i> 20 people</span>
                         </div>
                         <div class="facility-actions">
                             <button class="toggle-availability available">
@@ -112,9 +108,7 @@
                     </div>
                     <div class="facility-details">
                         <h4 class="facility-name">Swimming Pool</h4>
-                        <p class="facility-price">$10/hour per person</p>
                         <div class="facility-meta">
-                            <span><i class="fas fa-users"></i> 30 people</span>
                         </div>
                         <div class="facility-actions">
                             <button class="toggle-availability unavailable">
@@ -131,9 +125,7 @@
                     </div>
                     <div class="facility-details">
                         <h4 class="facility-name">Fitness Gym</h4>
-                        <p class="facility-price">$5/hour per person</p>
                         <div class="facility-meta">
-                            <span><i class="fas fa-users"></i> 15 people</span>
                         </div>
                         <div class="facility-actions">
                             <button class="toggle-availability available">
@@ -222,139 +214,109 @@ const reservations = [
         amount: "$500.00",
         notes: ""
     },
-    {
-        id: "RES-2023-002",
-        facility: "Sports Court",
-        resident: "Maria Garcia (Unit 205)",
-        dateTime: "16 Oct 2023, 09:00-11:00",
-        date: "16 Oct 2023",
-        time: "09:00 - 11:00 (2 hours)",
-        status: "pending",
-        guests: "15 people",
-        purpose: "Badminton Tournament",
-        amount: "$100.00",
-        notes: ""
-    },
-    {
-        id: "RES-2023-003",
-        facility: "Swimming Pool",
-        resident: "Robert Johnson (Unit 312)",
-        dateTime: "17 Oct 2023, 10:00-12:00",
-        date: "17 Oct 2023",
-        time: "10:00 - 12:00 (2 hours)",
-        status: "completed",
-        guests: "10 people",
-        purpose: "Swim Practice",
-        amount: "$20.00",
-        notes: ""
-    },
-    {
-        id: "RES-2023-004",
-        facility: "Fitness Gym",
-        resident: "Sarah Lee (Unit 108)",
-        dateTime: "18 Oct 2023, 07:00-08:00",
-        date: "18 Oct 2023",
-        time: "07:00 - 08:00 (1 hour)",
-        status: "approved",
-        guests: "1 person",
-        purpose: "Personal Training",
-        amount: "$5.00",
-        notes: ""
-    },
-    {
-        id: "RES-2023-005",
-        facility: "Function Hall",
-        resident: "Michael Brown (Unit 402)",
-        dateTime: "19 Oct 2023, 19:00-23:00",
-        date: "19 Oct 2023",
-        time: "19:00 - 23:00 (4 hours)",
-        status: "pending",
-        guests: "80 people",
-        purpose: "Birthday Party",
-        amount: "$500.00",
-        notes: ""
-    },
-    {
-        id: "RES-2023-006",
-        facility: "Sports Court",
-        resident: "Emily Wilson (Unit 315)",
-        dateTime: "20 Oct 2023, 15:00-17:00",
-        date: "20 Oct 2023",
-        time: "15:00 - 17:00 (2 hours)",
-        status: "approved",
-        guests: "12 people",
-        purpose: "Basketball Game",
-        amount: "$100.00",
-        notes: ""
-    },
-    {
-        id: "RES-2023-007",
-        facility: "Swimming Pool",
-        resident: "David Taylor (Unit 210)",
-        dateTime: "21 Oct 2023, 11:00-13:00",
-        date: "21 Oct 2023",
-        time: "11:00 - 13:00 (2 hours)",
-        status: "pending",
-        guests: "8 people",
-        purpose: "Family Swim",
-        amount: "$80.00",
-        notes: ""
-    },
-    {
-        id: "RES-2023-008",
-        facility: "Fitness Gym",
-        resident: "Jessica Martinez (Unit 112)",
-        dateTime: "22 Oct 2023, 06:00-07:00",
-        date: "22 Oct 2023",
-        time: "06:00 - 07:00 (1 hour)",
-        status: "completed",
-        guests: "1 person",
-        purpose: "Morning Workout",
-        amount: "$5.00",
-        notes: ""
-    },
-    {
-        id: "RES-2023-009",
-        facility: "Function Hall",
-        resident: "Daniel Anderson (Unit 305)",
-        dateTime: "23 Oct 2023, 12:00-16:00",
-        date: "23 Oct 2023",
-        time: "12:00 - 16:00 (4 hours)",
-        status: "approved",
-        guests: "60 people",
-        purpose: "Business Meeting",
-        amount: "$500.00",
-        notes: ""
-    },
-    {
-        id: "RES-2023-010",
-        facility: "Sports Court",
-        resident: "Olivia Thomas (Unit 118)",
-        dateTime: "24 Oct 2023, 08:00-10:00",
-        date: "24 Oct 2023",
-        time: "08:00 - 10:00 (2 hours)",
-        status: "pending",
-        guests: "10 people",
-        purpose: "Tennis Match",
-        amount: "$100.00",
-        notes: ""
-    },
-    {
-        id: "RES-2023-011",
-        facility: "Swimming Pool",
-        resident: "James White (Unit 207)",
-        dateTime: "25 Oct 2023, 14:00-16:00",
-        date: "25 Oct 2023",
-        time: "14:00 - 16:00 (2 hours)",
-        status: "approved",
-        guests: "5 people",
-        purpose: "Swim Lessons",
-        amount: "$50.00",
-        notes: ""
-    }
 ];
 
+let adminSocket;
+let retryCount = 0;
+const maxRetries = 5;
+const retryDelay = 3000;
+const FACILITY_STATUS_KEY = 'facility_statuses';
+
+function connectWebSocket() {
+    try {
+        const protocol = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
+        const host = window.location.host;
+        
+        adminSocket = new WebSocket(`${protocol}${host}/ws/admin`);
+        
+        adminSocket.onopen = function() {
+            console.log('Admin WebSocket connection established');
+            retryCount = 0;
+            requestCurrentStatuses();
+        };
+        
+        adminSocket.onmessage = function(event) {
+            const data = JSON.parse(event.data);
+            if (data.type === 'facility_status_update') {
+                updateFacilityStatus(data.facility, data.status);
+                saveFacilityStatus(data.facility, data.status);
+            } else if (data.type === 'current_statuses') {
+                data.statuses.forEach(status => {
+                    updateFacilityStatus(status.facility, status.status);
+                    saveFacilityStatus(status.facility, status.status);
+                });
+            }
+        };
+        
+        adminSocket.onerror = function(error) {
+            console.error('Admin WebSocket error:', error);
+        };
+        
+        adminSocket.onclose = function(event) {
+            console.log('Admin WebSocket connection closed', event.code, event.reason);
+            if (retryCount < maxRetries) {
+                retryCount++;
+                setTimeout(connectWebSocket, retryDelay);
+            }
+        };
+    } catch (error) {
+        console.error('WebSocket initialization failed:', error);
+        if (retryCount < maxRetries) {
+            retryCount++;
+            setTimeout(connectWebSocket, retryDelay);
+        }
+    }
+}
+
+function requestCurrentStatuses() {
+    if (adminSocket && adminSocket.readyState === WebSocket.OPEN) {
+        adminSocket.send(JSON.stringify({
+            type: 'request_current_statuses'
+        }));
+    }
+}
+
+function saveFacilityStatus(facility, status) {
+    const statuses = getFacilityStatuses();
+    statuses[facility] = status;
+    localStorage.setItem(FACILITY_STATUS_KEY, JSON.stringify(statuses));
+}
+
+function getFacilityStatuses() {
+    const statuses = localStorage.getItem(FACILITY_STATUS_KEY);
+    return statuses ? JSON.parse(statuses) : {};
+}
+function updateFacilityStatus(facility, status) {
+    const facilityCard = document.querySelector(`.facility-card[data-facility="${facility}"]`);
+    if (!facilityCard) return;
+
+    const statusBadge = facilityCard.querySelector('.facility-status');
+    const toggleBtn = facilityCard.querySelector('.toggle-availability');
+    
+    if (status === 'unavailable') {
+        statusBadge.classList.replace('available', 'unavailable');
+        statusBadge.textContent = 'Unavailable';
+        toggleBtn.classList.replace('available', 'unavailable');
+        toggleBtn.innerHTML = '<i class="fas fa-check"></i> Set Available';
+    } else {
+        statusBadge.classList.replace('unavailable', 'available');
+        statusBadge.textContent = 'Available';
+        toggleBtn.classList.replace('unavailable', 'available');
+        toggleBtn.innerHTML = '<i class="fas fa-times"></i> Set Unavailable';
+    }
+}
+
+function initializeFacilityStatuses() {
+    const statuses = getFacilityStatuses();
+    Object.entries(statuses).forEach(([facility, status]) => {
+        updateFacilityStatus(facility, status);
+    });
+}
+
 document.addEventListener('DOMContentLoaded', function() {
+    initializeFacilityStatuses();
+    connectWebSocket();
+    
     const reservationsTableBody = document.getElementById('reservationsTableBody');
     const tabs = document.querySelectorAll('.reservations-tab');
     const manageFacilitiesBtn = document.getElementById('manageFacilitiesBtn');
@@ -371,11 +333,8 @@ document.addEventListener('DOMContentLoaded', function() {
     let currentPage = 1;
     const reservationsPerPage = 5;
     let currentFilter = 'all';
-    
-    // Current selected reservation for details modal
     let currentReservation = null;
     
-    // Initialize the table with pagination
     function renderReservations(filter = 'all', page = 1) {
         currentFilter = filter;
         currentPage = page;
@@ -385,21 +344,17 @@ document.addEventListener('DOMContentLoaded', function() {
             return res.status === filter;
         });
         
-        // Calculate pagination
         const totalPages = Math.ceil(filteredReservations.length / reservationsPerPage);
         const startIndex = (page - 1) * reservationsPerPage;
         const endIndex = Math.min(startIndex + reservationsPerPage, filteredReservations.length);
         const paginatedReservations = filteredReservations.slice(startIndex, endIndex);
         
-        // Clear table
         reservationsTableBody.innerHTML = '';
         
-        // Populate table with paginated reservations
         paginatedReservations.forEach(reservation => {
             const row = document.createElement('tr');
             row.dataset.id = reservation.id;
             
-            // Determine action buttons based on status
             let actionButtons = '';
             if (reservation.status === 'pending') {
                 actionButtons = `
@@ -421,7 +376,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 `;
             }
             
-            // Get status badge class
             const statusClass = `status-${reservation.status}`;
             const statusText = reservation.status.charAt(0).toUpperCase() + reservation.status.slice(1);
             
@@ -436,33 +390,26 @@ document.addEventListener('DOMContentLoaded', function() {
                 </td>
             `;
             
-            reservationsTableBody.appendChild(row);
-            
-            // Add event listeners to action buttons
             row.querySelectorAll('[data-action]').forEach(btn => {
                 btn.addEventListener('click', () => handleReservationAction(reservation.id, btn.dataset.action));
             });
+            
+            reservationsTableBody.appendChild(row);
         });
         
-        // Update pagination controls
         updatePaginationControls(filteredReservations.length, page, totalPages);
     }
     
-    // Update pagination controls
     function updatePaginationControls(totalReservations, currentPage, totalPages) {
-        // Update pagination info
         const startIndex = (currentPage - 1) * reservationsPerPage + 1;
         const endIndex = Math.min(startIndex + reservationsPerPage - 1, totalReservations);
         paginationInfo.textContent = `Showing ${startIndex}-${endIndex} of ${totalReservations} reservations`;
         
-        // Update previous/next buttons
         prevPageBtn.disabled = currentPage === 1;
         nextPageBtn.disabled = currentPage === totalPages;
         
-        // Update page numbers
         pageNumbers.innerHTML = '';
         
-        // Always show first page
         if (currentPage > 2) {
             addPageNumber(1);
             if (currentPage > 3) {
@@ -470,12 +417,10 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
         
-        // Show current page and adjacent pages
         for (let i = Math.max(1, currentPage - 1); i <= Math.min(totalPages, currentPage + 1); i++) {
             addPageNumber(i);
         }
         
-        // Always show last page
         if (currentPage < totalPages - 1) {
             if (currentPage < totalPages - 2) {
                 pageNumbers.innerHTML += '<span class="page-ellipsis">...</span>';
@@ -487,16 +432,14 @@ document.addEventListener('DOMContentLoaded', function() {
             const pageBtn = document.createElement('button');
             pageBtn.className = `page-number ${pageNumber === currentPage ? 'active' : ''}`;
             pageBtn.textContent = pageNumber;
-            pageBtn.addEventListener('click', () => {
-                renderReservations(currentFilter, pageNumber);
-            });
+            pageBtn.addEventListener('click', () => renderReservations(currentFilter, pageNumber));
             pageNumbers.appendChild(pageBtn);
         }
     }
     
-    // Handle reservation actions
     function handleReservationAction(reservationId, action) {
         const reservation = reservations.find(res => res.id === reservationId);
+        if (!reservation) return;
         
         switch(action) {
             case 'details':
@@ -511,11 +454,9 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    // Show reservation details in modal
     function showReservationDetails(reservation) {
         currentReservation = reservation;
         
-        // Update modal content
         document.getElementById('detailsReservationId').textContent = `Reservation ${reservation.id}`;
         document.getElementById('detailsStatus').innerHTML = 
             `<span class="status-badge status-${reservation.status}">
@@ -533,41 +474,46 @@ document.addEventListener('DOMContentLoaded', function() {
         detailsModal.classList.add('active');
     }
     
-    // Approve a reservation
     function approveReservation(reservationId) {
         const reservation = reservations.find(res => res.id === reservationId);
         if (reservation) {
             reservation.status = 'approved';
             renderReservations(currentFilter, currentPage);
-            alert('Reservation approved successfully! It has been sent to staff for processing.');
+            showAlert('Reservation approved successfully! It has been sent to staff for processing.');
         }
     }
     
-    // Reject a reservation
     function rejectReservation(reservationId) {
         const reservation = reservations.find(res => res.id === reservationId);
         if (reservation) {
             reservation.status = 'cancelled';
             renderReservations(currentFilter, currentPage);
-            alert('Reservation rejected successfully!');
+            showAlert('Reservation rejected successfully!');
         }
     }
     
+    function showAlert(message) {
+        const alertBox = document.createElement('div');
+        alertBox.className = 'custom-alert';
+        alertBox.textContent = message;
+        document.body.appendChild(alertBox);
+        
+        setTimeout(() => {
+            alertBox.classList.add('fade-out');
+            setTimeout(() => alertBox.remove(), 500);
+        }, 3000);
+    }
+
     // Initialize tab functionality
     tabs.forEach(tab => {
         tab.addEventListener('click', () => {
-            // Remove active class from all tabs
             tabs.forEach(t => t.classList.remove('active'));
-            
-            // Add active class to clicked tab
             tab.classList.add('active');
-            
-            // Filter reservations and reset to page 1
             renderReservations(tab.dataset.tab, 1);
         });
     });
     
-    // Pagination button handlers
+    // Event listeners
     prevPageBtn.addEventListener('click', () => {
         if (currentPage > 1) {
             renderReservations(currentFilter, currentPage - 1);
@@ -586,12 +532,10 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     
-    // Modal toggles
     manageFacilitiesBtn.addEventListener('click', () => {
         facilitiesModal.classList.add('active');
     });
     
-    // Close all modals
     closeModalButtons.forEach(btn => {
         btn.addEventListener('click', () => {
             facilitiesModal.classList.remove('active');
@@ -599,16 +543,14 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
     
-    // Save staff notes
     saveNotesBtn.addEventListener('click', () => {
         if (currentReservation) {
             currentReservation.notes = document.getElementById('staffNotes').value;
-            alert('Notes saved successfully!');
+            showAlert('Notes saved successfully!');
             detailsModal.classList.remove('active');
         }
     });
     
-    // Close modals when clicking outside
     document.querySelectorAll('.modal-overlay').forEach(modal => {
         modal.addEventListener('click', function(e) {
             if (e.target === this) {
@@ -616,35 +558,27 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     });
-    
-    // Toggle facility availability
+
     document.querySelectorAll('.toggle-availability').forEach(btn => {
         btn.addEventListener('click', function() {
             const card = this.closest('.facility-card');
-            const statusBadge = card.querySelector('.facility-status');
+            const facility = card.dataset.facility;
+            const isAvailable = this.classList.contains('available');
+            const newStatus = isAvailable ? 'unavailable' : 'available';
             
-            if (this.classList.contains('available')) {
-                // Set to unavailable
-                this.classList.remove('available');
-                this.classList.add('unavailable');
-                this.innerHTML = '<i class="fas fa-check"></i> Set Available';
-                
-                statusBadge.classList.remove('available');
-                statusBadge.classList.add('unavailable');
-                statusBadge.textContent = 'Unavailable';
-            } else {
-                // Set to available
-                this.classList.remove('unavailable');
-                this.classList.add('available');
-                this.innerHTML = '<i class="fas fa-times"></i> Set Unavailable';
-                
-                statusBadge.classList.remove('unavailable');
-                statusBadge.classList.add('available');
-                statusBadge.textContent = 'Available';
+            if (adminSocket && adminSocket.readyState === WebSocket.OPEN) {
+                adminSocket.send(JSON.stringify({
+                    type: 'facility_status_update',
+                    facility: facility,
+                    status: newStatus
+                }));
             }
+            
+            updateFacilityStatus(facility, newStatus);
+            saveFacilityStatus(facility, newStatus);
         });
     });
-    
+
     // Initial render
     renderReservations();
 });
