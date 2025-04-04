@@ -48,6 +48,9 @@ namespace HomeOwner.Controllers
             return _context.User.Count(u => u.status == "Active");
         }
 
+
+
+
         [HttpPost]
         public JsonResult AddUser([FromBody] User userData)
         {
