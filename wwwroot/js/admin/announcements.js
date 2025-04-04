@@ -92,7 +92,7 @@ document.addEventListener("DOMContentLoaded", function () {
     btn.addEventListener("click", function (e) {
       e.stopPropagation();
       const row = this.closest("tr");
-      currentAnnouncementId = row.getAttribute("data-id");
+      const currentAnnouncementId = row.getAttribute("data-id");
       getAnnouncementForEdit(currentAnnouncementId);
     });
   });
@@ -167,12 +167,11 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   function getAnnouncementForEdit(id) {
-    fetch("/Admin/GetAnnouncement", {
+    fetch("/Admin/GetAnnouncement/?id=" + id, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ id: id }),
     })
       .then((response) => {
         if (!response.ok) {
