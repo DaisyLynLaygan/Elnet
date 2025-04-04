@@ -4,6 +4,7 @@ using HomeOwner.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace HomeOwner.Migrations
 {
     [DbContext(typeof(HomeOwnerContext))]
-    partial class HomeOwnerContextModelSnapshot : ModelSnapshot
+    [Migration("20250404143545_addedCommunityClass")]
+    partial class addedCommunityClass
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -65,10 +68,8 @@ namespace HomeOwner.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("comment_id"));
 
-                    b.Property<int?>("author_id")
-                        .HasColumnType("int");
-
                     b.Property<string>("content")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime?>("created_date")
@@ -80,11 +81,19 @@ namespace HomeOwner.Migrations
                     b.Property<DateTime?>("updated_date")
                         .HasColumnType("datetime2");
 
+                    b.Property<int?>("user_id")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("user_id1")
+                        .HasColumnType("int");
+
                     b.HasKey("comment_id");
 
-                    b.HasIndex("author_id");
-
                     b.HasIndex("post_id");
+
+                    b.HasIndex("user_id");
+
+                    b.HasIndex("user_id1");
 
                     b.ToTable("Comment");
                 });
@@ -98,6 +107,7 @@ namespace HomeOwner.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("post_id"));
 
                     b.Property<string>("content")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime?>("created_date")
@@ -162,29 +172,33 @@ namespace HomeOwner.Migrations
 
             modelBuilder.Entity("HomeOwner.Models.Comment", b =>
                 {
-                    b.HasOne("HomeOwner.Models.User", "Author")
-                        .WithMany("Comments")
-                        .HasForeignKey("author_id")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.HasOne("HomeOwner.Models.Post", "Post")
+                    b.HasOne("HomeOwner.Models.Post", "post")
                         .WithMany("Comments")
                         .HasForeignKey("post_id")
                         .OnDelete(DeleteBehavior.Cascade);
 
-                    b.Navigation("Author");
+                    b.HasOne("HomeOwner.Models.User", "user")
+                        .WithMany()
+                        .HasForeignKey("user_id")
+                        .OnDelete(DeleteBehavior.Restrict);
 
-                    b.Navigation("Post");
+                    b.HasOne("HomeOwner.Models.User", null)
+                        .WithMany("Comments")
+                        .HasForeignKey("user_id1");
+
+                    b.Navigation("post");
+
+                    b.Navigation("user");
                 });
 
             modelBuilder.Entity("HomeOwner.Models.Post", b =>
                 {
-                    b.HasOne("HomeOwner.Models.User", "Author")
-                        .WithMany("Posts")
+                    b.HasOne("HomeOwner.Models.User", "user")
+                        .WithMany("Post")
                         .HasForeignKey("user_id")
                         .OnDelete(DeleteBehavior.Restrict);
 
-                    b.Navigation("Author");
+                    b.Navigation("user");
                 });
 
             modelBuilder.Entity("HomeOwner.Models.Post", b =>
@@ -196,7 +210,7 @@ namespace HomeOwner.Migrations
                 {
                     b.Navigation("Comments");
 
-                    b.Navigation("Posts");
+                    b.Navigation("Post");
                 });
 #pragma warning restore 612, 618
         }

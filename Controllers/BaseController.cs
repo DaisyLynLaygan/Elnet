@@ -34,12 +34,7 @@ namespace HomeOwner.Controllers
             homeownerRoute = CurrentUser.role == "homeowner";
             staffRoute = CurrentUser.role == "staff";
 
-            // Controller-specific authorization
-            if (this is AdminController && !adminRoute)
-            {
-                context.Result = RedirectToAction("Index", "Home");
-                return;
-            }
+          
 
             base.OnActionExecuting(context);
         }
