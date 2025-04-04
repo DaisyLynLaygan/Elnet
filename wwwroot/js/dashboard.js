@@ -1,4 +1,115 @@
+let dashboardSocket;
+let dashboardRetryCount = 0;
+const dashboardMaxRetries = 5;
+const dashboardRetryDelay = 3000;
+const FACILITY_STATUS_KEY = 'facility_statuses';
+// Initialize WebSocket connection
+function connectDashboardWebSocket() {
+    try {
+        const protocol = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
+        const host = window.location.host;
+        const path = '/ws/dashboard';
+        
+        dashboardSocket = new WebSocket(`${protocol}${host}${path}`);
+        
+        dashboardSocket.onopen = function() {
+            console.log('Dashboard WebSocket connection established');
+            dashboardRetryCount = 0;
+            requestCurrentStatuses();
+        };
+        
+        dashboardSocket.onmessage = function(event) {
+            const data = JSON.parse(event.data);
+            if (data.type === 'facility_status_update') {
+                updateFacilityStatusUI(data.facility, data.status);
+                saveFacilityStatus(data.facility, data.status);
+            } else if (data.type === 'current_statuses') {
+                data.statuses.forEach(status => {
+                    updateFacilityStatusUI(status.facility, status.status);
+                    saveFacilityStatus(status.facility, status.status);
+                });
+            }
+        };
+        
+        dashboardSocket.onerror = function(error) {
+            console.error('Dashboard WebSocket error:', error);
+        };
+        
+        dashboardSocket.onclose = function(event) {
+            console.log('Dashboard WebSocket connection closed', event.code, event.reason);
+            if (dashboardRetryCount < dashboardMaxRetries) {
+                dashboardRetryCount++;
+                setTimeout(connectDashboardWebSocket, dashboardRetryDelay);
+            }
+        };
+    } catch (error) {
+        console.error('Dashboard WebSocket initialization failed:', error);
+        if (dashboardRetryCount < dashboardMaxRetries) {
+            dashboardRetryCount++;
+            setTimeout(connectDashboardWebSocket, dashboardRetryDelay);
+        }
+    }
+}
+
+function requestCurrentStatuses() {
+    if (dashboardSocket && dashboardSocket.readyState === WebSocket.OPEN) {
+        dashboardSocket.send(JSON.stringify({
+            type: 'request_current_statuses'
+        }));
+    }
+}
+
+function saveFacilityStatus(facility, status) {
+    const statuses = getFacilityStatuses();
+    statuses[facility] = status;
+    localStorage.setItem(FACILITY_STATUS_KEY, JSON.stringify(statuses));
+}
+
+function getFacilityStatuses() {
+    const statuses = localStorage.getItem(FACILITY_STATUS_KEY);
+    return statuses ? JSON.parse(statuses) : {};
+}
+
+function updateFacilityStatusUI(facility, status) {
+    const facilityCards = document.querySelectorAll('.facility-card');
+    facilityCards.forEach(card => {
+        const facilityName = card.dataset.facility;
+        if (facilityName === facility) {
+            if (status === 'unavailable') {
+                card.classList.add('unavailable-facility');
+                const bookButton = card.querySelector('.facility-button');
+                if (bookButton) {
+                    bookButton.disabled = true;
+                    bookButton.textContent = 'Unavailable';
+                    bookButton.classList.remove('facility-button');
+                    bookButton.classList.add('unavailable-button');
+                }
+            } else {
+                card.classList.remove('unavailable-facility');
+                const bookButton = card.querySelector('.unavailable-button');
+                if (bookButton) {
+                    bookButton.disabled = false;
+                    bookButton.textContent = 'Book Now';
+                    bookButton.classList.remove('unavailable-button');
+                    bookButton.classList.add('facility-button');
+                }
+            }
+        }
+    });
+}
+
+function initializeFacilityStatuses() {
+    const statuses = getFacilityStatuses();
+    Object.entries(statuses).forEach(([facility, status]) => {
+        updateFacilityStatusUI(facility, status);
+    });
+}
+
+
 document.addEventListener('DOMContentLoaded', function() {
+    initializeFacilityStatuses();
+    connectDashboardWebSocket();
+    
     // Initialize Swiper for facilities
     var facilitiesSwiper = new Swiper('.facilitiesSwiper', {
         slidesPerView: 1,
@@ -61,7 +172,7 @@ document.addEventListener('DOMContentLoaded', function() {
         thumbnailInterval = setInterval(cycleThumbnails, 5000);
     });
 
-     // Set min date for date inputs to today
+    // Set min date for date inputs to today
     const today = new Date().toISOString().split('T')[0];
     document.getElementById('service-date').min = today;
     document.getElementById('facility-date').min = today;
@@ -88,18 +199,23 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
     
-    // Open facility modal when clicking Book Now buttons
+   // Modify the facility button click handler
     document.querySelectorAll('.facility-button').forEach(button => {
         button.addEventListener('click', function() {
             const facilityName = this.getAttribute('data-facility');
             const facilityPrice = this.getAttribute('data-price');
             const facilityIcon = this.getAttribute('data-icon');
             const hourlyRate = this.getAttribute('data-hourly');
+            const maxGuests = this.getAttribute('data-max-guests');
             
             document.getElementById('facility-name-display').textContent = facilityName;
             document.getElementById('facility-price-display').textContent = `Starting at $${facilityPrice}/event`;
             document.getElementById('facility-icon-display').textContent = facilityIcon;
             document.getElementById('facilityBookingModal').setAttribute('data-hourly-rate', hourlyRate);
+            document.getElementById('facilityBookingModal').setAttribute('data-max-guests', maxGuests);
+            
+            // Set default guests to minimum (1) or facility minimum if applicable
+            document.getElementById('facility-guests').value = '1';
             
             resetSteps('facility');
             facilityModal.style.display = 'flex';
@@ -230,7 +346,6 @@ function updateBookingSummary() {
     document.getElementById('facility-summary-total').textContent = `$${totalFacility.toFixed(2)}`;
 }
 
-// Update the confirmMaintenanceBooking function
 function confirmMaintenanceBooking() {
     const serviceName = document.getElementById('service-name-display').textContent;
     const date = document.getElementById('service-date').value;
@@ -267,7 +382,7 @@ function confirmMaintenanceBooking() {
         }
     });
 }
-// Update the confirmFacilityBooking function
+
 function confirmFacilityBooking() {
     const facilityName = document.getElementById('facility-name-display').textContent;
     const date = document.getElementById('facility-date').value;

@@ -1432,3 +1432,42 @@ h1, h2, h3, h4, h5, h6 {
       display: none;
   }
 }
+
+/* Add these styles to your existing CSS */
+
+.unavailable-button {
+  position: relative;
+  opacity: 0.7;
+  background-color: #cccccc;
+  color: #666666;
+  cursor: not-allowed;
+  pointer-events: none;
+  border: none;
+}
+
+.unavailable-facility {
+  position: relative;
+  opacity: 0.8;
+}
+
+.unavailable-facility::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(255, 255, 255, 0.7);
+  z-index: 1;
+}
+
+.facility-button {
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.facility-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
