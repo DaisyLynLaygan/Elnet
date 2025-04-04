@@ -7,7 +7,6 @@ using Newtonsoft.Json;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add CORS with more specific settings
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll", policy =>
@@ -19,7 +18,6 @@ builder.Services.AddCors(options =>
     });
 });
 
-// Fixed DbContext configuration with proper parentheses
 var connectionString = builder.Configuration.GetConnectionString("HomeOwnerContext") 
     ?? throw new InvalidOperationException("Connection string 'HomeOwnerContext' not found.");
     
@@ -39,6 +37,20 @@ builder.Services.AddSingleton<WebSocketManager>();
 
 var app = builder.Build();
 
+
+app.Use(async (context, next) =>
+{
+    context.Response.Headers.Add("X-Content-Type-Options", "nosniff");
+    context.Response.Headers.Add("X-Frame-Options", "DENY");
+    context.Response.Headers.Add("X-XSS-Protection", "1; mode=block");
+    context.Response.Headers.Add("Referrer-Policy", "no-referrer");
+    context.Response.Headers.Add("Cache-Control", "no-cache, no-store, must-revalidate");
+    context.Response.Headers.Add("Pragma", "no-cache");
+    context.Response.Headers.Add("Expires", "0");
+    
+    await next();
+});
+
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
@@ -47,16 +59,10 @@ if (!app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
-
 app.UseRouting();
-
-// Use CORS before WebSocket and other middleware
 app.UseCors("AllowAll");
-
 app.UseSession();
 app.UseAuthorization();
-
-// Add WebSocket middleware before MVC
 app.UseWebSockets();
 
 app.Use(async (context, next) =>
