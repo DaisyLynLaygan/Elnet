@@ -11,6 +11,11 @@ namespace HomeOwner.Controllers
         public StaffController(HomeOwnerContext db)
         {
             _context = db;
+              if (!staffRoute)
+            {
+               
+                RedirectToAction("Index", "Home");
+            }
         }
 
         public IActionResult StaffDashboard()

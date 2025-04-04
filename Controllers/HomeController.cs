@@ -63,7 +63,7 @@ public class HomeController : Controller
                 user = new User
                 {
                     firstname = "Admin",
-                    role = "Admin"
+                    role = "admin"
                 };
 
             }

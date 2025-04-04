@@ -10,8 +10,14 @@ namespace HomeOwner.Controllers
     public class Homeowner : BaseController
     {
         private readonly HomeOwnerContext _context;
-        public Homeowner(HomeOwnerContext db) {
+        public Homeowner(HomeOwnerContext db)
+        {
             _context = db;
+              if (!homeownerRoute)
+            {
+               
+                RedirectToAction("Index", "Home");
+            }
         }
 
         public void ViewContents()

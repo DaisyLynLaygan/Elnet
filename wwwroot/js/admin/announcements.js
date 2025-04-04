@@ -1,307 +1,352 @@
-document.addEventListener('DOMContentLoaded', function() {
-    // Modal elements
-    const modals = {
-        create: document.getElementById('createAnnouncementModal'),
-        view: document.getElementById('viewAnnouncementModal'),
-        edit: document.getElementById('editAnnouncementModal')
+document.addEventListener("DOMContentLoaded", function () {
+  // Modal elements
+  const modals = {
+    create: document.getElementById("createAnnouncementModal"),
+    view: document.getElementById("viewAnnouncementModal"),
+    edit: document.getElementById("editAnnouncementModal"),
+  };
+
+  // Current announcement being edited/deleted
+  let currentAnnouncementId = null;
+
+  // Show SweetAlert notification with callback
+  function showAlert(message, type = "success", callback = null) {
+    return Swal.fire({
+      icon: type,
+      title: message,
+      showConfirmButton: true,
+      timer: 3000,
+    }).then((result) => {
+      if (callback && result.isConfirmed) {
+        callback();
+      }
+    });
+  }
+
+  // Modal functions
+  function openModal(modal) {
+    modal.style.display = "block";
+    document.body.classList.add("modal-open");
+  }
+
+  function closeModal(modal) {
+    modal.style.display = "none";
+    document.body.classList.remove("modal-open");
+  }
+
+  // Close modals when clicking X or close button
+  document
+    .getElementById("closeCreateModal")
+    .addEventListener("click", () => closeModal(modals.create));
+  document
+    .getElementById("closeEditModal")
+    .addEventListener("click", () => closeModal(modals.edit));
+  document
+    .getElementById("closeViewModal")
+    .addEventListener("click", () => closeModal(modals.view));
+  document
+    .getElementById("closeViewModalBtn")
+    .addEventListener("click", () => closeModal(modals.view));
+
+  // Close modal when clicking outside
+  document.querySelectorAll(".modal").forEach((modal) => {
+    modal.addEventListener("click", function (e) {
+      if (e.target === this) {
+        closeModal(this);
+      }
+    });
+  });
+
+  // Create announcement button
+  document
+    .getElementById("createAnnouncementBtn")
+    .addEventListener("click", function () {
+      resetCreateForm();
+      openModal(modals.create);
+    });
+
+  // Cancel buttons
+  document
+    .getElementById("cancelCreateAnnouncement")
+    .addEventListener("click", () => {
+      closeModal(modals.create);
+    });
+
+  document
+    .getElementById("cancelEditAnnouncement")
+    .addEventListener("click", () => {
+      closeModal(modals.edit);
+    });
+
+  // View announcement functionality
+  document.querySelectorAll(".btn-icon.view").forEach((btn) => {
+    btn.addEventListener("click", function () {
+      const row = this.closest("tr");
+      populateViewModal(row);
+      openModal(modals.view);
+    });
+  });
+
+  // Edit announcement functionality
+  document.querySelectorAll(".btn-icon.edit").forEach((btn) => {
+    btn.addEventListener("click", function (e) {
+      e.stopPropagation();
+      const row = this.closest("tr");
+      const currentAnnouncementId = row.getAttribute("data-id");
+      getAnnouncementForEdit(currentAnnouncementId);
+    });
+  });
+
+  // Delete announcement functionality
+  document.querySelectorAll(".btn-icon.delete").forEach((btn) => {
+    btn.addEventListener("click", function (e) {
+      e.stopPropagation();
+      const row = this.closest("tr");
+      const announcementId = row.getAttribute("data-id");
+
+      console.log("Announcement ID:", announcementId);
+      const announcementTitle = row.querySelector(
+        '[data-cell="Title"]'
+      ).textContent;
+
+      showDeleteConfirmation(announcementId, announcementTitle);
+    });
+  });
+
+  // Create announcement form submission
+  document
+    .getElementById("submitCreateAnnouncement")
+    .addEventListener("click", function () {
+      saveAnnouncement();
+    });
+
+  // Edit announcement form submission
+  document
+    .getElementById("submitEditAnnouncement")
+    .addEventListener("click", function () {
+      updateAnnouncement();
+    });
+
+  // Helper functions
+  function resetCreateForm() {
+    document.getElementById("createAnnouncementTitle").value = "";
+    document.getElementById("createAnnouncementContent").value = "";
+    document.getElementById("createAnnouncementPriority").value = "normal";
+    document.getElementById("createSendNotification").checked = false;
+
+    const today = new Date().toISOString().split("T")[0];
+    document.getElementById("createAnnouncementStartDate").value = today;
+    document.getElementById("createAnnouncementEndDate").value = "";
+  }
+
+  function populateViewModal(row) {
+    document.getElementById("viewAnnouncementTitle").textContent =
+      row.querySelector('[data-cell="Title"]').textContent;
+    document.getElementById("viewAnnouncementContent").textContent =
+      row.querySelector('[data-cell="Content"]').textContent;
+    document.getElementById("viewAnnouncementAuthor").textContent =
+      row.querySelector('[data-cell="Author"]').textContent;
+    document.getElementById("viewAnnouncementDate").textContent =
+      row.querySelector('[data-cell="Posted"]').textContent;
+    document.getElementById("viewAnnouncementExpiry").textContent =
+      row.querySelector('[data-cell="Expires"]').textContent;
+
+    const priority = row
+      .querySelector('[data-cell="Status"]')
+      .textContent.trim()
+      .toLowerCase();
+    const priorityBadge = document.getElementById("viewAnnouncementPriority");
+    priorityBadge.textContent = priority;
+    priorityBadge.className =
+      "badge " +
+      (priority === "urgent"
+        ? "badge-danger"
+        : priority === "high"
+        ? "badge-warning"
+        : "badge-primary");
+  }
+
+  function getAnnouncementForEdit(id) {
+    fetch("/Admin/GetAnnouncement/?id=" + id, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Network response was not ok");
+        }
+        return response.json();
+      })
+      .then((data) => {
+        if (data.success) {
+          document.getElementById("editAnnouncementId").value =
+            data.announcement.announcement_id;
+          document.getElementById("editAnnouncementTitle").value =
+            data.announcement.title;
+          document.getElementById("editAnnouncementContent").value =
+            data.announcement.content;
+          document.getElementById("editAnnouncementStartDate").value =
+            data.announcement.start_date;
+          document.getElementById("editAnnouncementEndDate").value =
+            data.announcement.end_date || "";
+          document.getElementById("editAnnouncementPriority").value =
+            data.announcement.priority;
+
+          openModal(modals.edit);
+        } else {
+          showAlert(data.message || "Announcement not found", "error");
+        }
+      })
+      .catch((error) => {
+        showAlert("Error fetching announcement: " + error.message, "error");
+      });
+  }
+
+  function showDeleteConfirmation(id, title) {
+    console.log(id);
+    Swal.fire({
+      title: "Delete Announcement?",
+      html: `Are you sure you want to delete <strong>"${title}"</strong>?`,
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Yes, delete it!",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        deleteAnnouncement(id);
+      }
+    });
+  }
+
+  function saveAnnouncement() {
+    const title = document.getElementById("createAnnouncementTitle").value;
+    const content = document.getElementById("createAnnouncementContent").value;
+
+    if (!title || !content) {
+      showAlert("Title and content are required", "error");
+      return;
+    }
+
+    const formData = {
+      title: title,
+      content: content,
+      start_date: document.getElementById("createAnnouncementStartDate").value,
+      end_date:
+        document.getElementById("createAnnouncementEndDate").value || null,
+      priority: document.getElementById("createAnnouncementPriority").value,
     };
-    
-    // Current announcement being edited/deleted
-    let currentAnnouncementId = null;
 
-    // Show SweetAlert notification with callback
-    function showAlert(message, type = 'success', callback = null) {
-        return Swal.fire({
-            icon: type,
-            title: message,
-            showConfirmButton: true,
-            timer: 3000
-        }).then((result) => {
-            if (callback && result.isConfirmed) {
-                callback();
-            }
-        });
-    }
-
-    // Modal functions
-    function openModal(modal) {
-        modal.style.display = 'block';
-        document.body.classList.add('modal-open');
-    }
-    
-    function closeModal(modal) {
-        modal.style.display = 'none';
-        document.body.classList.remove('modal-open');
-    }
-    
-    // Close modals when clicking X or close button
-    document.getElementById('closeCreateModal').addEventListener('click', () => closeModal(modals.create));
-    document.getElementById('closeEditModal').addEventListener('click', () => closeModal(modals.edit));
-    document.getElementById('closeViewModal').addEventListener('click', () => closeModal(modals.view));
-    document.getElementById('closeViewModalBtn').addEventListener('click', () => closeModal(modals.view));
-    
-    // Close modal when clicking outside
-    document.querySelectorAll('.modal').forEach(modal => {
-        modal.addEventListener('click', function(e) {
-            if (e.target === this) {
-                closeModal(this);
-            }
-        });
-    });
-    
-    // Create announcement button
-    document.getElementById('createAnnouncementBtn').addEventListener('click', function() {
-        resetCreateForm();
-        openModal(modals.create);
-    });
-    
-    // Cancel buttons
-    document.getElementById('cancelCreateAnnouncement').addEventListener('click', () => {
-        closeModal(modals.create);
-    });
-    
-    document.getElementById('cancelEditAnnouncement').addEventListener('click', () => {
-        closeModal(modals.edit);
-    });
-    
-    // View announcement functionality
-    document.querySelectorAll('.btn-icon.view').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const row = this.closest('tr');
-            populateViewModal(row);
-            openModal(modals.view);
-        });
-    });
-    
-    // Edit announcement functionality
-    document.querySelectorAll('.btn-icon.edit').forEach(btn => {
-        btn.addEventListener('click', function(e) {
-            e.stopPropagation();
-            const row = this.closest('tr');
-            currentAnnouncementId = row.getAttribute('data-id');
-            getAnnouncementForEdit(currentAnnouncementId);
-        });
-    });
-    
-    // Delete announcement functionality
-    document.querySelectorAll('.btn-icon.delete').forEach(btn => {
-        btn.addEventListener('click', function(e) {
-            e.stopPropagation();
-            const row = this.closest('tr');
-            currentAnnouncementId = row.getAttribute('data-id');
-            const announcementTitle = row.querySelector('[data-cell="Title"]').textContent;
-            
-            showDeleteConfirmation(announcementTitle);
-        });
-    });
-    
-    // Create announcement form submission
-    document.getElementById('submitCreateAnnouncement').addEventListener('click', function() {
-        saveAnnouncement();
-    });
-    
-    // Edit announcement form submission
-    document.getElementById('submitEditAnnouncement').addEventListener('click', function() {
-        updateAnnouncement();
-    });
-    
-    // Helper functions
-    function resetCreateForm() {
-        document.getElementById('createAnnouncementTitle').value = '';
-        document.getElementById('createAnnouncementContent').value = '';
-        document.getElementById('createAnnouncementPriority').value = 'normal';
-        document.getElementById('createSendNotification').checked = false;
-        
-        const today = new Date().toISOString().split('T')[0];
-        document.getElementById('createAnnouncementStartDate').value = today;
-        document.getElementById('createAnnouncementEndDate').value = '';
-    }
-    
-    function populateViewModal(row) {
-        document.getElementById('viewAnnouncementTitle').textContent = 
-            row.querySelector('[data-cell="Title"]').textContent;
-        document.getElementById('viewAnnouncementContent').textContent = 
-            row.querySelector('[data-cell="Content"]').textContent;
-        document.getElementById('viewAnnouncementAuthor').textContent = 
-            row.querySelector('[data-cell="Author"]').textContent;
-        document.getElementById('viewAnnouncementDate').textContent = 
-            row.querySelector('[data-cell="Posted"]').textContent;
-        document.getElementById('viewAnnouncementExpiry').textContent = 
-            row.querySelector('[data-cell="Expires"]').textContent;
-        
-        const priority = row.querySelector('[data-cell="Status"]').textContent.trim().toLowerCase();
-        const priorityBadge = document.getElementById('viewAnnouncementPriority');
-        priorityBadge.textContent = priority;
-        priorityBadge.className = 'badge ' + 
-            (priority === 'urgent' ? 'badge-danger' : 
-             priority === 'high' ? 'badge-warning' : 'badge-primary');
-    }
-    
-    function getAnnouncementForEdit(id) {
-        fetch('/Admin/GetAnnouncement', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ id: id })
-        })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-            return response.json();
-        })
-        .then(data => {
-            if (data.success) {
-                document.getElementById('editAnnouncementId').value = data.announcement.announcement_id;
-                document.getElementById('editAnnouncementTitle').value = data.announcement.title;
-                document.getElementById('editAnnouncementContent').value = data.announcement.content;
-                document.getElementById('editAnnouncementStartDate').value = data.announcement.start_date;
-                document.getElementById('editAnnouncementEndDate').value = data.announcement.end_date || '';
-                document.getElementById('editAnnouncementPriority').value = data.announcement.priority;
-                
-                openModal(modals.edit);
-            } else {
-                showAlert(data.message || 'Announcement not found', 'error');
-            }
-        })
-        .catch(error => {
-            showAlert('Error fetching announcement: ' + error.message, 'error');
-        });
-    }
-    
-    function showDeleteConfirmation(title) {
-        Swal.fire({
-            title: 'Delete Announcement?',
-            html: `Are you sure you want to delete <strong>"${title}"</strong>?`,
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#d33',
-            cancelButtonColor: '#3085d6',
-            confirmButtonText: 'Yes, delete it!'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                deleteAnnouncement(currentAnnouncementId);
-            }
-        });
-    }
-    
-    function saveAnnouncement() {
-        const title = document.getElementById('createAnnouncementTitle').value;
-        const content = document.getElementById('createAnnouncementContent').value;
-        
-        if (!title || !content) {
-            showAlert('Title and content are required', 'error');
-            return;
+    fetch("/Admin/AddAnnouncement", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(formData),
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Network response was not ok");
         }
-
-        const formData = {
-            title: title,
-            content: content,
-            start_date: document.getElementById('createAnnouncementStartDate').value,
-            end_date: document.getElementById('createAnnouncementEndDate').value || null,
-            priority: document.getElementById('createAnnouncementPriority').value
-        };
-
-        fetch('/Admin/AddAnnouncement', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(formData)
-        })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-            return response.json();
-        })
-        .then(data => {
-            if (data.success) {
-                closeModal(modals.create);
-                showAlert('Announcement published successfully!', 'success', () => {
-                    window.location.reload();
-                });
-            } else {
-                showAlert(data.message || 'Failed to create announcement', 'error');
-            }
-        })
-        .catch(error => {
-            showAlert('Error creating announcement: ' + error.message, 'error');
-        });
-    }
-    
-    function updateAnnouncement() {
-        const title = document.getElementById('editAnnouncementTitle').value;
-        const content = document.getElementById('editAnnouncementContent').value;
-        
-        if (!title || !content) {
-            showAlert('Title and content are required', 'error');
-            return;
+        return response.json();
+      })
+      .then((data) => {
+        if (data.success) {
+          closeModal(modals.create);
+          showAlert("Announcement published successfully!", "success", () => {
+            window.location.reload();
+          });
+        } else {
+          showAlert(data.message || "Failed to create announcement", "error");
         }
+      })
+      .catch((error) => {
+        showAlert("Error creating announcement: " + error.message, "error");
+      });
+  }
 
-        const formData = {
-            announcement_id: parseInt(document.getElementById('editAnnouncementId').value),
-            title: title,
-            content: content,
-            start_date: document.getElementById('editAnnouncementStartDate').value,
-            end_date: document.getElementById('editAnnouncementEndDate').value || null,
-            priority: document.getElementById('editAnnouncementPriority').value
-        };
+  function updateAnnouncement() {
+    const title = document.getElementById("editAnnouncementTitle").value;
+    const content = document.getElementById("editAnnouncementContent").value;
 
-        fetch('/Admin/EditAnnouncement', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(formData)
-        })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-            return response.json();
-        })
-        .then(data => {
-            if (data.success) {
-                closeModal(modals.edit);
-                showAlert('Announcement updated successfully!', 'success', () => {
-                    window.location.reload();
-                });
-            } else {
-                showAlert(data.message || 'Announcement not found or update failed', 'error');
-            }
-        })
-        .catch(error => {
-            showAlert('Error updating announcement: ' + error.message, 'error');
-        });
+    if (!title || !content) {
+      showAlert("Title and content are required", "error");
+      return;
     }
-    
-    function deleteAnnouncement(id) {
-        fetch('/Admin/DeleteAnnouncement', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ id: id })
-        })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-            return response.json();
-        })
-        .then(data => {
-            if (data.success) {
-                showAlert('Announcement deleted successfully!', 'success', () => {
-                    window.location.reload();
-                });
-            } else {
-                showAlert(data.message || 'Announcement not found or delete failed', 'error');
-            }
-        })
-        .catch(error => {
-            showAlert('Error deleting announcement: ' + error.message, 'error');
-        });
-    }
+
+    const formData = {
+      announcement_id: parseInt(
+        document.getElementById("editAnnouncementId").value
+      ),
+      title: title,
+      content: content,
+      start_date: document.getElementById("editAnnouncementStartDate").value,
+      end_date:
+        document.getElementById("editAnnouncementEndDate").value || null,
+      priority: document.getElementById("editAnnouncementPriority").value,
+    };
+
+    fetch("/Admin/EditAnnouncement", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(formData),
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Network response was not ok");
+        }
+        return response.json();
+      })
+      .then((data) => {
+        if (data.success) {
+          closeModal(modals.edit);
+          showAlert("Announcement updated successfully!", "success", () => {
+            window.location.reload();
+          });
+        } else {
+          showAlert(
+            data.message || "Announcement not found or update failed",
+            "error"
+          );
+        }
+      })
+      .catch((error) => {
+        showAlert("Error updating announcement: " + error.message, "error");
+      });
+  }
+
+  function deleteAnnouncement(id) {
+    console.log(id);
+    fetch("/Admin/DeleteAnnouncement/?id=" + id, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Network response was not ok");
+        }
+        return response.json();
+      })
+      .then((data) => {
+        if (data.success) {
+          showAlert("Announcement deleted successfully!", "success", () => {
+            window.location.reload();
+          });
+        } else {
+          showAlert(
+            data.message || "Announcement not found or delete failed",
+            "error"
+          );
+        }
+      })
+      .catch((error) => {
+        showAlert("Error deleting announcement: " + error.message, "error");
+      });
+  }
 });

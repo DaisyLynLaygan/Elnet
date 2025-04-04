@@ -8,10 +8,15 @@ namespace HomeOwner.Controllers
     public class AdminController : BaseController
     {
         private readonly HomeOwnerContext _context;
-        
+
         public AdminController(HomeOwnerContext db)
         {
             _context = db;
+
+            if(!adminRoute)
+            {
+                RedirectToAction("Index", "Home");
+            }
         }
 
         //Get all users
@@ -47,6 +52,9 @@ namespace HomeOwner.Controllers
         {
             return _context.User.Count(u => u.status == "Active");
         }
+
+
+
 
         [HttpPost]
         public JsonResult AddUser([FromBody] User userData)
