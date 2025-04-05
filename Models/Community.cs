@@ -44,7 +44,4 @@ public class Comment
     [ForeignKey("post_id")]
     public Post? Post { get; set; }
 }
-
-
-    
 }

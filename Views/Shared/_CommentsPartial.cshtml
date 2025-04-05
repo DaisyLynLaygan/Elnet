@@ -1,0 +1,22 @@
+@model List<HomeOwner.Models.Comment>
+
+@if (Model.Count == 0)
+{
+    <p class="no-comments">No comments yet. Be the first to comment!</p>
+}
+else
+{
+    @foreach (var comment in Model.OrderBy(c => c.created_date))
+    {
+        <div class="comment">
+            <img src="~/images/user-default-picture.jpg" alt="@comment.Author.username">
+            <div class="comment-content">
+                <div class="comment-header">
+                    <strong>@comment.Author.username</strong>
+                    <span>@comment.created_date.ToString("g")</span>
+                </div>
+                <p>@comment.content</p>
+            </div>
+        </div>
+    }
+}
