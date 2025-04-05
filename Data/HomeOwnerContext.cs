@@ -13,31 +13,33 @@ namespace HomeOwner.Data
             : base(options)
         {
         }
-     protected override void OnModelCreating(ModelBuilder modelBuilder)
-{
-    // Post-User relationship
-    modelBuilder.Entity<Post>()
-        .HasOne(p => p.Author)
-        .WithMany(u => u.Posts)
-        .HasForeignKey(p => p.user_id)
-        .OnDelete(DeleteBehavior.Restrict);
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            // Post-User relationship
+            modelBuilder.Entity<Post>()
+                .HasOne(p => p.Author)
+                .WithMany(u => u.Posts)
+                .HasForeignKey(p => p.user_id)
+                .OnDelete(DeleteBehavior.Restrict);
 
-    // Comment-User relationship
-    modelBuilder.Entity<Comment>()
-        .HasOne(c => c.Author)
-        .WithMany(u => u.Comments)
-        .HasForeignKey(c => c.author_id)
-        .OnDelete(DeleteBehavior.Restrict);
+            // Comment-User relationship
+            modelBuilder.Entity<Comment>()
+                .HasOne(c => c.Author)
+                .WithMany(u => u.Comments)
+                .HasForeignKey(c => c.author_id)
+                .OnDelete(DeleteBehavior.Restrict);
 
-    // Comment-Post relationship
-    modelBuilder.Entity<Comment>()
-        .HasOne(c => c.Post)
-        .WithMany(p => p.Comments)
-        .HasForeignKey(c => c.post_id)
-        .OnDelete(DeleteBehavior.Cascade);
-}
+            // Comment-Post relationship
+            modelBuilder.Entity<Comment>()
+                .HasOne(c => c.Post)
+                .WithMany(p => p.Comments)
+                .HasForeignKey(c => c.post_id)
+                .OnDelete(DeleteBehavior.Cascade);
+        }
 
         public DbSet<HomeOwner.Models.User> User { get; set; } = default!;
         public DbSet<HomeOwner.Models.Announcement> Announcement { get; set; } = default!;
+        public DbSet<HomeOwner.Models.Post> Post { get; set; } = default!;
+          public DbSet<HomeOwner.Models.Comment> Comment { get; set; } = default!;
     }
 }

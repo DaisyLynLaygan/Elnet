@@ -68,6 +68,7 @@ namespace HomeOwner.Controllers
 
         protected void ViewContents()
         {
+            ViewBag.CurrentUser = CurrentUser;
             ViewBag.AdminAccess = adminRoute;
             ViewBag.HomeownerAccess = homeownerRoute;
             ViewBag.StaffAccess = staffRoute;
