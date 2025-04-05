@@ -10,9 +10,11 @@ namespace HomeOwner.Models
     public string? content { get; set; }
     public DateTime? created_date { get; set; }
     public DateTime? updated_date { get; set; }
-    
+     public string? ImagePath { get; set; } 
+      [NotMapped] // Exclude from database
+        public IFormFile? ImageFile { get; set; }
     // Foreign key
-    public int? user_id { get; set; }
+        public int? user_id { get; set; }
     
     // Navigation property
     [ForeignKey("user_id")]

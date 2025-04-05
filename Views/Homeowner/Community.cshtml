@@ -1,5 +1,8 @@
+
+@model HomeOwner.Models.ViewModel;
 @{
     Layout = "~/Views/Shared/Dashboard_Layout.cshtml";
+     var announcement = Model.Announcements as List<Announcement>;
 }
 
 <link rel="stylesheet" href="~/css/homeowners/community.css"/>
@@ -28,60 +31,71 @@
         <!-- Middle Content (60%) -->
         <div class="community-newsfeed">
             <!-- Create Post Section -->
-            <div class="create-post">
-                <div class="create-post-header">
-                    <img src="~/images/user-default-picture.jpg" alt="Profile">
-                    <input type="text" placeholder="Share with neighbors..." class="post-input" id="postInput">
-                </div>
-                <div class="post-actions">
-                    <button class="post-action" id="addPhotoBtn">
-                        <i class="fas fa-image" style="color: #45bd62;"></i> Photo
-                    </button>
-                    <input type="file" id="photoUpload" accept="image/*" multiple style="display: none;">
-                    <button class="post-submit" id="submitPostBtn">Post</button>
-                </div>
-                <div class="photo-preview-container" id="photoPreviewContainer"></div>
+          
+              
+         <div class="create-post">
+    <form asp-action="AddPostUser" asp-controller="Homeowner" method="post" enctype="multipart/form-data">
+        <div class="create-post-header">
+            <img src="~/images/user-default-picture.jpg" alt="Profile">
+            <input asp-for="newPost.content" type="text" placeholder="Share with neighbors..." class="post-input" id="postInput">
+        </div>
+        <div class="post-actions">
+            <!-- Change this to a DIV (not a button) -->
+            <div class="post-action" id="addPhotoBtn">
+                <i class="fas fa-image" style="color: #45bd62;"></i> Photo
             </div>
+            <input asp-for="newPost.ImageFile" type="file" id="photoUpload" accept="image/*" multiple style="display: none;">
+            <button type="submit" class="post-submit" id="submitPostBtn">Post</button>
+        </div>
+        <div class="photo-preview-container" id="photoPreviewContainer"></div>
+    </form>
+</div>
+          
 
             <!-- Neighborhood Posts -->
             <div class="neighborhood-post">
-                <div class="post-header">
-                    <img src="~/images/user-default-picture.jpg" alt="User">
-                    <div class="post-user-info">
-                        <strong>Sarah Johnson</strong>
-                        <div class="post-meta">
-                            <span>Yesterday · Oak Street</span>
+                @foreach (var post in Model.Posts as List<Post>)
+                {
+
+
+                    <div class="post-header">
+                        <img src="~/images/user-default-picture.jpg" alt="User">
+                        <div class="post-user-info">
+                           <strong>@($"{post.Author?.firstname} {post.Author?.lastname} - {post.Author?.role}")</strong>
+<div class="post-meta">
+    <span>@post.created_date · @post.Author?.address</span>
+</div>
                         </div>
+                        <button class="post-options">
+                            <i class="fas fa-ellipsis-h"></i>
+                        </button>
                     </div>
-                    <button class="post-options">
-                        <i class="fas fa-ellipsis-h"></i>
-                    </button>
-                </div>
-                <div class="post-content">
-                    Does anyone have recommendations for a good plumber? Our kitchen sink is leaking badly.
-                </div>
-                <div class="post-image">
-                    <img src="@GetRandomPropertyImage()" alt="Leaking sink">
-                </div>
-                <div class="post-stats">
-                    <span class="reactions">
-                        <i class="fas fa-thumbs-up"></i> 12
-                    </span>
-                    <span class="comments" data-post-id="1">
-                        5 comments
-                    </span>
-                </div>
-                <div class="post-interactions">
-                    <button class="interaction-button">
-                        <i class="far fa-thumbs-up"></i> <span>Helpful</span>
-                    </button>
-                    <button class="interaction-button comment-btn" data-post-id="1">
-                        <i class="far fa-comment"></i> <span>Comment</span>
-                    </button>
-                    <button class="interaction-button">
-                        <i class="fas fa-share"></i> <span>Share</span>
-                    </button>
-                </div>
+                    <div class="post-content">
+                       @post.content
+                    </div>
+                    <div class="post-image">
+                        <img src="@post.ImagePath" alt="Leaking sink">
+                    </div>
+                    <div class="post-stats">
+                        <span class="reactions">
+                            <i class="fas fa-thumbs-up"></i> 12
+                        </span>
+                        <span class="comments" data-post-id="1">
+                            5 comments
+                        </span>
+                    </div>
+                    <div class="post-interactions">
+                        <button class="interaction-button">
+                            <i class="far fa-thumbs-up"></i> <span>Helpful</span>
+                        </button>
+                        <button class="interaction-button comment-btn" data-post-id="1">
+                            <i class="far fa-comment"></i> <span>Comment</span>
+                        </button>
+                        <button class="interaction-button">
+                            <i class="fas fa-share"></i> <span>Share</span>
+                        </button>
+                    </div>
+                }
             </div>
 
             <div class="neighborhood-post">
@@ -129,11 +143,14 @@
             </div>
             
             <div class="announcement-item important">
-                <i class="fas fa-exclamation-circle" style="color: #f02849;"></i>
-                <div class="announcement-content">
-                    <strong>Water Maintenance</strong>
-                    <span>June 15, 8am-4pm</span>
-                </div>
+                @foreach (var announcements in announcement)
+                {
+                    <i class="fas fa-exclamation-circle" style="color: #f02849;"></i>
+                    <div class="announcement-content">
+                        <strong>@announcements.title</strong>
+                        <span>@announcements.start_date</span>
+                    </div>
+                }
             </div>
             
             <div class="announcement-item">

@@ -32,6 +32,7 @@ builder.Services.AddSession(options =>
     options.Cookie.IsEssential = true;
 });
 
+
 builder.Services.AddControllersWithViews();
 builder.Services.AddSingleton<WebSocketManager>();
 
