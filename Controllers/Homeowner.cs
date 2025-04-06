@@ -36,7 +36,7 @@ namespace HomeOwner.Controllers
             return announcements; 
         }
 
-
+        
         //Error ni
         public void UpdateProfile(User model)
         {
@@ -114,7 +114,7 @@ public async Task<IActionResult> AddPostUser(ViewModel model)
             ViewBag.message = "Error username existed";
              return RedirectToAction("Community", "Homeowner");
         }
-    
+
 
 
 
