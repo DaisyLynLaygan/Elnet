@@ -1,7 +1,7 @@
 @model HomeOwner.Models.ViewModel;
 @{
     Layout = "~/Views/Shared/Dashboard_Layout.cshtml";
-    var announcement = Model.Announcements as List<Announcement>;
+    var announcementsList = Model.Announcements as List<Announcement>;
 }
 
 <link rel="stylesheet" href="~/css/homeowners/community.css"/>
@@ -31,7 +31,7 @@
         <div class="community-newsfeed">
             <!-- Create Post Section -->
             <div class="create-post">
-                <form asp-action="AddPostUser" asp-controller="Homeowner" method="post" enctype="multipart/form-data">
+                <form asp-action="AddPostUser" asp-controller="Homeowner" method="post" enctype="multipart/form-data" onsubmit="return validatePost()">
                     <div class="create-post-header">
                         <img src="~/images/user-default-picture.jpg" alt="Profile">
                         <input asp-for="newPost.content" type="text" placeholder="Share with neighbors..." class="post-input" id="postInput">
@@ -104,17 +104,38 @@
             <div class="announcements-header">
                 <h3><i class="fas fa-bullhorn"></i> Announcements</h3>
             </div>
-            
-            @foreach (var announcements in announcement)
-            {
-                <div class="announcement-item important">
-                    <i class="fas fa-exclamation-circle" style="color: #f02849;"></i>
-                    <div class="announcement-content">
-                        <strong>@announcements.title</strong>
-                        <span>@announcements.start_date</span>
+        
+            <div class="announcement-item-for-admin important">
+                @foreach (var item in announcementsList
+                    .OrderByDescending(a => a.priority == "Urgent")
+                    .ThenByDescending(a => a.priority == "High")
+                    .ThenByDescending(a => a.start_date ?? DateTime.MinValue))
+                {
+                    <div class="announcement-content-for-admin" onclick="showAnnouncementModal(
+                        '@item.title', 
+                        '@Html.Raw(item.content.Replace("'", "\\'"))', 
+                        '@item.start_date?.ToString("MMMM dd, yyyy")', 
+                        '@item.end_date?.ToString("MMMM dd, yyyy")', 
+                        '@item.priority', 
+                        '@item.author')">
+                        
+                        @if (item.priority == "Urgent")
+                        {
+                            <i class="fas fa-exclamation-circle" style="color: #f02849;"></i>
+                        }
+                        else if (item.priority == "High")
+                        {
+                            <i class="fas fa-exclamation-triangle" style="color: #ffcc00;"></i>
+                        }
+                        else
+                        {
+                            <i class="fas fa-info-circle" style="color: #0066cc;"></i>
+                        }
+                        <strong>@item.title</strong>
+                        <span>@item.start_date?.ToString("MMM, dd, yyy")</span>
                     </div>
-                </div>
-            }
+                }
+            </div>
             
             <div class="announcement-item">
                 <i class="fas fa-trash" style="color: #45bd62;"></i>
@@ -175,18 +196,29 @@
     </div>
 </div>
 
-@functions {
-    private string GetRandomPropertyImage()
-    {
-        var random = new Random();
-        var images = new List<string> { 
-            "/images/rental1.png", 
-            "/images/rental2.png",
-            "/images/rental3.png",
-            "/images/rental4.png"
-        };
-        return images[random.Next(images.Count)];
-    }
-}
+<!-- Announcement Modal -->
+<div class="announcement-modal" id="announcementModal">
+    <div class="announcement-modal-content">
+        <div class="announcement-modal-header">
+            <h2 class="announcement-modal-title" id="announcementModalTitle"></h2>
+            <button class="announcement-modal-close" id="announcementModalClose">&times;</button>
+        </div>
+        <div class="announcement-modal-body">
+            <div class="announcement-priority" id="announcementPriorityBadge"></div>
+            <div class="announcement-content" id="announcementModalContent"></div>
+            <div class="announcement-dates">
+                <div class="announcement-date">
+                    <i class="fas fa-calendar-alt"></i>
+                    <span id="announcementModalStartDate"></span>
+                </div>
+                <div class="announcement-date">
+                    <i class="fas fa-calendar-times"></i>
+                    <span id="announcementModalEndDate"></span>
+                </div>
+            </div>
+            <div class="announcement-author" id="announcementModalAuthor"></div>
+        </div>
+    </div>
+</div>
 
 <script src="~/js/community.js" asp-append-version="true"></script>

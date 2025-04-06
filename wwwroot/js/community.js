@@ -190,6 +190,51 @@ document.getElementById('announcementModal').addEventListener('click', function(
     }
 });
 
+
+function showAnnouncementModal(title, content, startDate, endDate, priority, author) {
+    const modal = document.getElementById('announcementModal');
+    const titleElement = document.getElementById('announcementModalTitle');
+    const contentElement = document.getElementById('announcementModalContent');
+    const startDateElement = document.getElementById('announcementModalStartDate');
+    const endDateElement = document.getElementById('announcementModalEndDate');
+    const priorityBadge = document.getElementById('announcementPriorityBadge');
+    const authorElement = document.getElementById('announcementModalAuthor');
+
+    // Set the content
+    titleElement.textContent = title;
+    contentElement.innerHTML = content.replace(/\n/g, '<br>');
+    startDateElement.textContent = startDate || 'Not specified';
+    endDateElement.textContent = endDate || 'No end date';
+    authorElement.textContent = `Posted by: ${author || 'Admin'}`;
+
+    // Set priority badge
+    priorityBadge.textContent = priority || 'Normal';
+    priorityBadge.className = 'announcement-priority';
+    if (priority) {
+        priorityBadge.classList.add(priority.toLowerCase());
+    } else {
+        priorityBadge.classList.add('normal');
+    }
+
+    // Show modal
+    modal.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+}
+
+function hideAnnouncementModal() {
+    document.getElementById('announcementModal').style.display = 'none';
+    document.body.style.overflow = '';
+}
+
+// Close modal when clicking close button
+document.getElementById('announcementModalClose').addEventListener('click', hideAnnouncementModal);
+
+// Close modal when clicking outside
+document.getElementById('announcementModal').addEventListener('click', function(e) {
+    if (e.target === this) {
+        hideAnnouncementModal();
+    }
+});
 // Post Validation
 function validatePost() {
     const postText = document.getElementById('postInput').value.trim();
@@ -197,11 +242,39 @@ function validatePost() {
     const errorElement = document.getElementById('postError');
 
     if (!postText && !hasPhotos) {
-        errorElement.textContent = "Please add some text or photos to your post";
-        errorElement.style.display = 'block';
+        if (!errorElement) {
+            // Create error element if it doesn't exist
+            const errorEl = document.createElement('div');
+            errorEl.id = 'postError';
+            errorEl.className = 'post-error';
+            errorEl.textContent = "Please add some text or photos to your post";
+            document.querySelector('.create-post').appendChild(errorEl);
+        } else {
+            errorElement.textContent = "Please add some text or photos to your post";
+            errorElement.style.display = 'block';
+        }
         return false;
     }
 
-    errorElement.style.display = 'none';
+    if (errorElement) {
+        errorElement.style.display = 'none';
+    }
     return true;
 }
+
+// Modify your form submission to include validation
+document.querySelector('.create-post form').addEventListener('submit', function(e) {
+    if (!validatePost()) {
+        e.preventDefault();
+    }
+});
+
+// Add event listener to post input to validate on typing
+document.getElementById('postInput').addEventListener('input', function() {
+    validatePost();
+});
+
+// Add event listener to photo upload to validate when photos are added/removed
+document.getElementById('photoUpload').addEventListener('change', function() {
+    validatePost();
+});
