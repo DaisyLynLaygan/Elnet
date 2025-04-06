@@ -1,4 +1,4 @@
-﻿﻿using HomeOwner.Data;
+﻿﻿﻿using HomeOwner.Data;
 using HomeOwner.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -36,6 +36,7 @@ namespace HomeOwner.Controllers
             return announcements; 
         }
 
+        
         //Error ni
         public void UpdateProfile(User model)
         {
@@ -146,17 +147,17 @@ public async Task<IActionResult> AddPostUser(ViewModel model)
             return View();
         }
       public IActionResult Community()
-{
-    ViewContents(); // If this sets other ViewData (e.g., user info)
-    
-    var model = new ViewModel
     {
-        Announcements = GetAnnouncements(), // Load announcements
-        Posts = RetrievePost()             // Load posts
-    };
-    
-    return View(model); // Pass the combined ViewModel
-}
+        ViewContents(); // If this sets other ViewData (e.g., user info)
+        
+        var model = new ViewModel
+        {
+            Announcements = GetAnnouncements(), // Load announcements
+            Posts = RetrievePost()             // Load posts
+        };
+        
+        return View(model); // Pass the combined ViewModel
+    }
         
         public IActionResult Payment()
         {
