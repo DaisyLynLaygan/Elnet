@@ -278,14 +278,3 @@ document.getElementById('postInput').addEventListener('input', function() {
 document.getElementById('photoUpload').addEventListener('change', function() {
     validatePost();
 });
-
-
-// Post Options Functionality
-document.addEventListener('click', function(e) {
-    // Close all menus when clicking elsewhere
-    if (!e.target.closest('.post-options-container')) {
-        document.querySelectorAll('.post-options-menu').forEach(menu => {
-            menu.style.display = 'none';
-        });
-    }
-});
