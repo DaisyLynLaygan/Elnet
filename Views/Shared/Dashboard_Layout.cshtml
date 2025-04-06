@@ -14,7 +14,7 @@
 </head>
 <style>
     /* Survey Modal Styles */
-.modal {
+.modasurvey {
     position: fixed;
     z-index: 1000;
     left: 0;
@@ -27,7 +27,7 @@
     justify-content: center;
 }
 
-.modal-content {
+.modal-contentsurvey {
     background-color: #fff;
     border-radius: 12px;
     width: 90%;
@@ -36,7 +36,7 @@
     overflow: hidden;
 }
 
-.modal-header {
+.modal-headersurvey {
     padding: 20px;
     background-color: #6D4C41;
     color: white;
@@ -45,7 +45,7 @@
     align-items: center;
 }
 
-.modal-header h3 {
+.modal-headersurvey h3 {
     margin: 0;
     font-size: 1.5rem;
 }
@@ -60,7 +60,7 @@
     transform: scale(1.1);
 }
 
-.modal-body {
+.modal-bodysurvey {
     padding: 20px;
 }
 
@@ -262,7 +262,7 @@
 
 /* Responsive Adjustments */
 @@media (max-width: 480px) {
-    .modal-content {
+    .modal-contentsurvey {
         width: 95%;
     }
     
@@ -340,13 +340,13 @@
 </div>
 
 <!-- Survey Modal - Add this to your layout file -->
-<div id="surveyModal" class="modal" style="display: none;">
-    <div class="modal-content">
-        <div class="modal-header">
+<div id="surveyModal" class="modalsurvey" style="display: none;">
+    <div class="modal-contentsurvey">
+        <div class="modal-headersurvey">
             <h3>Community Survey</h3>
             <span class="close">&times;</span>
         </div>
-        <div class="modal-body">
+        <div class="modal-bodysurvey">
             <div class="survey-intro">
                 <p>We value your feedback! Please take a moment to complete this short survey about our community.</p>
             </div>

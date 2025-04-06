@@ -654,14 +654,14 @@ body {
     position: fixed;
     top: 0;
     left: 0;
-    width: 100%;
+    width: 100% !important;
     height: 100%;
     background-color: rgba(0, 0, 0, 0.5);
     z-index: 1000;
     align-items: center;
     justify-content: center;
     padding: 20px;
-    overflow-y: auto;
+    overflow-y: auto !important;
 }
 
 .modal-dialog {
@@ -673,7 +673,8 @@ body {
 .modal-content {
     background-color: var(--cream);
     border-radius: 8px;
-    overflow: hidden;
+    overflow-y: auto;
+    max-height: 90vh; /* Enables internal scrolling if too tall */
     box-shadow: 0 5px 30px rgba(0, 0, 0, 0.3);
     transform: translateY(0);
     transition: transform 0.3s ease-out;
@@ -702,6 +703,8 @@ body {
     color: white;
     transition: transform 0.3s;
 }
+
+
 .close-modal-2
 {
     font-size: 28px;
