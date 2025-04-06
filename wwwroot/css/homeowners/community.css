@@ -34,6 +34,7 @@ body {
     line-height: 1.6;
     color: var(--text-dark);
     overflow-x: hidden;
+    /* overflow-y: hidden; */
 }
 
 /* Main Layout */
@@ -953,4 +954,153 @@ body {
     justify-content: center;
     cursor: pointer;
     font-size: 12px;
+}
+    /* Blazor-style Modal */
+    .blazor-modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 1000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .blazor-modal-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+    }
+
+    .blazor-modal-content {
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        width: 80%;
+        max-width: 600px;
+        z-index: 1001;
+        max-height: 80vh;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .blazor-modal-header {
+        padding: 15px 20px;
+        border-bottom: 1px solid #eee;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .blazor-modal-body {
+        padding: 20px;
+        overflow-y: auto;
+        flex-grow: 1;
+    }
+
+    .blazor-modal-footer {
+        padding: 15px 20px;
+        border-top: 1px solid #eee;
+        display: flex;
+        justify-content: flex-end;
+    }
+
+    .blazor-modal-button {
+        padding: 8px 16px;
+        background-color: #007bff;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+
+    .blazor-modal-button:hover {
+        background-color: #0069d9;
+    }
+
+    .blazor-modal-close {
+        background: none;
+        border: none;
+        font-size: 1.5rem;
+        cursor: pointer;
+    }
+
+    .announcement-dates {
+        margin-top: 15px;
+        padding-top: 15px;
+        border-top: 1px solid #eee;
+    }
+
+    .announcement-dates div {
+        margin-bottom: 8px;
+    }
+
+    /* Role badge base styles */
+.role-badge {
+    display: inline-block;
+    padding: 3px 10px 3px 25px;
+    border-radius: 15px;
+    font-size: 0.8em;
+    font-weight: 600;
+    text-transform: uppercase;
+    position: relative;
+    margin-left: 10px;
+    transition: all 0.2s ease;
+}
+
+/* Icon for all badges */
+.role-badge::before {
+    font-family: "Font Awesome 6 Free";
+    font-weight: 900;
+    position: absolute;
+    left: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+/* Homeowner specific styles */
+.role-homeowner {
+    background: linear-gradient(to right, #FFF8DC, #F5DEB3);
+    color: #5D4037;
+    border: 1px solid #D2B48C;
+    box-shadow: 0 2px 4px rgba(139, 69, 19, 0.1);
+}
+
+.role-homeowner::before {
+    content: "\f015"; /* Home icon */
+    color: #8B4513;
+}
+
+/* Staff specific styles */
+.role-staff {
+    background: linear-gradient(to right, #E6F2FF, #B3D9FF);
+    color: #1E4B8B;
+    border: 1px solid #99C2FF;
+}
+
+.role-staff::before {
+    content: "\f0f0"; /* Briefcase icon */
+    color: #1E6FC9;
+}
+
+/* Admin specific styles */
+.role-admin {
+    background: linear-gradient(to right, #FFEBEE, #FFCDD2);
+    color: #C62828;
+    border: 1px solid #EF9A9A;
+}
+
+.role-admin::before {
+    content: "\f521"; /* Shield icon */
+    color: #D32F2F;
+}
+
+/* Hover effects */
+.role-badge:hover {
+    box-shadow: 0 3px 6px rgba(0,0,0,0.1);
 }
