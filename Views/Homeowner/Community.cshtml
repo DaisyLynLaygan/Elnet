@@ -1,8 +1,7 @@
-
 @model HomeOwner.Models.ViewModel;
 @{
     Layout = "~/Views/Shared/Dashboard_Layout.cshtml";
-     var announcement = Model.Announcements as List<Announcement>;
+    var announcement = Model.Announcements as List<Announcement>;
 }
 
 <link rel="stylesheet" href="~/css/homeowners/community.css"/>
@@ -31,56 +30,56 @@
         <!-- Middle Content (60%) -->
         <div class="community-newsfeed">
             <!-- Create Post Section -->
-          
-              
-         <div class="create-post">
-    <form asp-action="AddPostUser" asp-controller="Homeowner" method="post" enctype="multipart/form-data">
-        <div class="create-post-header">
-            <img src="~/images/user-default-picture.jpg" alt="Profile">
-            <input asp-for="newPost.content" type="text" placeholder="Share with neighbors..." class="post-input" id="postInput">
-        </div>
-        <div class="post-actions">
-            <!-- Change this to a DIV (not a button) -->
-            <div class="post-action" id="addPhotoBtn">
-                <i class="fas fa-image" style="color: #45bd62;"></i> Photo
+            <div class="create-post">
+                <form asp-action="AddPostUser" asp-controller="Homeowner" method="post" enctype="multipart/form-data">
+                    <div class="create-post-header">
+                        <img src="~/images/user-default-picture.jpg" alt="Profile">
+                        <input asp-for="newPost.content" type="text" placeholder="Share with neighbors..." class="post-input" id="postInput">
+                    </div>
+                    <div class="post-actions">
+                        <div class="post-action" id="addPhotoBtn">
+                            <i class="fas fa-image" style="color: #45bd62;"></i> Photo
+                        </div>
+                        <input asp-for="newPost.ImageFile" type="file" id="photoUpload" accept="image/*" multiple style="display: none;">
+                        <button type="submit" class="post-submit" id="submitPostBtn">Post</button>
+                    </div>
+                    <div class="photo-preview-container" id="photoPreviewContainer"></div>
+                </form>
             </div>
-            <input asp-for="newPost.ImageFile" type="file" id="photoUpload" accept="image/*" multiple style="display: none;">
-            <button type="submit" class="post-submit" id="submitPostBtn">Post</button>
-        </div>
-        <div class="photo-preview-container" id="photoPreviewContainer"></div>
-    </form>
-</div>
-          
 
             <!-- Neighborhood Posts -->
-            <div class="neighborhood-post">
-                @foreach (var post in Model.Posts as List<Post>)
-                {
-
-
+            @foreach (var post in (Model.Posts as List<Post>).OrderByDescending(p => p.created_date))
+            {
+                <div class="neighborhood-post">
                     <div class="post-header">
                         <img src="~/images/user-default-picture.jpg" alt="User">
                         <div class="post-user-info">
-                           <strong>@($"{post.Author?.firstname} {post.Author?.lastname} - {post.Author?.role}")</strong>
-<div class="post-meta">
-    <span>@post.created_date · @post.Author?.address</span>
-</div>
+                            <strong>
+                                @post.Author?.firstname @post.Author?.lastname 
+                                <span class="role-badge role-@post.Author?.role.ToLower()">@post.Author?.role</span>
+                            </strong>
+                            <div class="post-meta">
+                                <span>@post.created_date · @post.Author?.address</span>
+                            </div>
                         </div>
                         <button class="post-options">
                             <i class="fas fa-ellipsis-h"></i>
                         </button>
                     </div>
                     <div class="post-content">
-                       @post.content
+                        @post.content
                     </div>
-                    <div class="post-image">
-                        <img src="@post.ImagePath" alt="Leaking sink">
-                    </div>
+                    @if (!string.IsNullOrEmpty(post.ImagePath))
+                    {
+                        <div class="post-image">
+                            <img src="@post.ImagePath" alt="Post image">
+                        </div>
+                    }
                     <div class="post-stats">
                         <span class="reactions">
                             <i class="fas fa-thumbs-up"></i> 12
                         </span>
-                        <span class="comments" data-post-id="1">
+                        <span class="comments">
                             5 comments
                         </span>
                     </div>
@@ -88,52 +87,16 @@
                         <button class="interaction-button">
                             <i class="far fa-thumbs-up"></i> <span>Helpful</span>
                         </button>
-                        <button class="interaction-button comment-btn" data-post-id="1">
+                        <button class="interaction-button comment-btn">
                             <i class="far fa-comment"></i> <span>Comment</span>
                         </button>
                         <button class="interaction-button">
                             <i class="fas fa-share"></i> <span>Share</span>
                         </button>
                     </div>
-                }
-            </div>
+                </div>
+            }
 
-            <div class="neighborhood-post">
-                <div class="post-header">
-                    <img src="~/images/user-default-picture.jpg" alt="User">
-                    <div class="post-user-info">
-                        <strong>Mike Thompson</strong>
-                        <div class="post-meta">
-                            <span>2 days ago · Maple Ave</span>
-                        </div>
-                    </div>
-                    <button class="post-options">
-                        <i class="fas fa-ellipsis-h"></i>
-                    </button>
-                </div>
-                <div class="post-content">
-                    Neighborhood watch meeting this Thursday at 7pm in the community center. All are welcome!
-                </div>
-                <div class="post-stats">
-                    <span class="reactions">
-                        <i class="fas fa-thumbs-up"></i> 24
-                    </span>
-                    <span class="comments" data-post-id="2">
-                        8 comments
-                    </span>
-                </div>
-                <div class="post-interactions">
-                    <button class="interaction-button">
-                        <i class="far fa-thumbs-up"></i> <span>Helpful</span>
-                    </button>
-                    <button class="interaction-button comment-btn" data-post-id="2">
-                        <i class="far fa-comment"></i> <span>Comment</span>
-                    </button>
-                    <button class="interaction-button">
-                        <i class="fas fa-share"></i> <span>Share</span>
-                    </button>
-                </div>
-            </div>
         </div>
 
         <!-- Right Sidebar (20%) -->
@@ -142,16 +105,16 @@
                 <h3><i class="fas fa-bullhorn"></i> Announcements</h3>
             </div>
             
-            <div class="announcement-item important">
-                @foreach (var announcements in announcement)
-                {
+            @foreach (var announcements in announcement)
+            {
+                <div class="announcement-item important">
                     <i class="fas fa-exclamation-circle" style="color: #f02849;"></i>
                     <div class="announcement-content">
                         <strong>@announcements.title</strong>
                         <span>@announcements.start_date</span>
                     </div>
-                }
-            </div>
+                </div>
+            }
             
             <div class="announcement-item">
                 <i class="fas fa-trash" style="color: #45bd62;"></i>
@@ -190,7 +153,7 @@
     </div>
 </div>
 
-<!-- Change the modal class from "modal" to "community-modal" -->
+<!-- Modal for comments -->
 <div class="community-modal" id="commentModal">
     <div class="community-modal-dialog">
         <div class="community-modal-content">

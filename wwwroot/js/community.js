@@ -2,7 +2,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Comment Modal Functionality
     const commentModal = document.getElementById('commentModal');
     const commentBtns = document.querySelectorAll('.comment-btn');
-    const closeModalBtn = document.querySelector('#commentModal .close-community-modal'); // Updated class
+    const closeModalBtn = document.querySelector('#commentModal .close-community-modal');
     const commentsContainer = document.getElementById('commentsContainer');
     const commentInput = document.getElementById('commentInput');
     const postCommentBtn = document.querySelector('.btn-post-comment');
@@ -31,7 +31,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Open comment modal
     commentBtns.forEach(btn => {
         btn.addEventListener('click', function() {
-            const postId = this.getAttribute('data-post-id');
+            const postId = this.getAttribute('data-post-id') || '1'; // Default to post 1 if no ID
             loadComments(postId);
             commentModal.classList.add('show');
             document.body.style.overflow = 'hidden';
@@ -151,21 +151,6 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
     });
-    
-    // Submit post button
-    submitPostBtn.addEventListener('click', function() {
-        const postText = postInput.value.trim();
-        const hasPhotos = photoPreviewContainer.children.length > 0;
-        
-        if (postText || hasPhotos) {
-            // In a real app, this would send to backend
-            alert('Post submitted! (This is a UI demo only)');
-            postInput.value = '';
-            photoPreviewContainer.innerHTML = '';
-        } else {
-            alert('Please add some text or photos to your post');
-        }
-    });
 
     // Allow pressing Enter in comment input to post
     commentInput.addEventListener('keypress', function(e) {
@@ -182,3 +167,41 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 });
+
+// Announcement Modal Functions
+function showAnnouncementModal(title, description, startDate, endDate) {
+    document.getElementById('modalAnnouncementTitle').textContent = title;
+    document.getElementById('modalAnnouncementDescription').textContent = description;
+    document.getElementById('modalAnnouncementStartDate').textContent = startDate;
+    document.getElementById('modalAnnouncementEndDate').textContent = endDate;
+    document.getElementById('announcementModal').style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+}
+
+function hideAnnouncementModal() {
+    document.getElementById('announcementModal').style.display = 'none';
+    document.body.style.overflow = '';
+}
+
+// Close announcement modal when clicking outside
+document.getElementById('announcementModal').addEventListener('click', function(e) {
+    if (e.target === this) {
+        hideAnnouncementModal();
+    }
+});
+
+// Post Validation
+function validatePost() {
+    const postText = document.getElementById('postInput').value.trim();
+    const hasPhotos = document.getElementById('photoPreviewContainer').children.length > 0;
+    const errorElement = document.getElementById('postError');
+
+    if (!postText && !hasPhotos) {
+        errorElement.textContent = "Please add some text or photos to your post";
+        errorElement.style.display = 'block';
+        return false;
+    }
+
+    errorElement.style.display = 'none';
+    return true;
+}

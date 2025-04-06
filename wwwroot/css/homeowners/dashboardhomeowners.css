@@ -50,9 +50,6 @@ body {
   transition: background-color var(--transition-speed);
 }
 
-::-webkit-scrollbar-thumb:hover {
-  background-color: var(--primary-dark); /* Darken the primary color on hover */
-}
 
 ::-webkit-scrollbar-corner {
   background-color: var(--white);
