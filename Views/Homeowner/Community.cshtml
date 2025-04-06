@@ -1,10 +1,12 @@
 @model HomeOwner.Models.ViewModel;
 @{
     Layout = "~/Views/Shared/Dashboard_Layout.cshtml";
-    var announcementsList = Model.Announcements as List<Announcement>;
+    var announcementsList = Model.Announcements as List<Announcement> ?? new List<Announcement>();
+    var postsList = Model.Posts as List<Post> ?? new List<Post>();
+    var currentUser = ViewBag.CurrentUser as HomeOwner.Models.User; // Properly declare currentUser
 }
 
-<link rel="stylesheet" href="~/css/homeowners/community.css"/>
+<link rel="stylesheet" href="~/css/homeowners/community.css" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 
 <div class="community-wrapper">
@@ -18,7 +20,7 @@
                 </div>
                 <div class="sidebar-item">
                     <i class="fas fa-comment-alt"></i>
-                     <span><a asp-controller="Homeowner" asp-action="Feedback" style="text-decoration: none; color: #000;">Feedback</a></span>
+                    <span><a asp-controller="Homeowner" asp-action="Feedback" style="text-decoration: none; color: #000;">Feedback</a></span>
                 </div>
                 <div class="sidebar-item">
                     <i class="far fa-calendar-alt"></i>
@@ -48,24 +50,36 @@
             </div>
 
             <!-- Neighborhood Posts -->
-            @foreach (var post in (Model.Posts as List<Post>).OrderByDescending(p => p.created_date))
+            @foreach (var post in postsList.OrderByDescending(p => p.created_date ?? DateTime.MinValue))
             {
-                <div class="neighborhood-post">
+                <div class="neighborhood-post" data-post-id="@post.post_id">
                     <div class="post-header">
                         <img src="~/images/user-default-picture.jpg" alt="User">
                         <div class="post-user-info">
                             <strong>
-                                @post.Author?.firstname @post.Author?.lastname 
-                                <span class="role-badge role-@post.Author?.role.ToLower()">@post.Author?.role</span>
+                                @post.Author?.firstname @post.Author?.lastname
+                                <span class="role-badge role-@post.Author?.role?.ToLower()">@post.Author?.role</span>
                             </strong>
                             <div class="post-meta">
-                                <span>@post.created_date · @post.Author?.address</span>
+                                <span>@post.created_date?.ToString("MMMM dd, yyyy") · @post.Author?.address</span>
                             </div>
                         </div>
-                        <button class="post-options">
-                            <i class="fas fa-ellipsis-h"></i>
-                        </button>
+    
+                   @if (currentUser != null && post.Author?.user_id == currentUser.user_id)
+                    {
+                        <div class="post-options-container">
+                            <button class="post-options">
+                                <i class="fas fa-ellipsis-h"></i>
+                            </button>
+                            <div class="post-options-menu">
+                                <button class="edit-post" data-post-id="@post.post_id">Edit</button>
+                                <button class="delete-post" data-post-id="@post.post_id">Delete</button>
+                            </div>
+                        </div>
+                    }
+                        
                     </div>
+
                     <div class="post-content">
                         @post.content
                     </div>
@@ -87,7 +101,7 @@
                         <button class="interaction-button">
                             <i class="far fa-thumbs-up"></i> <span>Helpful</span>
                         </button>
-                        <button class="interaction-button comment-btn">
+                        <button class="interaction-button comment-btn" data-post-id="@post.post_id">
                             <i class="far fa-comment"></i> <span>Comment</span>
                         </button>
                         <button class="interaction-button">
@@ -96,7 +110,6 @@
                     </div>
                 </div>
             }
-
         </div>
 
         <!-- Right Sidebar (20%) -->
@@ -104,21 +117,21 @@
             <div class="announcements-header">
                 <h3><i class="fas fa-bullhorn"></i> Announcements</h3>
             </div>
-        
+
             <div class="announcement-item-for-admin important">
                 @foreach (var item in announcementsList
-                    .OrderByDescending(a => a.priority == "Urgent")
-                    .ThenByDescending(a => a.priority == "High")
-                    .ThenByDescending(a => a.start_date ?? DateTime.MinValue))
+                                .OrderByDescending(a => a.priority == "Urgent")
+                                .ThenByDescending(a => a.priority == "High")
+                                .ThenByDescending(a => a.start_date ?? DateTime.MinValue))
                 {
                     <div class="announcement-content-for-admin" onclick="showAnnouncementModal(
-                        '@item.title', 
-                        '@Html.Raw(item.content.Replace("'", "\\'"))', 
-                        '@item.start_date?.ToString("MMMM dd, yyyy")', 
-                        '@item.end_date?.ToString("MMMM dd, yyyy")', 
-                        '@item.priority', 
-                        '@item.author')">
-                        
+                                    '@item.title', 
+                                    '@Html.Raw(item.content?.Replace("'", "\\'"))', 
+                                    '@item.start_date?.ToString("MMMM dd, yyyy")', 
+                                    '@item.end_date?.ToString("MMMM dd, yyyy")', 
+                                    '@item.priority', 
+                                    '@item.author')">
+
                         @if (item.priority == "Urgent")
                         {
                             <i class="fas fa-exclamation-circle" style="color: #f02849;"></i>
@@ -132,11 +145,11 @@
                             <i class="fas fa-info-circle" style="color: #0066cc;"></i>
                         }
                         <strong>@item.title</strong>
-                        <span>@item.start_date?.ToString("MMM, dd, yyy")</span>
+                        <span>@item.start_date?.ToString("MMM dd, yyyy")</span>
                     </div>
                 }
             </div>
-            
+
             <div class="announcement-item">
                 <i class="fas fa-trash" style="color: #45bd62;"></i>
                 <div class="announcement-content">
@@ -148,7 +161,7 @@
             <div class="announcements-header">
                 <h3><i class="fas fa-calendar-alt"></i> Upcoming Events</h3>
             </div>
-            
+
             <div class="event-item">
                 <div class="event-date">
                     <span class="day">15</span>
@@ -159,7 +172,7 @@
                     <span>Main Street, 12-5pm</span>
                 </div>
             </div>
-            
+
             <div class="event-item">
                 <div class="event-date">
                     <span class="day">22</span>
@@ -174,7 +187,7 @@
     </div>
 </div>
 
-<!-- Modal for comments -->
+<!-- Comment Modal -->
 <div class="community-modal" id="commentModal">
     <div class="community-modal-dialog">
         <div class="community-modal-content">
@@ -217,6 +230,35 @@
                 </div>
             </div>
             <div class="announcement-author" id="announcementModalAuthor"></div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Post Modal -->
+<div class="edit-post-modal" id="editPostModal">
+    <div class="edit-post-modal-content">
+        <div class="edit-post-modal-header">
+            <h3>Edit Post</h3>
+            <button type="button" class="close-edit-modal">&times;</button>
+        </div>
+        <div class="edit-post-modal-body">
+            <textarea id="editPostContent" class="edit-post-textarea"></textarea>
+            <div class="edit-post-actions">
+                <button id="cancelEditPost" class="edit-post-cancel">Cancel</button>
+                <button id="saveEditPost" class="edit-post-save">Save Changes</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="delete-confirmation-modal" id="deleteConfirmationModal">
+    <div class="delete-confirmation-content">
+        <h3>Delete Post?</h3>
+        <p>Are you sure you want to delete this post? This action cannot be undone.</p>
+        <div class="delete-confirmation-buttons">
+            <button class="cancel-delete">Cancel</button>
+            <button class="confirm-delete">Delete</button>
         </div>
     </div>
 </div>

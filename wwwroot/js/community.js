@@ -1,4 +1,4 @@
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     // Comment Modal Functionality
     const commentModal = document.getElementById('commentModal');
     const commentBtns = document.querySelectorAll('.comment-btn');
@@ -6,7 +6,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const commentsContainer = document.getElementById('commentsContainer');
     const commentInput = document.getElementById('commentInput');
     const postCommentBtn = document.querySelector('.btn-post-comment');
-    
+
     // Sample comments data
     const sampleComments = {
         1: [
@@ -27,41 +27,41 @@ document.addEventListener('DOMContentLoaded', function() {
             { id: 8, user: 'James Brown', text: 'I\'ll bring extra chairs from my house.', time: '5 hours ago' }
         ]
     };
-    
+
     // Open comment modal
     commentBtns.forEach(btn => {
-        btn.addEventListener('click', function() {
+        btn.addEventListener('click', function () {
             const postId = this.getAttribute('data-post-id') || '1'; // Default to post 1 if no ID
             loadComments(postId);
             commentModal.classList.add('show');
             document.body.style.overflow = 'hidden';
         });
     });
-    
+
     // Close modal
-    closeModalBtn.addEventListener('click', function() {
+    closeModalBtn.addEventListener('click', function () {
         commentModal.classList.remove('show');
         document.body.style.overflow = '';
     });
-    
+
     // Close when clicking outside modal
-    commentModal.addEventListener('click', function(e) {
+    commentModal.addEventListener('click', function (e) {
         if (e.target === commentModal) {
             commentModal.classList.remove('show');
             document.body.style.overflow = '';
         }
     });
-    
+
     // Load comments for a post
     function loadComments(postId) {
         commentsContainer.innerHTML = '';
         const comments = sampleComments[postId] || [];
-        
+
         if (comments.length === 0) {
             commentsContainer.innerHTML = '<p class="no-comments">No comments yet. Be the first to comment!</p>';
             return;
         }
-        
+
         comments.forEach(comment => {
             const commentEl = document.createElement('div');
             commentEl.className = 'comment';
@@ -78,9 +78,9 @@ document.addEventListener('DOMContentLoaded', function() {
             commentsContainer.appendChild(commentEl);
         });
     }
-    
+
     // Post a new comment
-    postCommentBtn.addEventListener('click', function() {
+    postCommentBtn.addEventListener('click', function () {
         const commentText = commentInput.value.trim();
         if (commentText) {
             const newComment = {
@@ -90,7 +90,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 text: commentText,
                 time: 'Just now'
             };
-            
+
             const commentEl = document.createElement('div');
             commentEl.className = 'comment';
             commentEl.innerHTML = `
@@ -103,36 +103,36 @@ document.addEventListener('DOMContentLoaded', function() {
                     <p>${newComment.text}</p>
                 </div>
             `;
-            
+
             commentsContainer.appendChild(commentEl);
             commentInput.value = '';
-            
+
             // Scroll to bottom
             commentsContainer.scrollTop = commentsContainer.scrollHeight;
         }
     });
-    
+
     // Create Post Functionality
     const addPhotoBtn = document.getElementById('addPhotoBtn');
     const photoUpload = document.getElementById('photoUpload');
     const photoPreviewContainer = document.getElementById('photoPreviewContainer');
     const submitPostBtn = document.getElementById('submitPostBtn');
     const postInput = document.getElementById('postInput');
-    
+
     // Add photo button click
-    addPhotoBtn.addEventListener('click', function() {
+    addPhotoBtn.addEventListener('click', function () {
         photoUpload.click();
     });
-    
+
     // Handle photo selection
-    photoUpload.addEventListener('change', function(e) {
+    photoUpload.addEventListener('change', function (e) {
         photoPreviewContainer.innerHTML = '';
-        
+
         if (e.target.files && e.target.files.length > 0) {
             Array.from(e.target.files).forEach(file => {
                 if (file.type.match('image.*')) {
                     const reader = new FileReader();
-                    reader.onload = function(event) {
+                    reader.onload = function (event) {
                         const previewItem = document.createElement('div');
                         previewItem.className = 'photo-preview-item';
                         previewItem.innerHTML = `
@@ -140,9 +140,9 @@ document.addEventListener('DOMContentLoaded', function() {
                             <button class="remove-photo">&times;</button>
                         `;
                         photoPreviewContainer.appendChild(previewItem);
-                        
+
                         // Remove photo button
-                        previewItem.querySelector('.remove-photo').addEventListener('click', function() {
+                        previewItem.querySelector('.remove-photo').addEventListener('click', function () {
                             previewItem.remove();
                         });
                     };
@@ -153,14 +153,14 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // Allow pressing Enter in comment input to post
-    commentInput.addEventListener('keypress', function(e) {
+    commentInput.addEventListener('keypress', function (e) {
         if (e.key === 'Enter') {
             postCommentBtn.click();
         }
     });
 
     // Allow pressing Enter in post input to submit (but only if Shift isn't held)
-    postInput.addEventListener('keypress', function(e) {
+    postInput.addEventListener('keypress', function (e) {
         if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
             submitPostBtn.click();
@@ -184,7 +184,7 @@ function hideAnnouncementModal() {
 }
 
 // Close announcement modal when clicking outside
-document.getElementById('announcementModal').addEventListener('click', function(e) {
+document.getElementById('announcementModal').addEventListener('click', function (e) {
     if (e.target === this) {
         hideAnnouncementModal();
     }
@@ -230,7 +230,7 @@ function hideAnnouncementModal() {
 document.getElementById('announcementModalClose').addEventListener('click', hideAnnouncementModal);
 
 // Close modal when clicking outside
-document.getElementById('announcementModal').addEventListener('click', function(e) {
+document.getElementById('announcementModal').addEventListener('click', function (e) {
     if (e.target === this) {
         hideAnnouncementModal();
     }
@@ -263,18 +263,164 @@ function validatePost() {
 }
 
 // Modify your form submission to include validation
-document.querySelector('.create-post form').addEventListener('submit', function(e) {
+document.querySelector('.create-post form').addEventListener('submit', function (e) {
     if (!validatePost()) {
         e.preventDefault();
     }
 });
 
 // Add event listener to post input to validate on typing
-document.getElementById('postInput').addEventListener('input', function() {
+document.getElementById('postInput').addEventListener('input', function () {
     validatePost();
 });
 
 // Add event listener to photo upload to validate when photos are added/removed
-document.getElementById('photoUpload').addEventListener('change', function() {
+document.getElementById('photoUpload').addEventListener('change', function () {
     validatePost();
+});
+
+// Post Edit/Delete Functionality
+const editPostModal = document.getElementById('editPostModal');
+const deleteConfirmationModal = document.getElementById('deleteConfirmationModal');
+let currentPostId = null;
+
+// Edit Post
+document.querySelectorAll('.edit-post').forEach(btn => {
+    btn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        const postId = this.getAttribute('data-post-id');
+        const postElement = document.querySelector(`.neighborhood-post[data-post-id="${postId}"]`);
+        const postContent = postElement.querySelector('.post-content').textContent;
+
+        currentPostId = postId;
+        document.getElementById('editPostContent').value = postContent;
+        editPostModal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+    });
+});
+
+// Delete Post
+document.querySelectorAll('.delete-post').forEach(btn => {
+    btn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        currentPostId = this.getAttribute('data-post-id');
+        deleteConfirmationModal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+    });
+});
+
+// Save Edited Post
+document.getElementById('saveEditPost').addEventListener('click', function () {
+    const newContent = document.getElementById('editPostContent').value.trim();
+
+    if (newContent) {
+        fetch('/Homeowner/UpdatePost', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                postId: parseInt(currentPostId),
+                content: newContent
+            })
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const postElement = document.querySelector(`.neighborhood-post[data-post-id="${currentPostId}"]`);
+                    postElement.querySelector('.post-content').textContent = newContent;
+
+                    // Update the "updated date" if available
+                    if (data.updatedDate) {
+                        const metaElement = postElement.querySelector('.post-meta span');
+                        if (metaElement) {
+                            const originalText = metaElement.textContent;
+                            const updatedText = originalText.replace(/·.*/, `· ${data.updatedDate}`);
+                            metaElement.textContent = updatedText;
+                        }
+                    }
+
+                    closeEditModal();
+                } else {
+                    alert(data.message || 'Failed to update post');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while updating the post');
+            });
+    }
+});
+
+// Confirm Delete
+document.querySelector('.confirm-delete').addEventListener('click', function () {
+    fetch('/Homeowner/DeletePost', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            postId: parseInt(currentPostId)
+        })
+    })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                document.querySelector(`.neighborhood-post[data-post-id="${currentPostId}"]`).remove();
+                closeDeleteModal();
+            } else {
+                alert(data.message || 'Failed to delete post');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while deleting the post');
+        });
+});
+
+// Close modals
+function closeEditModal() {
+    editPostModal.style.display = 'none';
+    document.body.style.overflow = '';
+}
+
+function closeDeleteModal() {
+    deleteConfirmationModal.style.display = 'none';
+    document.body.style.overflow = '';
+}
+
+document.querySelector('.close-edit-modal').addEventListener('click', closeEditModal);
+document.querySelector('.cancel-delete').addEventListener('click', closeDeleteModal);
+document.getElementById('cancelEditPost').addEventListener('click', closeEditModal);
+
+// Close when clicking outside modals
+editPostModal.addEventListener('click', function (e) {
+    if (e.target === editPostModal) {
+        closeEditModal();
+    }
+});
+
+deleteConfirmationModal.addEventListener('click', function (e) {
+    if (e.target === deleteConfirmationModal) {
+        closeDeleteModal();
+    }
+});
+
+// Post options dropdown
+document.querySelectorAll('.post-options').forEach(btn => {
+    btn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        const menu = this.nextElementSibling;
+        document.querySelectorAll('.post-options-menu').forEach(m => {
+            if (m !== menu) m.style.display = 'none';
+        });
+        menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+    });
+});
+
+// Close dropdowns when clicking elsewhere
+document.addEventListener('click', function () {
+    document.querySelectorAll('.post-options-menu').forEach(menu => {
+        menu.style.display = 'none';
+    });
 });
