@@ -4,6 +4,7 @@ using HomeOwner.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace HomeOwner.Migrations
 {
     [DbContext(typeof(HomeOwnerContext))]
-    partial class HomeOwnerContextModelSnapshot : ModelSnapshot
+    [Migration("20250412134931_AddReportSchema")]
+    partial class AddReportSchema
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -119,42 +122,6 @@ namespace HomeOwner.Migrations
                     b.ToTable("Post");
                 });
 
-            modelBuilder.Entity("HomeOwner.Models.Report", b =>
-                {
-                    b.Property<int>("report_id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("report_id"));
-
-                    b.Property<DateTime?>("created_date")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("report_description")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("report_facility")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("report_severity")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("report_type")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime?>("updated_date")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int?>("user_id")
-                        .HasColumnType("int");
-
-                    b.HasKey("report_id");
-
-                    b.HasIndex("user_id");
-
-                    b.ToTable("Report");
-                });
-
             modelBuilder.Entity("HomeOwner.Models.User", b =>
                 {
                     b.Property<int>("user_id")
@@ -226,16 +193,6 @@ namespace HomeOwner.Migrations
                     b.Navigation("Author");
                 });
 
-            modelBuilder.Entity("HomeOwner.Models.Report", b =>
-                {
-                    b.HasOne("HomeOwner.Models.User", "Author")
-                        .WithMany("Reports")
-                        .HasForeignKey("user_id")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.Navigation("Author");
-                });
-
             modelBuilder.Entity("HomeOwner.Models.Post", b =>
                 {
                     b.Navigation("Comments");
@@ -246,8 +203,6 @@ namespace HomeOwner.Migrations
                     b.Navigation("Comments");
 
                     b.Navigation("Posts");
-
-                    b.Navigation("Reports");
                 });
 #pragma warning restore 612, 618
         }

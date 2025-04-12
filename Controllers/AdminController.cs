@@ -2,6 +2,7 @@
 using HomeOwner.Models;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
+using Microsoft.EntityFrameworkCore;
 
 namespace HomeOwner.Controllers
 {
@@ -13,7 +14,7 @@ namespace HomeOwner.Controllers
         {
             _context = db;
 
-            if(!adminRoute)
+            if (!adminRoute)
             {
                 RedirectToAction("Index", "Home");
             }
@@ -28,14 +29,14 @@ namespace HomeOwner.Controllers
             {
                 var users = _context.User.ToList();
                 viewModel.Users = users;
-                viewModel.newUser = new User(); 
+                viewModel.newUser = new User();
             }
             catch (Exception)
             {
                 viewModel.ErrorMessage = "Error loading users";
             }
 
-            return viewModel; 
+            return viewModel;
         }
 
         public int GetStaffCount()
@@ -47,7 +48,7 @@ namespace HomeOwner.Controllers
         {
             return _context.User.Count(u => u.role == "homeowner");
         }
-        
+
         public int GetActiveUserCount()
         {
             return _context.User.Count(u => u.status == "Active");
@@ -76,7 +77,7 @@ namespace HomeOwner.Controllers
 
                 _context.User.Add(user);
                 _context.SaveChanges();
-                
+
                 return Json(new { success = true, message = "User added successfully!" });
             }
             catch (Exception ex)
@@ -104,7 +105,7 @@ namespace HomeOwner.Controllers
                 user.status = userData.status;
 
                 _context.SaveChanges();
-                
+
                 return Json(new { success = true, message = "User updated successfully!" });
             }
             catch (Exception ex)
@@ -126,7 +127,7 @@ namespace HomeOwner.Controllers
 
                 _context.User.Remove(user);
                 _context.SaveChanges();
-                
+
                 return Json(new { success = true, message = "User deleted successfully!" });
             }
             catch (Exception ex)
@@ -159,13 +160,13 @@ namespace HomeOwner.Controllers
             {
                 var announcements = _context.Announcement.ToList();
                 viewModel.Announcements = announcements;
-                viewModel.newAnnouncement = new Announcement(); 
+                viewModel.newAnnouncement = new Announcement();
             }
             catch (Exception)
             {
                 viewModel.ErrorMessage = "Error loading announcements";
             }
-            return viewModel; 
+            return viewModel;
         }
         [HttpPost]
         public JsonResult GetAnnouncement(int id)
@@ -178,9 +179,11 @@ namespace HomeOwner.Controllers
                     return Json(new { success = false, message = "Announcement not found." });
                 }
 
-                return Json(new { 
-                    success = true, 
-                    announcement = new {
+                return Json(new
+                {
+                    success = true,
+                    announcement = new
+                    {
                         announcement_id = announcement.announcement_id,
                         title = announcement.title,
                         content = announcement.content,
@@ -226,7 +229,7 @@ namespace HomeOwner.Controllers
 
                 _context.Announcement.Add(announcement);
                 _context.SaveChanges();
-                
+
                 return Json(new { success = true, message = "Announcement published successfully!", id = announcement.announcement_id });
             }
             catch (Exception ex)
@@ -257,7 +260,7 @@ namespace HomeOwner.Controllers
                 announcement.priority = announcementData.priority ?? "normal";
 
                 _context.SaveChanges();
-                
+
                 return Json(new { success = true, message = "Announcement updated successfully!" });
             }
             catch (Exception ex)
@@ -279,7 +282,7 @@ namespace HomeOwner.Controllers
 
                 _context.Announcement.Remove(announcement);
                 _context.SaveChanges();
-                
+
                 return Json(new { success = true, message = "Announcement deleted successfully!" });
             }
             catch (Exception ex)
@@ -287,7 +290,7 @@ namespace HomeOwner.Controllers
                 return Json(new { success = false, message = ex.Message });
             }
         }
-            
+
         public IActionResult Documents()
         {
             ViewContents();
@@ -317,9 +320,9 @@ namespace HomeOwner.Controllers
         }
 
 
-      
 
-        public  IActionResult  AdminUsers()
+
+        public IActionResult AdminUsers()
         {
             ViewContents();
 
@@ -344,7 +347,14 @@ namespace HomeOwner.Controllers
         public IActionResult AdminIssue()
         {
             ViewBag.ActiveMenu = "FacilityIssue";
-            return View();
+            ViewContents();
+            var issues = _context.Report.Include(r => r.Author).ToList();
+
+
+
+            return View(issues);
         }
+
+       
     }
 }

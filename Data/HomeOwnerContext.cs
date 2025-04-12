@@ -35,11 +35,17 @@ namespace HomeOwner.Data
                 .WithMany(p => p.Comments)
                 .HasForeignKey(c => c.post_id)
                 .OnDelete(DeleteBehavior.Cascade);
+            modelBuilder.Entity<Report>()
+                .HasOne(r => r.Author)
+                .WithMany(u => u.Reports)
+                .HasForeignKey(r => r.user_id)
+                .OnDelete(DeleteBehavior.Restrict);
         }
 
         public DbSet<HomeOwner.Models.User> User { get; set; } = default!;
         public DbSet<HomeOwner.Models.Announcement> Announcement { get; set; } = default!;
         public DbSet<HomeOwner.Models.Post> Post { get; set; } = default!;
-          public DbSet<HomeOwner.Models.Comment> Comment { get; set; } = default!;
+        public DbSet<HomeOwner.Models.Comment> Comment { get; set; } = default!;
+          public DbSet<HomeOwner.Models.Report> Report { get; set; } = default!;
     }
 }

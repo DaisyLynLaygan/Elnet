@@ -4,6 +4,7 @@ using HomeOwner.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace HomeOwner.Migrations
 {
     [DbContext(typeof(HomeOwnerContext))]
-    partial class HomeOwnerContextModelSnapshot : ModelSnapshot
+    [Migration("20250412144103_AddReportSchemaUpdated")]
+    partial class AddReportSchemaUpdated
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -127,6 +130,9 @@ namespace HomeOwner.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("report_id"));
 
+                    b.Property<int?>("author_id")
+                        .HasColumnType("int");
+
                     b.Property<DateTime?>("created_date")
                         .HasColumnType("datetime2");
 
@@ -145,12 +151,9 @@ namespace HomeOwner.Migrations
                     b.Property<DateTime?>("updated_date")
                         .HasColumnType("datetime2");
 
-                    b.Property<int?>("user_id")
-                        .HasColumnType("int");
-
                     b.HasKey("report_id");
 
-                    b.HasIndex("user_id");
+                    b.HasIndex("author_id");
 
                     b.ToTable("Report");
                 });
@@ -229,9 +232,8 @@ namespace HomeOwner.Migrations
             modelBuilder.Entity("HomeOwner.Models.Report", b =>
                 {
                     b.HasOne("HomeOwner.Models.User", "Author")
-                        .WithMany("Reports")
-                        .HasForeignKey("user_id")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .WithMany()
+                        .HasForeignKey("author_id");
 
                     b.Navigation("Author");
                 });
@@ -246,8 +248,6 @@ namespace HomeOwner.Migrations
                     b.Navigation("Comments");
 
                     b.Navigation("Posts");
-
-                    b.Navigation("Reports");
                 });
 #pragma warning restore 612, 618
         }
