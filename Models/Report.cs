@@ -15,10 +15,10 @@ namespace HomeOwner.Models
         public DateTime? updated_date { get; set; }
 
         // Foreign key to User
-        public int? author_id { get; set; }  // Changed from user_id to author_id
+        public int? user_id { get; set; }  // Changed from user_id to author_id
         
         // Navigation property
-        [ForeignKey("author_id")]
+        [ForeignKey("user_id")]
         public User? Author { get; set; }  // Renamed from 'user' to 'Author'
 
         

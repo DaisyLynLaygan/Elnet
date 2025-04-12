@@ -2,6 +2,7 @@
 using HomeOwner.Models;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
+using Microsoft.EntityFrameworkCore;
 
 namespace HomeOwner.Controllers
 {
@@ -347,7 +348,7 @@ namespace HomeOwner.Controllers
         {
             ViewBag.ActiveMenu = "FacilityIssue";
             ViewContents();
-            var issues = _context.Report.ToList();
+            var issues = _context.Report.Include(r => r.Author).ToList();
 
 
 

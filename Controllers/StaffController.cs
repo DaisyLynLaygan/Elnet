@@ -94,7 +94,7 @@ public async Task<IActionResult> AddReport(Report model)
     try
     {
         // Set the author_id to current user's ID
-        model.author_id = CurrentUser.user_id;
+        model.user_id = CurrentUser.user_id;
         model.created_date = DateTime.Now;
         
         _context.Report.Add(model);

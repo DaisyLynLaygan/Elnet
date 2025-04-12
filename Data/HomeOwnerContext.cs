@@ -38,7 +38,7 @@ namespace HomeOwner.Data
             modelBuilder.Entity<Report>()
                 .HasOne(r => r.Author)
                 .WithMany(u => u.Reports)
-                .HasForeignKey(r => r.author_id)
+                .HasForeignKey(r => r.user_id)
                 .OnDelete(DeleteBehavior.Restrict);
         }
 
