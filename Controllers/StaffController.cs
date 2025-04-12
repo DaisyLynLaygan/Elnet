@@ -81,6 +81,37 @@ namespace HomeOwner.Controllers
             return RedirectToAction("StaffCommunity", "Staff");
         }
 
+
+        //Add issue report
+      [HttpPost]
+public async Task<IActionResult> AddReport(Report model)
+{
+    if (!ModelState.IsValid)
+    {
+        return View(model);
+    }
+
+    try
+    {
+        // Set the author_id to current user's ID
+        model.author_id = CurrentUser.user_id;
+        model.created_date = DateTime.Now;
+        
+        _context.Report.Add(model);
+        await _context.SaveChangesAsync();
+        
+        return RedirectToAction("StaffDashboard", new { success = true });
+    }
+    catch
+    {
+        ModelState.AddModelError("", "Error submitting report");
+        return View(model);
+    }
+}
+
+
+
+
         public IActionResult StaffDashboard()
         {
             ViewContents();

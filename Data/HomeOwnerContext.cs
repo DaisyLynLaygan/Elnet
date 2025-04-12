@@ -40,6 +40,7 @@ namespace HomeOwner.Data
         public DbSet<HomeOwner.Models.User> User { get; set; } = default!;
         public DbSet<HomeOwner.Models.Announcement> Announcement { get; set; } = default!;
         public DbSet<HomeOwner.Models.Post> Post { get; set; } = default!;
-          public DbSet<HomeOwner.Models.Comment> Comment { get; set; } = default!;
+        public DbSet<HomeOwner.Models.Comment> Comment { get; set; } = default!;
+          public DbSet<HomeOwner.Models.Report> Report { get; set; } = default!;
     }
 }
