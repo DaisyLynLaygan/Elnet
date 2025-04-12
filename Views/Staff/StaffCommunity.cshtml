@@ -1,9 +1,12 @@
-@model HomeOwner.Models.User
+@model HomeOwner.Models.ViewModel;
 @{
     ViewData["Title"] = "Staff Community";
     ViewData["Subtitle"] = "Staff Overview";
     Layout = "~/Views/Shared/StaffLayout.cshtml";
     ViewBag.ActiveMenu = "Community";
+       var announcementsList = Model.Announcements as List<Announcement> ?? new List<Announcement>();
+    var postsList = Model.Posts as List<Post> ?? new List<Post>();
+    var currentUser = ViewBag.CurrentUser as HomeOwner.Models.User; // Properly declare currentUser
 }
 
 <link rel="stylesheet" href="~/css/staff/community.css"/>
@@ -32,61 +35,84 @@
         <!-- Middle Content (60%) -->
         <div class="community-newsfeed">
             <!-- Create Post Section -->
-            <div class="create-post">
-                <div class="create-post-header">
-                    <img src="~/images/user-default-picture.jpg" alt="Profile">
-                    <input type="text" placeholder="Share with neighbors..." class="post-input" id="postInput">
-                </div>
-                <div class="post-actions">
-                    <button class="post-action" id="addPhotoBtn">
-                        <i class="fas fa-image" style="color: #45bd62;"></i> Photo
-                    </button>
-                    <input type="file" id="photoUpload" accept="image/*" multiple style="display: none;">
-                    <button class="post-submit" id="submitPostBtn">Post</button>
-                </div>
-                <div class="photo-preview-container" id="photoPreviewContainer"></div>
+              <div class="create-post">
+                <form asp-action="AddPostUser" asp-controller="Staff" method="post" enctype="multipart/form-data">
+                    <div class="create-post-header">
+                        <img src="~/images/user-default-picture.jpg" alt="Profile">
+                        <input asp-for="newPost.content" type="text" placeholder="Share with neighbors..." class="post-input" id="postInput">
+                    </div>
+                    <div class="post-actions">
+                        <div class="post-action" id="addPhotoBtn">
+                            <i class="fas fa-image" style="color: #45bd62;"></i> Photo
+                        </div>
+                        <input asp-for="newPost.ImageFile" type="file" id="photoUpload" accept="image/*" multiple style="display: none;">
+                        <button type="submit" class="post-submit" id="submitPostBtn">Post</button>
+                    </div>
+                    <div class="photo-preview-container" id="photoPreviewContainer"></div>
+                </form>
             </div>
 
             <!-- Neighborhood Posts -->
-            <div class="neighborhood-post">
-                <div class="post-header">
-                    <img src="~/images/user-default-picture.jpg" alt="User">
-                    <div class="post-user-info">
-                        <strong>Sarah Johnson</strong>
-                        <div class="post-meta">
-                            <span>Yesterday · Oak Street</span>
+            @foreach (var post in postsList.OrderByDescending(p => p.created_date ?? DateTime.MinValue))
+            {
+                <div class="neighborhood-post" data-post-id="@post.post_id">
+                    <div class="post-header">
+                        <img src="~/images/user-default-picture.jpg" alt="User">
+                        <div class="post-user-info">
+                            <strong>
+                                @post.Author?.firstname @post.Author?.lastname
+                                <span class="role-badge role-@post.Author?.role?.ToLower()">@post.Author?.role</span>
+                            </strong>
+                            <div class="post-meta">
+                                <span>@post.created_date?.ToString("MMMM dd, yyyy") · @post.Author?.address</span>
+                            </div>
                         </div>
+    
+                   @if (currentUser != null && post.Author?.user_id == currentUser.user_id)
+                    {
+                        <div class="post-options-container">
+                            <button class="post-options">
+                                <i class="fas fa-ellipsis-h"></i>
+                            </button>
+                            <div class="post-options-menu">
+                                <button class="edit-post" data-post-id="@post.post_id">Edit</button>
+                                <button class="delete-post" data-post-id="@post.post_id">Delete</button>
+                            </div>
+                        </div>
+                    }
+                        
                     </div>
-                    <button class="post-options">
-                        <i class="fas fa-ellipsis-h"></i>
-                    </button>
+
+                    <div class="post-content">
+                        @post.content
+                    </div>
+                    @if (!string.IsNullOrEmpty(post.ImagePath))
+                    {
+                        <div class="post-image">
+                            <img src="@post.ImagePath" alt="Post image">
+                        </div>
+                    }
+                    <div class="post-stats">
+                        <span class="reactions">
+                            <i class="fas fa-thumbs-up"></i> 12
+                        </span>
+                        <span class="comments">
+                            5 comments
+                        </span>
+                    </div>
+                    <div class="post-interactions">
+                        <button class="interaction-button">
+                            <i class="far fa-thumbs-up"></i> <span>Helpful</span>
+                        </button>
+                        <button class="interaction-button comment-btn" data-post-id="@post.post_id">
+                            <i class="far fa-comment"></i> <span>Comment</span>
+                        </button>
+                        <button class="interaction-button">
+                            <i class="fas fa-share"></i> <span>Share</span>
+                        </button>
+                    </div>
                 </div>
-                <div class="post-content">
-                    Does anyone have recommendations for a good plumber? Our kitchen sink is leaking badly.
-                </div>
-                <div class="post-image">
-                    <img src="@GetRandomPropertyImage()" alt="Leaking sink">
-                </div>
-                <div class="post-stats">
-                    <span class="reactions">
-                        <i class="fas fa-thumbs-up"></i> 12
-                    </span>
-                    <span class="comments" data-post-id="1">
-                        5 comments
-                    </span>
-                </div>
-                <div class="post-interactions">
-                    <button class="interaction-button">
-                        <i class="far fa-thumbs-up"></i> <span>Helpful</span>
-                    </button>
-                    <button class="interaction-button comment-btn" data-post-id="1">
-                        <i class="far fa-comment"></i> <span>Comment</span>
-                    </button>
-                    <button class="interaction-button">
-                        <i class="fas fa-share"></i> <span>Share</span>
-                    </button>
-                </div>
-            </div>
+            }
 
             <div class="neighborhood-post">
                 <div class="post-header">

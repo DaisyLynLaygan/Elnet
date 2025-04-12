@@ -1,3 +1,6 @@
+@{
+    var user = ViewBag.CurrentUser;
+}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -47,7 +50,7 @@
         <div class="user-hamburger-container">
             <div class="user-profile">
                 <img src="~/images/user-default-picture.jpg" alt="User profile" />
-                <span class="user-name">Kimperor</span>
+                <span class="user-name">@user.firstname @user.lastname</span>
                 <div class="profile-dropdown">
                     <a href="/Account/Settings" class="dropdown-link">
                         <i class="fas fa-cog"></i>
