@@ -4,6 +4,9 @@
     ViewData["Subtitle"] = "Admin";
     ViewBag.ActiveMenu = "FacilityIssue";
 }
+@model List<HomeOwner.Models.Report>;
+@using HomeOwner.Helpers;
+
 
 <link rel="stylesheet" href="~/css/admin/issues.css" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
@@ -43,91 +46,26 @@
                 </tr>
             </thead>
             <tbody>
-                <tr>
-                    <td>ISS-2023-001</td>
-                    <td><span class="badge badge-plumbing">Plumbing</span></td>
-                    <td>Swimming Pool</td>
-                    <td>Staff Member 1</td>
-                    <td>15 Oct 2023 14:30</td>
-                    <td><span class="severity-medium">Medium</span></td>
-                    <td><span class="status-pending">Pending</span></td>
-                    <td>
-                        <button class="btn-icon view-issue" title="View Details">
-                            <i class="fas fa-eye"></i>
-                        </button>
-                        <button class="btn-icon add-note" title="Add Note">
-                            <i class="fas fa-edit"></i>
-                        </button>
-                    </td>
-                </tr>
-                <tr>
-                    <td>ISS-2023-002</td>
-                    <td><span class="badge badge-electrical">Electrical</span></td>
-                    <td>Function Hall</td>
-                    <td>Staff Member 2</td>
-                    <td>16 Oct 2023 09:15</td>
-                    <td><span class="severity-high">High</span></td>
-                    <td><span class="status-in-progress">In Progress</span></td>
-                    <td>
-                        <button class="btn-icon view-issue" title="View Details">
-                            <i class="fas fa-eye"></i>
-                        </button>
-                        <button class="btn-icon add-note" title="Add Note">
-                            <i class="fas fa-edit"></i>
-                        </button>
-                    </td>
-                </tr>
-                <tr>
-                    <td>ISS-2023-003</td>
-                    <td><span class="badge badge-structural">Structural</span></td>
-                    <td>Sports Court</td>
-                    <td>Staff Member 3</td>
-                    <td>17 Oct 2023 11:45</td>
-                    <td><span class="severity-critical">Critical</span></td>
-                    <td><span class="status-pending">Pending</span></td>
-                    <td>
-                        <button class="btn-icon view-issue" title="View Details">
-                            <i class="fas fa-eye"></i>
-                        </button>
-                        <button class="btn-icon add-note" title="Add Note">
-                            <i class="fas fa-edit"></i>
-                        </button>
-                    </td>
-                </tr>
-                <tr>
-                    <td>ISS-2023-004</td>
-                    <td><span class="badge badge-appliance">Appliance</span></td>
-                    <td>Gym</td>
-                    <td>Staff Member 4</td>
-                    <td>18 Oct 2023 16:20</td>
-                    <td><span class="severity-low">Low</span></td>
-                    <td><span class="status-completed">Completed</span></td>
-                    <td>
-                        <button class="btn-icon view-issue" title="View Details">
-                            <i class="fas fa-eye"></i>
-                        </button>
-                        <button class="btn-icon add-note" title="Add Note">
-                            <i class="fas fa-edit"></i>
-                        </button>
-                    </td>
-                </tr>
-                <tr>
-                    <td>ISS-2023-005</td>
-                    <td><span class="badge badge-security">Security</span></td>
-                    <td>Clubhouse</td>
-                    <td>Staff Member 5</td>
-                    <td>19 Oct 2023 08:10</td>
-                    <td><span class="severity-high">High</span></td>
-                    <td><span class="status-in-progress">In Progress</span></td>
-                    <td>
-                        <button class="btn-icon view-issue" title="View Details">
-                            <i class="fas fa-eye"></i>
-                        </button>
-                        <button class="btn-icon add-note" title="Add Note">
-                            <i class="fas fa-edit"></i>
-                        </button>
-                    </td>
-                </tr>
+                @foreach (var issues in Model) {
+                    <tr>
+                        <td>@issues.report_id</td>
+                        <td><span class="badge badge-plumbing">@StringHelpers.FirstLetterToUpper(issues.report_type)</span></td>
+                        <td>@StringHelpers.ToHumanReadable( issues.report_facility)</td>
+                        <td>@issues.Author?.firstname @issues.Author?.lastname </td>
+                        <td>@issues.created_date</td>
+                        <td><span class="severity-@issues.report_severity">@issues.report_severity</span></td>
+                        <td><span class="status-pending">Pending</span></td>
+                        <td>
+                            <button class="btn-icon view-issue" title="View Details">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <button class="btn-icon add-note" title="Add Note">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                        </td>
+                    </tr>
+                }
+              
             </tbody>
         </table>
     </div>

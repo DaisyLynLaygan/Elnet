@@ -238,13 +238,15 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h3>Report New Issue</h3>
-                <button class="modal-close" id="closeReportIssueModal">&times;</button>
+                <button type="button" class="modal-close" id="closeReportIssueModal">&times;</button>
             </div>
             <div class="modal-body">
                 <form asp-action="AddReport" asp-controller="Staff" method="post" id="reportIssueForm">
+                   
+                    
                     <div class="form-group">
-                        <label asp-for=@Model.report_type>Issue Type</label>
-                        <select class="form-control" asp-for=@Model.report_type required>
+                        <label asp-for="report_type">Issue Type</label>
+                        <select class="form-control" asp-for="report_type" required>
                             <option value="" selected disabled>Select issue type</option>
                             <option value="plumbing">Plumbing</option>
                             <option value="electrical">Electrical</option>
@@ -253,11 +255,12 @@
                             <option value="security">Security</option>
                             <option value="other">Other</option>
                         </select>
-                        <span asp-validation-for=@Model.report_type class="text-danger"></span>
+                        <span asp-validation-for="report_type" class="text-danger"></span>
                     </div>
+                    
                     <div class="form-group">
-                        <label asp-for=@Model.report_facility>Facility</label>
-                        <select class="form-control"asp-for=@Model.report_facility required>
+                        <label asp-for="report_facility">Facility</label>
+                        <select class="form-control" asp-for="report_facility" required>
                             <option value="" selected disabled>Select facility</option>
                             <option value="function_hall">Function Hall</option>
                             <option value="sports_court">Sports Court</option>
@@ -266,25 +269,28 @@
                             <option value="clubhouse">Clubhouse</option>
                             <option value="playground">Playground</option>
                         </select>
-                        <span asp-validation-for=@Model.report_facility class="text-danger"></span>
+                        <span asp-validation-for="report_facility" class="text-danger"></span>
                     </div>
+                    
                     <div class="form-group">
-                        <label asp-for=@Model.report_severity>Severity</label>
-                        <select class="form-control" asp-for=@Model.report_severity required>
+                        <label asp-for="report_severity">Severity</label>
+                        <select class="form-control" asp-for="report_severity" required>
                             <option value="low">Low (Non-urgent)</option>
                             <option value="medium" selected>Medium (Normal priority)</option>
                             <option value="high">High (Urgent)</option>
                             <option value="critical">Critical (Emergency)</option>
                         </select>
-                        <span asp-validation-for=@Model.report_severity class="text-danger"></span>
+                        <span asp-validation-for="report_severity" class="text-danger"></span>
                     </div>
+                    
                     <div class="form-group">
-                        <label asp-for=@Model.report_description>Description</label>
-                        <textarea class="form-control" asp-for=@Model.report_description rows="4" required></textarea>
-                        <span asp-validation-for=@Model.report_description class="text-danger"></span>
+                        <label asp-for="report_description">Description</label>
+                        <textarea class="form-control" asp-for="report_description" rows="4" required></textarea>
+                        <span asp-validation-for="report_description" class="text-danger"></span>
                     </div>
+                    
                     <div class="modal-footer">
-                        <button class="btn btn-secondary" id="cancelReportIssue">Cancel</button>
+                        <button type="button" class="btn btn-secondary" id="cancelReportIssue">Cancel</button>
                         <button type="submit" class="btn btn-warning" id="submitIssueReport">Report Issue</button>
                     </div>
                 </form>

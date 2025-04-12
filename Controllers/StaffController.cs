@@ -88,7 +88,7 @@ public async Task<IActionResult> AddReport(Report model)
 {
     if (!ModelState.IsValid)
     {
-        return View(model);
+       return RedirectToAction("StaffDashboard", "Staff");
     }
 
     try
@@ -105,7 +105,7 @@ public async Task<IActionResult> AddReport(Report model)
     catch
     {
         ModelState.AddModelError("", "Error submitting report");
-        return View(model);
+         return RedirectToAction("StaffDashboard", "Staff");
     }
 }
 
