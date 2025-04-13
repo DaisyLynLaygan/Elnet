@@ -68,5 +68,10 @@ namespace HomeOwner.Controllers
                 });
             }
         }
+
+
+        //Get Booking List pending via CurrentUser.user_id
+       
+       
     }
 }

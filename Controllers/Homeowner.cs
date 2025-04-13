@@ -312,7 +312,12 @@ public class CommentModel
         public IActionResult Payment()
         {
             ViewContents();
-            return View();
+             var bookings = _context.MaintenanceRequest
+        
+        .ToList();
+            ViewBag.MaintenanceBookings = bookings;
+        return View();
+            
         }
         public IActionResult History()
         {
