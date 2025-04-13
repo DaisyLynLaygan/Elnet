@@ -38,6 +38,86 @@ namespace HomeOwner.Controllers
         }
 
 
+  [HttpPost]
+public async Task<JsonResult> AddComment([FromBody] CommentModel model)
+{
+    try
+    {
+        var comment = new Comment
+        {
+            content = model.Content,
+            created_date = DateTime.Now,
+            updated_date = DateTime.Now,
+            author_id = CurrentUser.user_id,
+            post_id = model.PostId
+        };
+
+        _context.Comment.Add(comment);
+        await _context.SaveChangesAsync();
+
+        // Load the author information
+        var author = await _context.User.FindAsync(CurrentUser.user_id);
+        
+        // Get the comment count for this post
+        var commentCount = await _context.Comment.CountAsync(c => c.post_id == model.PostId);
+        
+        // Broadcast the new comment via WebSocket
+        var commentWebSocketManager = HttpContext.RequestServices.GetRequiredService<CommentWebSocketManager>();
+        await commentWebSocketManager.BroadcastComment(model.PostId, comment, author, commentCount);
+
+        return Json(new { success = true, comment = new {
+            id = comment.comment_id,
+            content = comment.content,
+            createdDate = comment.created_date?.ToString("MMMM dd, yyyy hh:mm tt"),
+            author = new {
+                id = author.user_id,
+                name = $"{author.firstname} {author.lastname}",
+                role = author.role
+            }
+        }});
+    }
+    catch (Exception ex)
+    {
+        return Json(new { success = false, message = ex.Message });
+    }
+}
+
+
+[HttpGet]
+public async Task<JsonResult> GetComments(int postId)
+{
+    try
+    {
+        var comments = await _context.Comment
+            .Include(c => c.Author)
+            .Where(c => c.post_id == postId)
+            .OrderBy(c => c.created_date)
+            .Select(c => new {
+                id = c.comment_id,
+                content = c.content,
+                createdDate = c.created_date,
+                author = new {
+                    id = c.Author.user_id,
+                    name = $"{c.Author.firstname} {c.Author.lastname}",
+                    role = c.Author.role
+                }
+            })
+            .ToListAsync();
+
+        return Json(new { success = true, comments });
+    }
+    catch (Exception ex)
+    {
+        return Json(new { success = false, message = ex.Message });
+    }
+}
+
+public class CommentModel
+{
+    public int PostId { get; set; }
+    public string Content { get; set; }
+}
+
         //Error ni
         public void UpdateProfile(User model)
         {
