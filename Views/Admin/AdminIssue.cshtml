@@ -46,25 +46,25 @@
                 </tr>
             </thead>
             <tbody>
-                @foreach (var issues in Model) {
-                    <tr>
-                        <td>@issues.report_id</td>
-                        <td><span class="badge badge-plumbing">@StringHelpers.FirstLetterToUpper(issues.report_type)</span></td>
-                        <td>@StringHelpers.ToHumanReadable( issues.report_facility)</td>
-                        <td>@issues.Author?.firstname @issues.Author?.lastname </td>
-                        <td>@issues.created_date</td>
-                        <td><span class="severity-@issues.report_severity">@issues.report_severity</span></td>
-                        <td><span class="status-pending">Pending</span></td>
-                        <td>
-                            <button class="btn-icon view-issue" title="View Details">
-                                <i class="fas fa-eye"></i>
-                            </button>
-                            <button class="btn-icon add-note" title="Add Note">
-                                <i class="fas fa-edit"></i>
-                            </button>
-                        </td>
-                    </tr>
-                }
+              @foreach (var issue in Model) {
+                <tr data-description="@issue.report_description">
+                    <td>@issue.report_id</td>
+                    <td><span class="badge badge-@issue.report_type">@StringHelpers.FirstLetterToUpper(issue.report_type)</span></td>
+                    <td>@StringHelpers.ToHumanReadable(issue.report_facility)</td>
+                    <td>@issue.Author?.firstname @issue.Author?.lastname</td>
+                    <td>@(issue.created_date?.ToString("MMM dd, yyyy HH:mm") ?? "Not specified")</td>
+                    <td><span class="severity-@issue.report_severity">@issue.report_severity</span></td>
+                    <td><span class="status-pending">Pending</span></td>
+                    <td>
+                        <button class="btn-icon view-issue" title="View Details" data-issue-id="@issue.report_id">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                        <button class="btn-icon add-note" title="Add Note" data-issue-id="@issue.report_id">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                    </td>
+                </tr>
+            }
               
             </tbody>
         </table>
@@ -126,7 +126,7 @@
                     </div>
                     <div class="detail-item">
                         <span class="detail-label">Description:</span>
-                        <span class="detail-value" id="detailDescription">Water leakage near the pool pump area. Significant water accumulation observed.</span>
+                        <span class="detail-value" id="detailDescription"></span>
                     </div>
                     <div class="detail-item">
                         <span class="detail-label">Staff Notes:</span>
@@ -180,7 +180,9 @@
                     reportedBy: row.cells[3].textContent,
                     dateReported: row.cells[4].textContent,
                     severity: row.cells[5].textContent,
-                    status: row.cells[6].textContent
+                    status: row.cells[6].textContent,
+                    description: row.getAttribute('data-description') || "No description provided"
+
                 };
                 
                 // Update modal content
@@ -191,7 +193,8 @@
                 document.getElementById('detailDateReported').textContent = currentIssue.dateReported;
                 document.getElementById('detailSeverity').textContent = currentIssue.severity;
                 document.getElementById('detailStatus').textContent = currentIssue.status;
-                
+                document.getElementById('detailDescription').textContent = currentIssue.description;
+
                 document.getElementById('issueDetailsModal').classList.add('active');
             });
         });

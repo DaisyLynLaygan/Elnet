@@ -1,0 +1,1576 @@
+Desktop\Elnet\HomeOwner.csproj]
+C:\Users\63945\Desktop\Elnet\Views\Homeowner\Community.cshtml(118,65): error CS1061: 'Post' does not contain a definition for 'Likes' and no accessible extension method 'Likes' accepting a first argument of type 'Post' could be found (are you missing a using directive or an assembly reference?) [C:\Users\63945\Desktop\Elnet\HomeOwner.csproj]
+C:\Users\63945\Desktop\Elnet\Views\Admin\AdminIssue.cshtml(52,100): warning CS8604: Possible null reference argument for parameter 'str' in 'string StringHelpers.FirstLetterToUpper(string str)'. [C:\Users\63945\Desktop\Elnet\HomeOwner.csproj]
+C:\Users\63945\Desktop\Elnet\Views\Admin\AdminIssue.cshtml(53,52): warning CS8604: Possible null reference argument for parameter 'input' in 'string StringHelpers.ToHumanReadable(string input)'. [C:\Users\63945\Desktop\Elnet\HomeOwner.csproj]
+C:\Users\63945\Desktop\Elnet\Program.cs(44,5): warning ASP0019: Use IHeaderDictionary.Append or the indexer to append or set headers. IDictionary.Add will throw an ArgumentException when attempting to add a duplicate key. (https://aka.ms/aspnet/analyzers) [C:\Users\63945\Desktop\Elnet\HomeOwner.csproj]
+C:\Users\63945\Desktop\Elnet\Program.cs(45,5): warning ASP0019: Use IHeaderDictionary.Append or the indexer to append or set headers. IDictionary.Add will throw an ArgumentException when attempting to add a duplicate key. (https://aka.ms/aspnet/analyzers) [C:\Users\63945\Desktop\Elnet\HomeOwner.csproj]
+C:\Users\63945\Desktop\Elnet\Program.cs(46,5): warning ASP0019: Use IHeaderDictionary.Append or the indexer to append or set headers. IDictionary.Add will throw an ArgumentException when attempting to add a duplicate key. (https://aka.ms/aspnet/analyzers) [C:\Users\63945\Desktop\Elnet\HomeOwner.csproj]
+C:\Users\63945\Desktop\Elnet\Program.cs(47,5): warning ASP0019: Use IHeaderDictionary.Append or the indexer to append or set headers. IDictionary.Add will throw an ArgumentException when attempting to add a duplicate key. (https://aka.ms/aspnet/analyzers) [C:\Users\63945\Desktop\Elnet\HomeOwner.csproj]
+C:\Users\63945\Desktop\Elnet\Program.cs(48,5): warning ASP0019: Use IHeaderDictionary.Append or the indexer to append or set headers. IDictionary.Add will throw an ArgumentException when attempting to add a duplicate key. (https://aka.ms/aspnet/analyzers) [C:\Users\63945\Desktop\Elnet\HomeOwner.csproj]
+C:\Users\63945\Desktop\Elnet\Program.cs(49,5): warning ASP0019: Use IHeaderDictionary.Append or the indexer to append or set headers. IDictionary.Add will throw an ArgumentException when attempting to add a duplicate key. (https://aka.ms/aspnet/analyzers) [C:\Users\63945\Desktop\Elnet\HomeOwner.csproj]
+C:\Users\63945\Desktop\Elnet\Program.cs(50,5): warning ASP0019: Use IHeaderDictionary.Append or the indexer to append or set headers. IDictionary.Add will throw an ArgumentException when attempting to add a duplicate key. (https://aka.ms/aspnet/analyzers) [C:\Users\63945\Desktop\Elnet\HomeOwner.csproj]
+
+The build failed. Fix the build errors and run again.
+
+dotnet watch ❌ [HomeOwner (net8.0)] Exited with error code 1
+dotnet watch ⏳ Waiting for a file to change before restarting dotnet...
+
+
+
+
+Fixed all the code and give me all the code!
+homeowner - controller
+using HomeOwner.Data;
+using HomeOwner.Models;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using System.IO;
+
+
+namespace HomeOwner.Controllers
+{
+
+
+    public class Homeowner : BaseController
+    {
+        private readonly HomeOwnerContext _context;
+        public Homeowner(HomeOwnerContext db)
+        {
+            _context = db;
+            if (!homeownerRoute)
+            {
+
+                RedirectToAction("Index", "Home");
+            }
+        }
+
+
+
+
+        public List<Announcement> GetAnnouncements()
+        {
+
+            var currentDate = DateTime.Now;
+
+            var announcements = _context.Announcement.Where(m => currentDate < m.end_date).ToList();
+
+
+
+            return announcements;
+        }
+
+
+  [HttpPost]
+public async Task<JsonResult> AddComment([FromBody] CommentModel model)
+{
+    try
+    {
+        var comment = new Comment
+        {
+            content = model.Content,
+            created_date = DateTime.Now,
+            updated_date = DateTime.Now,
+            author_id = CurrentUser.user_id,
+            post_id = model.PostId
+        };
+
+        _context.Comment.Add(comment);
+        await _context.SaveChangesAsync();
+
+        // Load the author information
+        var author = await _context.User.FindAsync(CurrentUser.user_id);
+        
+        // Get the comment count for this post
+        var commentCount = await _context.Comment.CountAsync(c => c.post_id == model.PostId);
+        
+        // Broadcast the new comment via WebSocket
+        var commentWebSocketManager = HttpContext.RequestServices.GetRequiredService<CommentWebSocketManager>();
+        await commentWebSocketManager.BroadcastComment(model.PostId, comment, author, commentCount);
+
+        return Json(new { success = true, comment = new {
+            id = comment.comment_id,
+            content = comment.content,
+            createdDate = comment.created_date?.ToString("MMMM dd, yyyy hh:mm tt"),
+            author = new {
+                id = author.user_id,
+                name = $"{author.firstname} {author.lastname}",
+                role = author.role
+            }
+        }});
+    }
+    catch (Exception ex)
+    {
+        return Json(new { success = false, message = ex.Message });
+    }
+}
+
+
+[HttpGet]
+public async Task<JsonResult> GetComments(int postId)
+{
+    try
+    {
+        var comments = await _context.Comment
+            .Include(c => c.Author)
+            .Where(c => c.post_id == postId)
+            .OrderBy(c => c.created_date)
+            .Select(c => new {
+                id = c.comment_id,
+                content = c.content,
+                createdDate = c.created_date,
+                author = new {
+                    id = c.Author.user_id,
+                    name = $"{c.Author.firstname} {c.Author.lastname}",
+                    role = c.Author.role
+                }
+            })
+            .ToListAsync();
+
+        return Json(new { success = true, comments });
+    }
+    catch (Exception ex)
+    {
+        return Json(new { success = false, message = ex.Message });
+    }
+}
+
+
+
+public class CommentModel
+{
+    public int PostId { get; set; }
+    public string Content { get; set; }
+}
+
+        //Error ni
+        public void UpdateProfile(User model)
+        {
+            try
+            {
+                // Find the user in the database
+                var existingUser = _context.User.FirstOrDefault(u => u.username == model.username);
+
+                if (existingUser == null)
+                {
+                    ViewBag.Error = "Invalid user data.";
+                    return;
+                }
+
+                // Update only the modified fields
+
+                existingUser.firstname = model?.firstname;
+                existingUser.lastname = model?.lastname;
+                existingUser.email = model?.email;
+                existingUser.address = model?.address;
+                existingUser.contact_no = model?.contact_no;
+
+
+                _context.User.Update(existingUser);
+                _context.SaveChanges();
+
+                ViewBag.Message = "Profile updated successfully!";
+
+            }
+            catch (Exception ex)
+            {
+                ViewBag.Error = "An error occurred while updating the profile.";
+
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> AddPostUser(ViewModel model)
+        {
+
+            // Map Register model to User model
+            var post = new Post
+            {
+                content = model.newPost.content,
+                created_date = DateTime.Now,
+                updated_date = DateTime.Now,
+                user_id = CurrentUser.user_id,
+            };
+            if (model.newPost.ImageFile != null && model.newPost.ImageFile.Length > 0)
+            {
+                // Save the image to a folder (e.g., wwwroot/uploads/posts)
+                var uploadsFolder = Path.Combine("wwwroot", "uploads", "posts");
+                Directory.CreateDirectory(uploadsFolder); // Ensure folder exists
+
+                var uniqueFileName = Guid.NewGuid().ToString() + "_" + model.newPost.ImageFile.FileName;
+                var filePath = Path.Combine(uploadsFolder, uniqueFileName);
+
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    await model.newPost.ImageFile.CopyToAsync(stream);
+                }
+
+                post.ImagePath = $"/uploads/posts/{uniqueFileName}"; // Save path
+            }
+
+
+            // Save the user to the database
+            _context.Post.Add(post);
+            _context.SaveChanges();
+
+
+            // Redirect to the Login page
+
+
+            ViewBag.message = "Error username existed";
+            return RedirectToAction("Community", "Homeowner");
+        }
+
+
+
+      public List<Post> RetrievePost()
+        {
+            var posts = _context.Post
+                .Include(p => p.Author)
+                .Include(p => p.Likes) // Include likes
+                .OrderByDescending(p => p.created_date)
+                .ToList();
+            
+            return posts; 
+        }
+
+
+
+[HttpPost]
+public async Task<JsonResult> ToggleLike([FromBody] LikeModel model)
+{
+    try
+    {
+        var existingLike = await _context.Like
+            .FirstOrDefaultAsync(l => l.post_id == model.PostId && l.user_id == CurrentUser.user_id);
+
+        if (existingLike != null)
+        {
+            // Unlike
+            _context.Like.Remove(existingLike);
+            await _context.SaveChangesAsync();
+            
+            return Json(new { 
+                success = true, 
+                liked = false, 
+                likeCount = await _context.Like.CountAsync(l => l.post_id == model.PostId) 
+            });
+        }
+        else
+        {
+            // Like
+            var like = new Like
+            {
+                post_id = model.PostId,
+                user_id = CurrentUser.user_id,
+                created_date = DateTime.Now
+            };
+            
+            _context.Like.Add(like);
+            await _context.SaveChangesAsync();
+            
+            return Json(new { 
+                success = true, 
+                liked = true, 
+                likeCount = await _context.Like.CountAsync(l => l.post_id == model.PostId) 
+            });
+        }
+    }
+    catch (Exception ex)
+    {
+        return Json(new { success = false, message = ex.Message });
+    }
+}
+
+[HttpGet]
+public async Task<JsonResult> GetLikeStatus(int postId)
+{
+    try
+    {
+        var isLiked = await _context.Like
+            .AnyAsync(l => l.post_id == postId && l.user_id == CurrentUser.user_id);
+            
+        var likeCount = await _context.Like
+            .CountAsync(l => l.post_id == postId);
+            
+        return Json(new { 
+            success = true, 
+            isLiked, 
+            likeCount 
+        });
+    }
+    catch (Exception ex)
+    {
+        return Json(new { success = false, message = ex.Message });
+    }
+}
+
+public class LikeModel
+{
+    public int PostId { get; set; }
+}
+
+        public IActionResult Dashboard()
+        {
+            ViewContents();
+            return View();
+        }
+        public IActionResult Login()
+        {
+            return View();
+        }
+        public IActionResult Feedback()
+        {
+            ViewContents();
+            return View();
+        }
+        public IActionResult Community()
+        {
+            ViewContents(); // If this sets other ViewData (e.g., user info)
+
+            var model = new ViewModel
+            {
+                Announcements = GetAnnouncements(), // Load announcements
+                Posts = RetrievePost()             // Load posts
+            };
+
+            return View(model); // Pass the combined ViewModel
+        }
+
+                [HttpPost]
+        public JsonResult DeletePost([FromBody] PostDeleteModel model)
+        {
+            try
+            {
+                var post = _context.Post.FirstOrDefault(p => p.post_id == model.postId);
+                
+                if (post == null)
+                {
+                    return Json(new { success = false, message = "Post not found." });
+                }
+                
+                if (post.user_id != CurrentUser.user_id)
+                {
+                    return Json(new { success = false, message = "You can only delete your own posts." });
+                }
+                
+                _context.Post.Remove(post);
+                _context.SaveChanges();
+                
+                return Json(new { success = true });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+
+                [HttpPost]
+        public JsonResult UpdatePost([FromBody] PostUpdateModel model)
+        {
+            try
+            {
+                var post = _context.Post.FirstOrDefault(p => p.post_id == model.postId);
+                
+                if (post == null)
+                {
+                    return Json(new { success = false, message = "Post not found." });
+                }
+                
+                if (post.user_id != CurrentUser.user_id)
+                {
+                    return Json(new { success = false, message = "You can only edit your own posts." });
+                }
+                
+                post.content = model.content;
+                post.updated_date = DateTime.Now;
+                
+                _context.SaveChanges();
+                
+                return Json(new { success = true, updatedDate = post.updated_date?.ToString("MMMM dd, yyyy") });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+
+        public class PostUpdateModel
+        {
+            public int postId { get; set; }
+            public string content { get; set; }
+        }
+
+        public class PostDeleteModel
+        {
+            public int postId { get; set; }
+        }
+
+
+        public IActionResult Payment()
+        {
+            ViewContents();
+            return View();
+        }
+        public IActionResult History()
+        {
+            ViewContents();
+            return View();
+        }
+        public IActionResult UserProfile()
+        {
+            ViewContents();
+            return View();
+        }
+
+        public IActionResult Events()
+        {
+            ViewContents();
+            return View();
+        }
+    }
+}
+
+
+Community.cshtml
+    @model HomeOwner.Models.ViewModel;
+    @{
+        Layout = "~/Views/Shared/Dashboard_Layout.cshtml";
+        var announcementsList = Model.Announcements as List<Announcement> ?? new List<Announcement>();
+        var postsList = Model.Posts as List<Post> ?? new List<Post>();
+        var currentUser = ViewBag.CurrentUser as HomeOwner.Models.User; // Properly declare currentUser
+    }
+
+    <link rel="stylesheet" href="~/css/homeowners/community.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+    <div class="community-wrapper">
+        <div class="community-container">
+            <!-- Left Sidebar (20%) -->
+            <div class="community-sidebar">
+                <div class="sidebar-section">
+                    <div class="sidebar-item">
+                        <i class="fas fa-home"></i>
+                        <span><a asp-controller="Homeowner" asp-action="Dashboard"
+                                style="text-decoration: none; color: #000;">Home</a></span>
+                    </div>
+                    <div class="sidebar-item">
+                        <i class="fas fa-comment-alt"></i>
+                        <span><a asp-controller="Homeowner" asp-action="Feedback"
+                                style="text-decoration: none; color: #000;">Feedback</a></span>
+                    </div>
+                    <div class="sidebar-item">
+                        <i class="far fa-calendar-alt"></i>
+                        <span><a asp-controller="Homeowner" asp-action="Events"
+                                style="text-decoration: none; color: #000;">Events</a></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Middle Content (60%) -->
+            <div class="community-newsfeed">
+                <!-- Create Post Section -->
+                <div class="create-post">
+                    <form asp-action="AddPostUser" asp-controller="Homeowner" method="post" enctype="multipart/form-data"
+                        onsubmit="return validatePost()">
+                        <div class="create-post-header">
+                            <img src="~/images/user-default-picture.jpg" alt="Profile">
+                            <input asp-for="newPost.content" type="text" placeholder="Share with neighbors..."
+                                class="post-input" id="postInput">
+                        </div>
+                        <div class="post-actions">
+                            <div class="post-action" id="addPhotoBtn">
+                                <i class="fas fa-image" style="color: #45bd62;"></i> Photo
+                            </div>
+                            <input asp-for="newPost.ImageFile" type="file" id="photoUpload" accept="image/*" multiple
+                                style="display: none;">
+                            <button type="submit" class="post-submit" id="submitPostBtn">Post</button>
+                        </div>
+                        <div class="photo-preview-container" id="photoPreviewContainer"></div>
+                    </form>
+                </div>
+
+                <!-- Neighborhood Posts -->
+                @foreach (var post in postsList.OrderByDescending(p => p.created_date ?? DateTime.MinValue))
+                {
+                    <div class="neighborhood-post" data-post-id="@post.post_id">
+                        <div class="post-header">
+                            <img src="~/images/user-default-picture.jpg" alt="User">
+                            <div class="post-user-info">
+                                <strong>
+                                    @post.Author?.firstname @post.Author?.lastname
+                                    <span class="role-badge role-@post.Author?.role?.ToLower()">@post.Author?.role</span>
+                                </strong>
+                                <div class="post-meta">
+                                    <span>@post.created_date?.ToString("MMMM dd, yyyy") · @post.Author?.address</span>
+                                </div>
+                            </div>
+
+                            @if (currentUser != null && post.Author?.user_id == currentUser.user_id)
+                            {
+                                <div class="post-options-container">
+                                    <button class="post-options">
+                                        <i class="fas fa-ellipsis-h"></i>
+                                    </button>
+                                    <div class="post-options-menu">
+                                        <button class="edit-post" data-post-id="@post.post_id">Edit</button>
+                                        <button class="delete-post" data-post-id="@post.post_id">Delete</button>
+                                    </div>
+                                </div>
+                            }
+
+                        </div>
+
+                        <div class="post-content">
+                            @post.content
+                        </div>
+                        @if (!string.IsNullOrEmpty(post.ImagePath))
+                        {
+                            <div class="post-image">
+                                <img src="@post.ImagePath" alt="Post image">
+                            </div>
+                        }
+                        <div class="post-stats">
+                            <span class="reactions">
+                                <i class="fas fa-thumbs-up"></i> 12
+                            </span>
+                            <span class="comments-count" data-post-id="@post.post_id">
+                                @{
+                                    var commentCount = post.Comments?.Count ?? 0;
+                                    if (commentCount == 1)
+                                    {
+                                        <span>1 comment</span>
+                                    }
+                                    else
+                                    {
+                                        <span>@commentCount comments</span>
+                                    }
+                                }
+                            </span>
+                        </div>
+                        <div class="post-interactions">
+                            <button class="interaction-button like-btn" data-post-id="@post.post_id" >
+                                <span class="like-count">@(post.Likes?.Count ?? 0)</span>
+                                <i class="far fa-thumbs-up"></i> <span>Helpful</span>
+                            </button>
+                            <button class="interaction-button comment-btn" data-post-id="@post.post_id">
+                                <i class="far fa-comment"></i> <span>Comment</span>
+                            </button>
+                            <button class="interaction-button">
+                                <i class="fas fa-share"></i> <span>Share</span>
+                            </button>
+                        </div>
+                    </div>
+                }
+            </div>
+
+            <!-- Right Sidebar (20%) -->
+            <div class="community-announcements">
+                <div class="announcements-header">
+                    <h3><i class="fas fa-bullhorn"></i> Announcements</h3>
+                </div>
+
+                <div class="announcement-item-for-admin important">
+                    @foreach (var item in announcementsList
+                                    .OrderByDescending(a => a.priority == "Urgent")
+                                    .ThenByDescending(a => a.priority == "High")
+                                    .ThenByDescending(a => a.start_date ?? DateTime.MinValue))
+                    {
+                        <div class="announcement-content-for-admin" onclick="showAnnouncementModal(
+                                            '@item.title', 
+                                            '@Html.Raw(item.content?.Replace("'", "\\'"))', 
+                                            '@item.start_date?.ToString("MMMM dd, yyyy")', 
+                                            '@item.end_date?.ToString("MMMM dd, yyyy")', 
+                                            '@item.priority', 
+                                            '@item.author')">
+
+                            @if (item.priority == "Urgent")
+                            {
+                                <i class="fas fa-exclamation-circle" style="color: #f02849;"></i>
+                            }
+                            else if (item.priority == "High")
+                            {
+                                <i class="fas fa-exclamation-triangle" style="color: #ffcc00;"></i>
+                            }
+                            else
+                            {
+                                <i class="fas fa-info-circle" style="color: #0066cc;"></i>
+                            }
+                            <strong>@item.title</strong>
+                            <span>@item.start_date?.ToString("MMM dd, yyyy")</span>
+                        </div>
+                    }
+                </div>
+
+                <div class="announcement-item">
+                    <i class="fas fa-trash" style="color: #45bd62;"></i>
+                    <div class="announcement-content">
+                        <strong>Trash Schedule</strong>
+                        <span>No pickup on Monday</span>
+                    </div>
+                </div>
+
+                <div class="announcements-header">
+                    <h3><i class="fas fa-calendar-alt"></i> Upcoming Events</h3>
+                </div>
+
+                <div class="event-item">
+                    <div class="event-date">
+                        <span class="day">15</span>
+                        <span class="month">JUN</span>
+                    </div>
+                    <div class="event-details">
+                        <strong>Block Party</strong>
+                        <span>Main Street, 12-5pm</span>
+                    </div>
+                </div>
+
+                <div class="event-item">
+                    <div class="event-date">
+                        <span class="day">22</span>
+                        <span class="month">JUN</span>
+                    </div>
+                    <div class="event-details">
+                        <strong>Yard Sale</strong>
+                        <span>Oak Street, 8am-2pm</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Replace the entire comment modal section with this: -->
+    <div class="community-modal" id="commentModal">
+        <div class="community-modal-dialog">
+            <div class="community-modal-content">
+                <div class="community-modal-header">
+                    <h3>Comments</h3>
+                    <button type="button" class="close-community-modal">&times;</button>
+                </div>
+                <div class="community-modal-body">
+                    <div class="comments-container" id="commentsContainer">
+                        <!-- Comments will be loaded here -->
+                    </div>
+                    <div class="add-comment">
+                        <img src="~/images/user-default-picture.jpg" alt="User">
+                        <input type="text" placeholder="Write a comment..." id="commentInput">
+                        <button class="btn-post-comment" id="postCommentBtn">Post</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Announcement Modal -->
+    <div class="announcement-modal" id="announcementModal">
+        <div class="announcement-modal-content">
+            <div class="announcement-modal-header">
+                <h2 class="announcement-modal-title" id="announcementModalTitle"></h2>
+                <button class="announcement-modal-close" id="announcementModalClose">&times;</button>
+            </div>
+            <div class="announcement-modal-body">
+                <div class="announcement-priority" id="announcementPriorityBadge"></div>
+                <div class="announcement-content" id="announcementModalContent"></div>
+                <div class="announcement-dates">
+                    <div class="announcement-date">
+                        <i class="fas fa-calendar-alt"></i>
+                        <span id="announcementModalStartDate"></span>
+                    </div>
+                    <div class="announcement-date">
+                        <i class="fas fa-calendar-times"></i>
+                        <span id="announcementModalEndDate"></span>
+                    </div>
+                </div>
+                <div class="announcement-author" id="announcementModalAuthor"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Post Modal -->
+    <div class="edit-post-modal" id="editPostModal">
+        <div class="edit-post-modal-content">
+            <div class="edit-post-modal-header">
+                <h3>Edit Post</h3>
+                <button type="button" class="close-edit-modal">&times;</button>
+            </div>
+            <div class="edit-post-modal-body">
+                <textarea id="editPostContent" class="edit-post-textarea"></textarea>
+                <div class="edit-post-actions">
+                    <button id="cancelEditPost" class="edit-post-cancel">Cancel</button>
+                    <button id="saveEditPost" class="edit-post-save">Save Changes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div class="delete-confirmation-modal" id="deleteConfirmationModal">
+        <div class="delete-confirmation-content">
+            <h3>Delete Post?</h3>
+            <p>Are you sure you want to delete this post? This action cannot be undone.</p>
+            <div class="delete-confirmation-buttons">
+                <button class="cancel-delete">Cancel</button>
+                <button class="confirm-delete">Delete</button>
+            </div>
+        </div>
+    </div>
+
+
+    <script src="~/js/community.js" asp-append-version="true"></script>
+
+community.js
+document.addEventListener('DOMContentLoaded', function () {
+    // Initialize WebSocket connection for comments
+    const protocol = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
+    const commentSocket = new WebSocket(`${protocol}${window.location.host}/ws/comments`);
+    
+    // Comment Modal Functionality
+    const commentModal = document.getElementById('commentModal');
+    const commentBtns = document.querySelectorAll('.comment-btn');
+    const closeModalBtn = document.querySelector('#commentModal .close-community-modal');
+    const commentsContainer = document.getElementById('commentsContainer');
+    const commentInput = document.getElementById('commentInput');
+    const postCommentBtn = document.querySelector('.btn-post-comment') || document.getElementById('postCommentBtn');
+    let currentPostId = null;
+
+    // Handle WebSocket messages
+    commentSocket.onmessage = function(event) {
+        const data = JSON.parse(event.data);
+        
+        if (data.type === 'new_comment') {
+            if (data.postId === currentPostId) {
+                addCommentToUI(data.comment);
+            }
+            updateCommentCount(data.postId, data.commentCount);
+        }
+    };
+
+    // Update comment count for a post
+    function updateCommentCount(postId, count) {
+        const commentCountElement = document.querySelector(`.comments-count[data-post-id="${postId}"]`);
+        if (commentCountElement) {
+            commentCountElement.innerHTML = count === 1 ? 
+                '<span>1 comment</span>' : 
+                `<span>${count} comments</span>`;
+        }
+    }
+
+    // Open comment modal
+    commentBtns.forEach(btn => {
+        btn.addEventListener('click', async function () {
+            currentPostId = parseInt(this.getAttribute('data-post-id'));
+            await loadComments(currentPostId);
+            commentModal.classList.add('show');
+            document.body.style.overflow = 'hidden';
+        });
+    });
+
+    // Close modal
+    if (closeModalBtn) {
+        closeModalBtn.addEventListener('click', function () {
+            commentModal.classList.remove('show');
+            document.body.style.overflow = '';
+        });
+    }
+
+    // Close when clicking outside modal
+    commentModal.addEventListener('click', function (e) {
+        if (e.target === commentModal) {
+            commentModal.classList.remove('show');
+            document.body.style.overflow = '';
+        }
+    });
+
+    // Load comments for a post
+    async function loadComments(postId) {
+        try {
+            // Determine if we're in staff or homeowner context
+            const isStaff = window.location.pathname.includes('Staff');
+            const endpoint = isStaff ? '/Staff/GetComments' : '/Homeowner/GetComments';
+            
+            const response = await fetch(`${endpoint}?postId=${postId}`);
+            const data = await response.json();
+            
+            commentsContainer.innerHTML = '';
+            
+            if (data.success && data.comments.length > 0) {
+                data.comments.forEach(comment => {
+                    addCommentToUI(comment);
+                });
+            } else {
+                commentsContainer.innerHTML = '<p class="no-comments">No comments yet. Be the first to comment!</p>';
+            }
+        } catch (error) {
+            console.error('Error loading comments:', error);
+            commentsContainer.innerHTML = '<p class="no-comments">Error loading comments. Please try again.</p>';
+        }
+    }
+
+    // Add a comment to the UI
+    function addCommentToUI(comment) {
+        // Remove the "no comments" message if it exists
+        const noCommentsMsg = commentsContainer.querySelector('.no-comments');
+        if (noCommentsMsg) {
+            noCommentsMsg.remove();
+        }
+
+        const commentEl = document.createElement('div');
+        commentEl.className = 'comment';
+        commentEl.dataset.commentId = comment.id;
+        commentEl.innerHTML = `
+            <img src="/images/user-default-picture.jpg" alt="${comment.author.name}">
+            <div class="comment-content">
+                <div class="comment-header">
+                    <strong>${comment.author.name}</strong>
+                    <span class="role-badge role-${comment.author.role.toLowerCase()}">${comment.author.role}</span>
+                    <span>${comment.createdDate}</span>
+                </div>
+                <p>${comment.content}</p>
+            </div>
+        `;
+        commentsContainer.appendChild(commentEl);
+        
+        // Scroll to bottom
+        commentsContainer.scrollTop = commentsContainer.scrollHeight;
+    }
+
+    // Post a new comment
+    if (postCommentBtn) {
+        postCommentBtn.addEventListener('click', async function () {
+            const commentText = commentInput.value.trim();
+            if (commentText && currentPostId) {
+                try {
+                    // Determine if we're in staff or homeowner context
+                    const isStaff = window.location.pathname.includes('Staff');
+                    const endpoint = isStaff ? '/Staff/AddComment' : '/Homeowner/AddComment';
+                    
+                    const response = await fetch(endpoint, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            PostId: currentPostId,
+                            Content: commentText
+                        })
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        commentInput.value = '';
+                    } else {
+                        alert(data.message || 'Failed to post comment');
+                    }
+                } catch (error) {
+                    console.error('Error posting comment:', error);
+                    alert('An error occurred while posting the comment');
+                }
+            }
+        });
+    }
+
+    // Like functionality
+    document.querySelectorAll('.interaction-button.like-btn').forEach(btn => {
+        btn.addEventListener('click', async function() {
+            const postId = parseInt(this.closest('.neighborhood-post').getAttribute('data-post-id'));
+            const icon = this.querySelector('i');
+            
+            try {
+                const response = await fetch('/Homeowner/ToggleLike', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        PostId: postId
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Update UI
+                    if (data.liked) {
+                        icon.classList.remove('far');
+                        icon.classList.add('fas', 'text-primary');
+                    } else {
+                        icon.classList.remove('fas', 'text-primary');
+                        icon.classList.add('far');
+                    }
+                    
+                    // Update like count
+                    const likeCountElement = this.querySelector('.like-count');
+                    if (likeCountElement) {
+                        likeCountElement.textContent = data.likeCount;
+                    }
+                }
+            } catch (error) {
+                console.error('Error toggling like:', error);
+            }
+        });
+    });
+
+    // Initialize like status for each post
+    document.querySelectorAll('.neighborhood-post').forEach(postElement => {
+        const postId = parseInt(postElement.getAttribute('data-post-id'));
+        const likeBtn = postElement.querySelector('.interaction-button.like-btn');
+        
+        if (likeBtn) {
+            fetch(`/Homeowner/GetLikeStatus?postId=${postId}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        const icon = likeBtn.querySelector('i');
+                        const likeCountElement = likeBtn.querySelector('.like-count');
+                        
+                        if (data.isLiked) {
+                            icon.classList.remove('far');
+                            icon.classList.add('fas', 'text-primary');
+                        }
+                        
+                        if (likeCountElement) {
+                            likeCountElement.textContent = data.likeCount;
+                        }
+                    }
+                })
+                .catch(error => console.error('Error getting like status:', error));
+        }
+    });
+
+    // Create Post Functionality
+    const addPhotoBtn = document.getElementById('addPhotoBtn');
+    const photoUpload = document.getElementById('photoUpload');
+    const photoPreviewContainer = document.getElementById('photoPreviewContainer');
+    const submitPostBtn = document.getElementById('submitPostBtn');
+    const postInput = document.getElementById('postInput');
+
+    // Add photo button click
+    if (addPhotoBtn) {
+        addPhotoBtn.addEventListener('click', function () {
+            photoUpload.click();
+        });
+    }
+
+    // Handle photo selection
+    if (photoUpload) {
+        photoUpload.addEventListener('change', function (e) {
+            photoPreviewContainer.innerHTML = '';
+
+            if (e.target.files && e.target.files.length > 0) {
+                Array.from(e.target.files).forEach(file => {
+                    if (file.type.match('image.*')) {
+                        const reader = new FileReader();
+                        reader.onload = function (event) {
+                            const previewItem = document.createElement('div');
+                            previewItem.className = 'photo-preview-item';
+                            previewItem.innerHTML = `
+                                <img src="${event.target.result}" alt="Preview">
+                                <button class="remove-photo">&times;</button>
+                            `;
+                            photoPreviewContainer.appendChild(previewItem);
+
+                            // Remove photo button
+                            previewItem.querySelector('.remove-photo').addEventListener('click', function () {
+                                previewItem.remove();
+                            });
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                });
+            }
+        });
+    }
+
+    // Allow pressing Enter in post input to submit (but only if Shift isn't held)
+    if (postInput) {
+        postInput.addEventListener('keypress', function (e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                if (submitPostBtn) {
+                    submitPostBtn.click();
+                }
+            }
+        });
+    }
+
+    // Post Validation
+    function validatePost() {
+        const postText = document.getElementById('postInput')?.value.trim();
+        const hasPhotos = document.getElementById('photoPreviewContainer')?.children.length > 0;
+        const errorElement = document.getElementById('postError');
+
+        if (!postText && !hasPhotos) {
+            if (!errorElement) {
+                // Create error element if it doesn't exist
+                const errorEl = document.createElement('div');
+                errorEl.id = 'postError';
+                errorEl.className = 'post-error';
+                errorEl.textContent = "Please add some text or photos to your post";
+                document.querySelector('.create-post').appendChild(errorEl);
+            } else {
+                errorElement.textContent = "Please add some text or photos to your post";
+                errorElement.style.display = 'block';
+            }
+            return false;
+        }
+
+        if (errorElement) {
+            errorElement.style.display = 'none';
+        }
+        return true;
+    }
+
+    // Modify your form submission to include validation
+    const createPostForm = document.querySelector('.create-post form');
+    if (createPostForm) {
+        createPostForm.addEventListener('submit', function (e) {
+            if (!validatePost()) {
+                e.preventDefault();
+            }
+        });
+    }
+
+    // Post Edit/Delete Functionality
+    const editPostModal = document.getElementById('editPostModal');
+    const deleteConfirmationModal = document.getElementById('deleteConfirmationModal');
+    let currentEditPostId = null;
+
+    // Edit Post
+    document.querySelectorAll('.edit-post').forEach(btn => {
+        btn.addEventListener('click', function (e) {
+            e.stopPropagation();
+            const postId = this.getAttribute('data-post-id');
+            const postElement = document.querySelector(`.neighborhood-post[data-post-id="${postId}"]`);
+            const postContent = postElement.querySelector('.post-content').textContent;
+
+            currentEditPostId = postId;
+            document.getElementById('editPostContent').value = postContent;
+            editPostModal.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        });
+    });
+
+    // Delete Post
+    document.querySelectorAll('.delete-post').forEach(btn => {
+        btn.addEventListener('click', function (e) {
+            e.stopPropagation();
+            currentEditPostId = this.getAttribute('data-post-id');
+            deleteConfirmationModal.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        });
+    });
+
+    // Save Edited Post
+    document.getElementById('saveEditPost')?.addEventListener('click', function () {
+        const newContent = document.getElementById('editPostContent').value.trim();
+
+        if (newContent) {
+            // Determine if we're in staff or homeowner context
+            const isStaff = window.location.pathname.includes('Staff');
+            const endpoint = isStaff ? '/Staff/UpdatePost' : '/Homeowner/UpdatePost';
+            
+            fetch(endpoint, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    postId: parseInt(currentEditPostId),
+                    content: newContent
+                })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        const postElement = document.querySelector(`.neighborhood-post[data-post-id="${currentEditPostId}"]`);
+                        postElement.querySelector('.post-content').textContent = newContent;
+
+                        // Update the "updated date" if available
+                        if (data.updatedDate) {
+                            const metaElement = postElement.querySelector('.post-meta span');
+                            if (metaElement) {
+                                const originalText = metaElement.textContent;
+                                const updatedText = originalText.replace(/·.*/, `· ${data.updatedDate}`);
+                                metaElement.textContent = updatedText;
+                            }
+                        }
+
+                        closeEditModal();
+                    } else {
+                        alert(data.message || 'Failed to update post');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred while updating the post');
+                });
+        }
+    });
+
+    // Confirm Delete
+    document.querySelector('.confirm-delete')?.addEventListener('click', function () {
+        // Determine if we're in staff or homeowner context
+        const isStaff = window.location.pathname.includes('Staff');
+        const endpoint = isStaff ? '/Staff/DeletePost' : '/Homeowner/DeletePost';
+        
+        fetch(endpoint, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                postId: parseInt(currentEditPostId)
+            })
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    document.querySelector(`.neighborhood-post[data-post-id="${currentEditPostId}"]`).remove();
+                    closeDeleteModal();
+                } else {
+                    alert(data.message || 'Failed to delete post');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while deleting the post');
+            });
+    });
+
+    // Close modals
+    function closeEditModal() {
+        editPostModal.style.display = 'none';
+        document.body.style.overflow = '';
+    }
+
+    function closeDeleteModal() {
+        deleteConfirmationModal.style.display = 'none';
+        document.body.style.overflow = '';
+    }
+
+    document.querySelector('.close-edit-modal')?.addEventListener('click', closeEditModal);
+    document.querySelector('.cancel-delete')?.addEventListener('click', closeDeleteModal);
+    document.getElementById('cancelEditPost')?.addEventListener('click', closeEditModal);
+
+    // Close when clicking outside modals
+    if (editPostModal) {
+        editPostModal.addEventListener('click', function (e) {
+            if (e.target === editPostModal) {
+                closeEditModal();
+            }
+        });
+    }
+
+    if (deleteConfirmationModal) {
+        deleteConfirmationModal.addEventListener('click', function (e) {
+            if (e.target === deleteConfirmationModal) {
+                closeDeleteModal();
+            }
+        });
+    }
+
+    // Post options dropdown
+    document.querySelectorAll('.post-options').forEach(btn => {
+        btn.addEventListener('click', function (e) {
+            e.stopPropagation();
+            const menu = this.nextElementSibling;
+            document.querySelectorAll('.post-options-menu').forEach(m => {
+                if (m !== menu) m.style.display = 'none';
+            });
+            menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+        });
+    });
+
+    // Close dropdowns when clicking elsewhere
+    document.addEventListener('click', function () {
+        document.querySelectorAll('.post-options-menu').forEach(menu => {
+            menu.style.display = 'none';
+        });
+    });
+});
+
+// Announcement Modal Functions
+function showAnnouncementModal(title, content, startDate, endDate, priority, author) {
+    const modal = document.getElementById('announcementModal');
+    const titleElement = document.getElementById('announcementModalTitle');
+    const contentElement = document.getElementById('announcementModalContent');
+    const startDateElement = document.getElementById('announcementModalStartDate');
+    const endDateElement = document.getElementById('announcementModalEndDate');
+    const priorityBadge = document.getElementById('announcementPriorityBadge');
+    const authorElement = document.getElementById('announcementModalAuthor');
+
+    // Set the content
+    titleElement.textContent = title;
+    contentElement.innerHTML = content.replace(/\n/g, '<br>');
+    startDateElement.textContent = startDate || 'Not specified';
+    endDateElement.textContent = endDate || 'No end date';
+    authorElement.textContent = `Posted by: ${author || 'Admin'}`;
+
+    // Set priority badge
+    priorityBadge.textContent = priority || 'Normal';
+    priorityBadge.className = 'announcement-priority';
+    if (priority) {
+        priorityBadge.classList.add(priority.toLowerCase());
+    } else {
+        priorityBadge.classList.add('normal');
+    }
+
+    // Show modal
+    modal.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+}
+
+function hideAnnouncementModal() {
+    document.getElementById('announcementModal').style.display = 'none';
+    document.body.style.overflow = '';
+}
+
+// Close modal when clicking close button
+document.getElementById('announcementModalClose')?.addEventListener('click', hideAnnouncementModal);
+
+// Close modal when clicking outside
+document.getElementById('announcementModal')?.addEventListener('click', function (e) {
+    if (e.target === this) {
+        hideAnnouncementModal();
+    }
+});
+
+Program.cs
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using HomeOwner.Data;
+using System.Net.WebSockets;
+using System.Text;
+using Newtonsoft.Json;
+using HomeOwner.Models;
+
+var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll", policy =>
+    {
+        policy.WithOrigins("http://localhost:5180", "https://localhost:5180")
+              .AllowAnyMethod()
+              .AllowAnyHeader()
+              .AllowCredentials();
+    });
+});
+
+var connectionString = builder.Configuration.GetConnectionString("HomeOwnerContext")
+    ?? throw new InvalidOperationException("Connection string 'HomeOwnerContext' not found.");
+
+builder.Services.AddDbContext<HomeOwnerContext>(options =>
+    options.UseSqlServer(connectionString));
+
+builder.Services.AddDistributedMemoryCache();
+builder.Services.AddSession(options =>
+{
+    options.IdleTimeout = TimeSpan.FromMinutes(30);
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
+});
+
+builder.Services.AddControllersWithViews();
+builder.Services.AddSingleton<WebSocketManager>();
+builder.Services.AddSingleton<CommentWebSocketManager>();
+
+var app = builder.Build();
+
+app.Use(async (context, next) =>
+{
+    context.Response.Headers.Add("X-Content-Type-Options", "nosniff");
+    context.Response.Headers.Add("X-Frame-Options", "DENY");
+    context.Response.Headers.Add("X-XSS-Protection", "1; mode=block");
+    context.Response.Headers.Add("Referrer-Policy", "no-referrer");
+    context.Response.Headers.Add("Cache-Control", "no-cache, no-store, must-revalidate");
+    context.Response.Headers.Add("Pragma", "no-cache");
+    context.Response.Headers.Add("Expires", "0");
+
+    await next();
+});
+
+if (!app.Environment.IsDevelopment())
+{
+    app.UseExceptionHandler("/Home/Error");
+    app.UseHsts();
+}
+
+app.UseHttpsRedirection();
+app.UseStaticFiles();
+app.UseRouting();
+app.UseCors("AllowAll");
+app.UseSession();
+app.UseAuthorization();
+app.UseWebSockets();
+
+app.Use(async (context, next) =>
+{
+    if (context.Request.Path == "/ws/admin" || context.Request.Path == "/ws/dashboard" || context.Request.Path == "/ws/comments")
+    {
+        if (context.WebSockets.IsWebSocketRequest)
+        {
+            WebSocket webSocket = await context.WebSockets.AcceptWebSocketAsync();
+
+            if (context.Request.Path == "/ws/admin")
+            {
+                var webSocketManager = context.RequestServices.GetRequiredService<WebSocketManager>();
+                await webSocketManager.HandleAdminConnection(webSocket);
+            }
+            else if (context.Request.Path == "/ws/dashboard")
+            {
+                var webSocketManager = context.RequestServices.GetRequiredService<WebSocketManager>();
+                await webSocketManager.HandleDashboardConnection(webSocket);
+            }
+            else if (context.Request.Path == "/ws/comments")
+            {
+                var commentWebSocketManager = context.RequestServices.GetRequiredService<CommentWebSocketManager>();
+                await commentWebSocketManager.HandleCommentConnection(webSocket);
+            }
+        }
+        else
+        {
+            context.Response.StatusCode = 400;
+        }
+    }
+    else
+    {
+        await next();
+    }
+});
+
+app.MapControllerRoute(
+    name: "default",
+    pattern: "{controller=Home}/{action=Index}/{id?}");
+
+app.Run();
+
+public class CommentWebSocketManager
+{
+    private readonly List<WebSocket> _commentSockets = new();
+    private readonly ILogger<CommentWebSocketManager> _logger;
+
+    public CommentWebSocketManager(ILogger<CommentWebSocketManager> logger)
+    {
+        _logger = logger;
+    }
+
+    public async Task HandleCommentConnection(WebSocket webSocket)
+    {
+        _commentSockets.Add(webSocket);
+        await HandleConnection(webSocket);
+    }
+
+    private async Task HandleConnection(WebSocket webSocket)
+    {
+        var buffer = new byte[1024 * 4];
+        try
+        {
+            WebSocketReceiveResult result = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
+
+            while (!result.CloseStatus.HasValue)
+            {
+                result = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
+            }
+
+            await webSocket.CloseAsync(result.CloseStatus.Value, result.CloseStatusDescription, CancellationToken.None);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError($"Comment WebSocket error: {ex.Message}");
+        }
+        finally
+        {
+            _commentSockets.Remove(webSocket);
+            _logger.LogInformation("Comment WebSocket connection closed");
+        }
+    }
+
+    public async Task BroadcastComment(int postId, Comment comment, User author, int commentCount)
+    {
+        var message = JsonConvert.SerializeObject(new
+        {
+            type = "new_comment",
+            postId,
+            comment = new
+            {
+                id = comment.comment_id,
+                content = comment.content,
+                createdDate = comment.created_date?.ToString("MMMM dd, yyyy hh:mm tt"),
+                author = new
+                {
+                    id = author.user_id,
+                    name = $"{author.firstname} {author.lastname}",
+                    role = author.role
+                }
+            },
+            commentCount
+        });
+
+        var buffer = Encoding.UTF8.GetBytes(message);
+        var tasks = new List<Task>();
+
+        foreach (var socket in _commentSockets.Where(s => s.State == WebSocketState.Open))
+        {
+            tasks.Add(socket.SendAsync(
+                new ArraySegment<byte>(buffer),
+                WebSocketMessageType.Text,
+                true,
+                CancellationToken.None));
+        }
+
+        await Task.WhenAll(tasks);
+    }
+}
+
+public class WebSocketManager
+{
+    private readonly List<WebSocket> _adminSockets = new();
+    private readonly List<WebSocket> _dashboardSockets = new();
+    private readonly ILogger<WebSocketManager> _logger;
+    private readonly Dictionary<string, string> _facilityStatuses = new();
+
+    public WebSocketManager(ILogger<WebSocketManager> logger)
+    {
+        _logger = logger;
+        _facilityStatuses.Add("function-hall", "available");
+        _facilityStatuses.Add("sports-court", "available");
+        _facilityStatuses.Add("swimming-pool", "available");
+        _facilityStatuses.Add("fitness-gym", "available");
+    }
+
+    public async Task HandleAdminConnection(WebSocket webSocket)
+    {
+        _adminSockets.Add(webSocket);
+        await SendCurrentStatuses(webSocket);
+        await HandleConnection(webSocket, _adminSockets, "Admin");
+    }
+
+    public async Task HandleDashboardConnection(WebSocket webSocket)
+    {
+        _dashboardSockets.Add(webSocket);
+        await SendCurrentStatuses(webSocket);
+        await HandleConnection(webSocket, _dashboardSockets, "Dashboard");
+    }
+
+    private async Task SendCurrentStatuses(WebSocket webSocket)
+    {
+        var statuses = _facilityStatuses.Select(kv => new
+        {
+            facility = kv.Key,
+            status = kv.Value
+        }).ToList();
+
+        var message = JsonConvert.SerializeObject(new
+        {
+            type = "current_statuses",
+            statuses = statuses
+        });
+
+        var buffer = Encoding.UTF8.GetBytes(message);
+        await webSocket.SendAsync(
+            new ArraySegment<byte>(buffer),
+            WebSocketMessageType.Text,
+            true,
+            CancellationToken.None);
+    }
+
+    private async Task HandleConnection(WebSocket webSocket, List<WebSocket> sockets, string connectionType)
+    {
+        var buffer = new byte[1024 * 4];
+        try
+        {
+            WebSocketReceiveResult result = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
+
+            while (!result.CloseStatus.HasValue)
+            {
+                var message = Encoding.UTF8.GetString(buffer, 0, result.Count);
+                _logger.LogInformation($"Received message from {connectionType}: {message}");
+
+                try
+                {
+                    var data = JsonConvert.DeserializeObject<dynamic>(message);
+
+                    if (data?.type == "facility_status_update")
+                    {
+                        string facility = data.facility;
+                        string status = data.status;
+
+                        if (_facilityStatuses.ContainsKey(facility))
+                        {
+                            _facilityStatuses[facility] = status;
+                            await BroadcastToAll(message);
+                        }
+                    }
+                    else if (data?.type == "request_current_statuses")
+                    {
+                        await SendCurrentStatuses(webSocket);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError($"Error processing message: {ex.Message}");
+                }
+
+                result = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
+            }
+
+            await webSocket.CloseAsync(result.CloseStatus.Value, result.CloseStatusDescription, CancellationToken.None);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError($"WebSocket error ({connectionType}): {ex.Message}");
+        }
+        finally
+        {
+            sockets.Remove(webSocket);
+            _logger.LogInformation($"{connectionType} WebSocket connection closed");
+        }
+    }
+    public async Task BroadcastLike(int postId, int likeCount, int userId, bool isLiked)
+{
+    var message = JsonConvert.SerializeObject(new
+    {
+        type = "like_update",
+        postId,
+        likeCount,
+        userId,
+        isLiked
+    });
+
+    var buffer = Encoding.UTF8.GetBytes(message);
+    var tasks = new List<Task>();
+
+    foreach (var socket in _commentSockets.Where(s => s.State == WebSocketState.Open))
+    {
+        tasks.Add(socket.SendAsync(
+            new ArraySegment<byte>(buffer),
+            WebSocketMessageType.Text,
+            true,
+            CancellationToken.None));
+    }
+
+    await Task.WhenAll(tasks);
+}
+
+    private async Task BroadcastToAll(string message)
+    {
+        var allSockets = new List<WebSocket>();
+        allSockets.AddRange(_adminSockets);
+        allSockets.AddRange(_dashboardSockets);
+
+        var buffer = Encoding.UTF8.GetBytes(message);
+        var tasks = new List<Task>();
+
+        foreach (var socket in allSockets.Where(s => s.State == WebSocketState.Open))
+        {
+            tasks.Add(socket.SendAsync(
+                new ArraySegment<byte>(buffer),
+                WebSocketMessageType.Text,
+                true,
+                CancellationToken.None));
+        }
+
+        await Task.WhenAll(tasks);
+    }
+}

@@ -16,15 +16,18 @@
             <div class="sidebar-section">
                 <div class="sidebar-item">
                     <i class="fas fa-home"></i>
-                    <span><a asp-controller="Homeowner" asp-action="Dashboard" style="text-decoration: none; color: #000;">Home</a></span>
+                    <span><a asp-controller="Homeowner" asp-action="Dashboard"
+                            style="text-decoration: none; color: #000;">Home</a></span>
                 </div>
                 <div class="sidebar-item">
                     <i class="fas fa-comment-alt"></i>
-                    <span><a asp-controller="Homeowner" asp-action="Feedback" style="text-decoration: none; color: #000;">Feedback</a></span>
+                    <span><a asp-controller="Homeowner" asp-action="Feedback"
+                            style="text-decoration: none; color: #000;">Feedback</a></span>
                 </div>
                 <div class="sidebar-item">
                     <i class="far fa-calendar-alt"></i>
-                    <span><a asp-controller="Homeowner" asp-action="Events" style="text-decoration: none; color: #000;">Events</a></span>
+                    <span><a asp-controller="Homeowner" asp-action="Events"
+                            style="text-decoration: none; color: #000;">Events</a></span>
                 </div>
             </div>
         </div>
@@ -33,16 +36,19 @@
         <div class="community-newsfeed">
             <!-- Create Post Section -->
             <div class="create-post">
-                <form asp-action="AddPostUser" asp-controller="Homeowner" method="post" enctype="multipart/form-data" onsubmit="return validatePost()">
+                <form asp-action="AddPostUser" asp-controller="Homeowner" method="post" enctype="multipart/form-data"
+                    onsubmit="return validatePost()">
                     <div class="create-post-header">
                         <img src="~/images/user-default-picture.jpg" alt="Profile">
-                        <input asp-for="newPost.content" type="text" placeholder="Share with neighbors..." class="post-input" id="postInput">
+                        <input asp-for="newPost.content" type="text" placeholder="Share with neighbors..."
+                            class="post-input" id="postInput">
                     </div>
                     <div class="post-actions">
                         <div class="post-action" id="addPhotoBtn">
                             <i class="fas fa-image" style="color: #45bd62;"></i> Photo
                         </div>
-                        <input asp-for="newPost.ImageFile" type="file" id="photoUpload" accept="image/*" multiple style="display: none;">
+                        <input asp-for="newPost.ImageFile" type="file" id="photoUpload" accept="image/*" multiple
+                            style="display: none;">
                         <button type="submit" class="post-submit" id="submitPostBtn">Post</button>
                     </div>
                     <div class="photo-preview-container" id="photoPreviewContainer"></div>
@@ -64,20 +70,20 @@
                                 <span>@post.created_date?.ToString("MMMM dd, yyyy") · @post.Author?.address</span>
                             </div>
                         </div>
-    
-                   @if (currentUser != null && post.Author?.user_id == currentUser.user_id)
-                    {
-                        <div class="post-options-container">
-                            <button class="post-options">
-                                <i class="fas fa-ellipsis-h"></i>
-                            </button>
-                            <div class="post-options-menu">
-                                <button class="edit-post" data-post-id="@post.post_id">Edit</button>
-                                <button class="delete-post" data-post-id="@post.post_id">Delete</button>
+
+                        @if (currentUser != null && post.Author?.user_id == currentUser.user_id)
+                        {
+                            <div class="post-options-container">
+                                <button class="post-options">
+                                    <i class="fas fa-ellipsis-h"></i>
+                                </button>
+                                <div class="post-options-menu">
+                                    <button class="edit-post" data-post-id="@post.post_id">Edit</button>
+                                    <button class="delete-post" data-post-id="@post.post_id">Delete</button>
+                                </div>
                             </div>
-                        </div>
-                    }
-                        
+                        }
+
                     </div>
 
                     <div class="post-content">
@@ -93,8 +99,18 @@
                         <span class="reactions">
                             <i class="fas fa-thumbs-up"></i> 12
                         </span>
-                        <span class="comments">
-                            5 comments
+                        <span class="comments-count" data-post-id="@post.post_id">
+                            @{
+                                var commentCount = post.Comments?.Count ?? 0;
+                                if (commentCount == 1)
+                                {
+                                    <span>1 comment</span>
+                                }
+                                else
+                                {
+                                    <span>@commentCount comments</span>
+                                }
+                            }
                         </span>
                     </div>
                     <div class="post-interactions">
@@ -125,12 +141,12 @@
                                 .ThenByDescending(a => a.start_date ?? DateTime.MinValue))
                 {
                     <div class="announcement-content-for-admin" onclick="showAnnouncementModal(
-                                    '@item.title', 
-                                    '@Html.Raw(item.content?.Replace("'", "\\'"))', 
-                                    '@item.start_date?.ToString("MMMM dd, yyyy")', 
-                                    '@item.end_date?.ToString("MMMM dd, yyyy")', 
-                                    '@item.priority', 
-                                    '@item.author')">
+                                        '@item.title', 
+                                        '@Html.Raw(item.content?.Replace("'", "\\'"))', 
+                                        '@item.start_date?.ToString("MMMM dd, yyyy")', 
+                                        '@item.end_date?.ToString("MMMM dd, yyyy")', 
+                                        '@item.priority', 
+                                        '@item.author')">
 
                         @if (item.priority == "Urgent")
                         {
@@ -187,7 +203,7 @@
     </div>
 </div>
 
-<!-- Comment Modal -->
+<!-- Replace the entire comment modal section with this: -->
 <div class="community-modal" id="commentModal">
     <div class="community-modal-dialog">
         <div class="community-modal-content">
@@ -202,7 +218,7 @@
                 <div class="add-comment">
                     <img src="~/images/user-default-picture.jpg" alt="User">
                     <input type="text" placeholder="Write a comment..." id="commentInput">
-                    <button class="btn-post-comment">Post</button>
+                    <button class="btn-post-comment" id="postCommentBtn">Post</button>
                 </div>
             </div>
         </div>
@@ -262,5 +278,4 @@
         </div>
     </div>
 </div>
-
 <script src="~/js/community.js" asp-append-version="true"></script>

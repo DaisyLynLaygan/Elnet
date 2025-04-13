@@ -52,7 +52,7 @@
                 </form>
             </div>
 
-            <!-- Neighborhood Posts -->
+              <!-- Neighborhood Posts -->
             @foreach (var post in postsList.OrderByDescending(p => p.created_date ?? DateTime.MinValue))
             {
                 <div class="neighborhood-post" data-post-id="@post.post_id">
@@ -67,20 +67,20 @@
                                 <span>@post.created_date?.ToString("MMMM dd, yyyy") · @post.Author?.address</span>
                             </div>
                         </div>
-    
-                   @if (currentUser != null && post.Author?.user_id == currentUser.user_id)
-                    {
-                        <div class="post-options-container">
-                            <button class="post-options">
-                                <i class="fas fa-ellipsis-h"></i>
-                            </button>
-                            <div class="post-options-menu">
-                                <button class="edit-post" data-post-id="@post.post_id">Edit</button>
-                                <button class="delete-post" data-post-id="@post.post_id">Delete</button>
+
+                        @if (currentUser != null && post.Author?.user_id == currentUser.user_id)
+                        {
+                            <div class="post-options-container">
+                                <button class="post-options">
+                                    <i class="fas fa-ellipsis-h"></i>
+                                </button>
+                                <div class="post-options-menu">
+                                    <button class="edit-post" data-post-id="@post.post_id">Edit</button>
+                                    <button class="delete-post" data-post-id="@post.post_id">Delete</button>
+                                </div>
                             </div>
-                        </div>
-                    }
-                        
+                        }
+
                     </div>
 
                     <div class="post-content">
@@ -96,8 +96,18 @@
                         <span class="reactions">
                             <i class="fas fa-thumbs-up"></i> 12
                         </span>
-                        <span class="comments">
-                            5 comments
+                        <span class="comments-count" data-post-id="@post.post_id">
+                            @{
+                                var commentCount = post.Comments?.Count ?? 0;
+                                if (commentCount == 1)
+                                {
+                                    <span>1 comment</span>
+                                }
+                                else
+                                {
+                                    <span>@commentCount comments</span>
+                                }
+                            }
                         </span>
                     </div>
                     <div class="post-interactions">
@@ -113,43 +123,6 @@
                     </div>
                 </div>
             }
-
-            <div class="neighborhood-post">
-                <div class="post-header">
-                    <img src="~/images/user-default-picture.jpg" alt="User">
-                    <div class="post-user-info">
-                        <strong>Mike Thompson</strong>
-                        <div class="post-meta">
-                            <span>2 days ago · Maple Ave</span>
-                        </div>
-                    </div>
-                    <button class="post-options">
-                        <i class="fas fa-ellipsis-h"></i>
-                    </button>
-                </div>
-                <div class="post-content">
-                    Neighborhood watch meeting this Thursday at 7pm in the community center. All are welcome!
-                </div>
-                <div class="post-stats">
-                    <span class="reactions">
-                        <i class="fas fa-thumbs-up"></i> 24
-                    </span>
-                    <span class="comments" data-post-id="2">
-                        8 comments
-                    </span>
-                </div>
-                <div class="post-interactions">
-                    <button class="interaction-button">
-                        <i class="far fa-thumbs-up"></i> <span>Helpful</span>
-                    </button>
-                    <button class="interaction-button comment-btn" data-post-id="2">
-                        <i class="far fa-comment"></i> <span>Comment</span>
-                    </button>
-                    <button class="interaction-button">
-                        <i class="fas fa-share"></i> <span>Share</span>
-                    </button>
-                </div>
-            </div>
         </div>
 
         <!-- Right Sidebar (20%) -->
@@ -157,15 +130,39 @@
             <div class="announcements-header">
                 <h3><i class="fas fa-bullhorn"></i> Announcements</h3>
             </div>
-            
-            <div class="announcement-item important">
-                <i class="fas fa-exclamation-circle" style="color: #f02849;"></i>
-                <div class="announcement-content">
-                    <strong>Water Maintenance</strong>
-                    <span>June 15, 8am-4pm</span>
-                </div>
+
+            <div class="announcement-item-for-admin important">
+                @foreach (var item in announcementsList
+                                .OrderByDescending(a => a.priority == "Urgent")
+                                .ThenByDescending(a => a.priority == "High")
+                                .ThenByDescending(a => a.start_date ?? DateTime.MinValue))
+                {
+                    <div class="announcement-content-for-admin" onclick="showAnnouncementModal(
+                                        '@item.title', 
+                                        '@Html.Raw(item.content?.Replace("'", "\\'"))', 
+                                        '@item.start_date?.ToString("MMMM dd, yyyy")', 
+                                        '@item.end_date?.ToString("MMMM dd, yyyy")', 
+                                        '@item.priority', 
+                                        '@item.author')">
+
+                        @if (item.priority == "Urgent")
+                        {
+                            <i class="fas fa-exclamation-circle" style="color: #f02849;"></i>
+                        }
+                        else if (item.priority == "High")
+                        {
+                            <i class="fas fa-exclamation-triangle" style="color: #ffcc00;"></i>
+                        }
+                        else
+                        {
+                            <i class="fas fa-info-circle" style="color: #0066cc;"></i>
+                        }
+                        <strong>@item.title</strong>
+                        <span>@item.start_date?.ToString("MMM dd, yyyy")</span>
+                    </div>
+                }
             </div>
-            
+
             <div class="announcement-item">
                 <i class="fas fa-trash" style="color: #45bd62;"></i>
                 <div class="announcement-content">
@@ -177,7 +174,7 @@
             <div class="announcements-header">
                 <h3><i class="fas fa-calendar-alt"></i> Upcoming Events</h3>
             </div>
-            
+
             <div class="event-item">
                 <div class="event-date">
                     <span class="day">15</span>
@@ -188,7 +185,7 @@
                     <span>Main Street, 12-5pm</span>
                 </div>
             </div>
-            
+
             <div class="event-item">
                 <div class="event-date">
                     <span class="day">22</span>
@@ -199,6 +196,32 @@
                     <span>Oak Street, 8am-2pm</span>
                 </div>
             </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- Announcement Modal -->
+<div class="announcement-modal" id="announcementModal">
+    <div class="announcement-modal-content">
+        <div class="announcement-modal-header">
+            <h2 class="announcement-modal-title" id="announcementModalTitle"></h2>
+            <button class="announcement-modal-close" id="announcementModalClose">&times;</button>
+        </div>
+        <div class="announcement-modal-body">
+            <div class="announcement-priority" id="announcementPriorityBadge"></div>
+            <div class="announcement-content" id="announcementModalContent"></div>
+            <div class="announcement-dates">
+                <div class="announcement-date">
+                    <i class="fas fa-calendar-alt"></i>
+                    <span id="announcementModalStartDate"></span>
+                </div>
+                <div class="announcement-date">
+                    <i class="fas fa-calendar-times"></i>
+                    <span id="announcementModalEndDate"></span>
+                </div>
+            </div>
+            <div class="announcement-author" id="announcementModalAuthor"></div>
         </div>
     </div>
 </div>
@@ -225,18 +248,16 @@
     </div>
 </div>
 
-@functions {
-    private string GetRandomPropertyImage()
-    {
-        var random = new Random();
-        var images = new List<string> { 
-            "/images/rental1.png", 
-            "/images/rental2.png",
-            "/images/rental3.png",
-            "/images/rental4.png"
-        };
-        return images[random.Next(images.Count)];
-    }
-}
+<!-- Delete Confirmation Modal -->
+<div class="delete-confirmation-modal" id="deleteConfirmationModal">
+    <div class="delete-confirmation-content">
+        <h3>Delete Post?</h3>
+        <p>Are you sure you want to delete this post? This action cannot be undone.</p>
+        <div class="delete-confirmation-buttons">
+            <button class="cancel-delete">Cancel</button>
+            <button class="confirm-delete">Delete</button>
+        </div>
+    </div>
+</div>
 
 <script src="~/js/community.js" asp-append-version="true"></script>
