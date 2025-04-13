@@ -312,9 +312,7 @@ public class CommentModel
         public IActionResult Payment()
         {
             ViewContents();
-             var bookings = _context.MaintenanceRequest
-        
-        .ToList();
+             var bookings = _context.MaintenanceRequest.Where(u => u.user_id == CurrentUser.user_id && u.status == "Pending").ToList();
             ViewBag.MaintenanceBookings = bookings;
         return View();
             

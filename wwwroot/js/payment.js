@@ -69,7 +69,7 @@ document.addEventListener("DOMContentLoaded", function () {
         document.getElementById("payment-amount-summary").textContent =
           "$" + document.getElementById("payment-amount").value;
       } else {
-        // Booking payment
+       
         const bookingCard = button.closest(".booking-card");
         const bookingType = button
           .closest(".bookings-container")
@@ -111,7 +111,7 @@ document.addEventListener("DOMContentLoaded", function () {
     alert("Payment processed successfully!");
     paymentModal.style.display = "none";
 
-    // In a real app, you would update the booking status here
+   
   });
 });
 
