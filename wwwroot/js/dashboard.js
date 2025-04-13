@@ -384,7 +384,8 @@ function updateBookingSummary() {
   const notes = document.getElementById("service-notes").value;
 
   document.getElementById("summary-service").textContent = serviceName;
-  document.getElementById("summary-date").textContent = date || "-";
+  document.getElementById("summary-date").textContent =
+    StringHelpers.formatDateOnly(date) || "-";
   document.getElementById("summary-time").textContent = time || "-";
   document.getElementById("summary-frequency").textContent =
     frequency === "once"
@@ -433,6 +434,7 @@ function updateBookingSummary() {
     "facility-summary-total"
   ).textContent = `$${totalFacility.toFixed(2)}`;
 }
+
 function confirmMaintenanceBooking() {
   const serviceName = document.getElementById(
     "service-name-display"
@@ -448,7 +450,7 @@ function confirmMaintenanceBooking() {
     title: "Confirm Booking",
     html: `You're about to book:<br><br>
                <b>${serviceName}</b><br>
-               Date: ${date}<br>
+               Date: ${StringHelpers.formatDateOnly(date)}<br>
                Time: ${time}<br>
                Frequency: ${frequency}<br>
                Total: ${price}`,
