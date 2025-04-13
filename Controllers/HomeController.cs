@@ -157,7 +157,7 @@ public class HomeController : Controller
             HttpContext.Session.Clear();
 
             // Redirect to the Index page
-            return RedirectToAction("Index");
+            return RedirectToAction("Login", "Home");
         }
 }
 

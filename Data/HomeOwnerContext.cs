@@ -40,6 +40,17 @@ namespace HomeOwner.Data
                 .WithMany(u => u.Reports)
                 .HasForeignKey(r => r.user_id)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<ServiceRequest>()
+          .HasDiscriminator<string>("RequestType")
+          .HasValue<MaintenanceRequest>("Maintenance")
+          .HasValue<FacilityRequest>("Facility");
+
+            // Configure StaffBooking relationship
+            modelBuilder.Entity<StaffBooking>()
+                .HasOne(s => s.ServiceRequest)
+                .WithOne(sr => sr.StaffBooking)
+                .HasForeignKey<StaffBooking>(s => s.request_id);
         }
 
         public DbSet<HomeOwner.Models.User> User { get; set; } = default!;
@@ -47,5 +58,9 @@ namespace HomeOwner.Data
         public DbSet<HomeOwner.Models.Post> Post { get; set; } = default!;
         public DbSet<HomeOwner.Models.Comment> Comment { get; set; } = default!;
         public DbSet<HomeOwner.Models.Report> Report { get; set; } = default!;
+        public DbSet<HomeOwner.Models.ServiceRequest> ServiceRequest { get; set; } = default!;
+        public DbSet<HomeOwner.Models.MaintenanceRequest> MaintenanceRequest { get; set; } = default!;
+        public DbSet<HomeOwner.Models.FacilityRequest> FacilityRequest { get; set; } = default!;
+        public DbSet<HomeOwner.Models.StaffBooking> StaffBooking { get; set; } = default!;
     }
 }

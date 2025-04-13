@@ -52,7 +52,7 @@
                     <td><span class="badge badge-@issue.report_type">@StringHelpers.FirstLetterToUpper(issue.report_type)</span></td>
                     <td>@StringHelpers.ToHumanReadable(issue.report_facility)</td>
                     <td>@issue.Author?.firstname @issue.Author?.lastname</td>
-                    <td>@(issue.created_date?.ToString("MMM dd, yyyy HH:mm") ?? "Not specified")</td>
+                    <td>@StringHelpers.FormatDate(issue.created_date)</td>
                     <td><span class="severity-@issue.report_severity">@issue.report_severity</span></td>
                     <td><span class="status-pending">Pending</span></td>
                     <td>
