@@ -1,4 +1,6 @@
-﻿namespace HomeOwner.Models
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace HomeOwner.Models
 {
     public class ViewModel
     {
@@ -20,7 +22,28 @@
         public Comment newComment { get; set; }
 
 
+        public class ServiceRequestViewModel
+        {
+            [Required]
+            public string ServiceType { get; set; } = string.Empty;
 
+            [Required]
+            public string ServiceIcon { get; set; } = string.Empty;
 
+            [Required]
+            public decimal Price { get; set; }
+
+            [Required]
+            public string Frequency { get; set; } = string.Empty;
+
+            [Required]
+            public DateTime ScheduledDate { get; set; }
+
+            [Required]
+            public string ScheduledTime { get; set; } = string.Empty;
+
+            [Required]
+            public string Notes { get; set; } = string.Empty;
+        }
     }
 }

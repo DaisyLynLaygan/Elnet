@@ -330,5 +330,11 @@ public class CommentModel
             ViewContents();
             return View();
         }
+        
+        public IActionResult Notification()
+        {
+            ViewContents();
+            return View();
+        }
     }
 }

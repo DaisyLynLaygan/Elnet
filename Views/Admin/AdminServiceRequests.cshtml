@@ -6,6 +6,7 @@
 
 <link rel="stylesheet" href="~/css/admin/admin-service-requests.css" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
 
 <div class="service-requests-admin-container">
     <div class="service-requests-header">
@@ -17,30 +18,30 @@
     <div class="stats-grid">
         <div class="stat-card">
             <span class="stat-label">Total Requests</span>
-            <span class="stat-value">142</span>
-            <span class="stat-change positive">
-                <i class="fas fa-arrow-up"></i> 8% from last week
+            <span class="stat-value" id="totalRequests">0</span>
+            <span class="stat-change" id="totalRequestsChange">
+                <i class="fas fa-arrow-up"></i> Loading...
             </span>
         </div>
         <div class="stat-card">
             <span class="stat-label">Pending Approval</span>
-            <span class="stat-value">24</span>
-            <span class="stat-change negative">
-                <i class="fas fa-arrow-up"></i> 3 from yesterday
+            <span class="stat-value" id="pendingRequests">0</span>
+            <span class="stat-change" id="pendingRequestsChange">
+                <i class="fas fa-arrow-up"></i> Loading...
             </span>
         </div>
         <div class="stat-card">
             <span class="stat-label">Awaiting Payment</span>
-            <span class="stat-value">18</span>
-            <span class="stat-change positive">
-                <i class="fas fa-arrow-down"></i> 5 from last week
+            <span class="stat-value" id="unpaidRequests">0</span>
+            <span class="stat-change" id="unpaidRequestsChange">
+                <i class="fas fa-arrow-down"></i> Loading...
             </span>
         </div>
         <div class="stat-card">
             <span class="stat-label">Completed</span>
-            <span class="stat-value">87</span>
-            <span class="stat-change positive">
-                <i class="fas fa-arrow-up"></i> 12 from last week
+            <span class="stat-value" id="completedRequests">0</span>
+            <span class="stat-change" id="completedRequestsChange">
+                <i class="fas fa-arrow-up"></i> Loading...
             </span>
         </div>
     </div>
@@ -52,11 +53,10 @@
                 <label for="statusFilter">Status</label>
                 <select id="statusFilter" class="form-select">
                     <option value="all">All Statuses</option>
-                    <option value="pending">Pending Approval</option>
-                    <option value="approved">Approved</option>
-                    <option value="payment-pending">Awaiting Payment</option>
-                    <option value="rejected">Rejected</option>
-                    <option value="completed">Completed</option>
+                    <option value="Pending Approval">Pending Approval</option>
+                    <option value="Approved">Approved</option>
+                    <option value="Rejected">Rejected</option>
+                    <option value="Completed">Completed</option>
                 </select>
             </div>
             <div class="filter-group">
@@ -69,6 +69,14 @@
                     <option value="Safety Inspection">Safety Inspection</option>
                     <option value="Deep Cleaning">Deep Cleaning</option>
                     <option value="HVAC Maintenance">HVAC Maintenance</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label for="paymentFilter">Payment Status</label>
+                <select id="paymentFilter" class="form-select">
+                    <option value="all">All Payments</option>
+                    <option value="Paid">Paid</option>
+                    <option value="Unpaid">Unpaid</option>
                 </select>
             </div>
             <div class="filter-group">
@@ -95,10 +103,10 @@
         <div class="card-header">
             <h2>Service Requests</h2>
             <div class="card-actions">
-                <button class="btn-icon" title="Refresh">
+                <button class="btn-icon" title="Refresh" id="refreshRequests">
                     <i class="fas fa-sync-alt"></i>
                 </button>
-                <button class="btn-icon" title="Export">
+                <button class="btn-icon" title="Export" id="exportRequests">
                     <i class="fas fa-download"></i>
                 </button>
             </div>
@@ -117,397 +125,82 @@
                         <th>Actions</th>
                     </tr>
                 </thead>
-                <tbody>
-                    <tr>
-                        <td>#SR-2023-001</td>
-                        <td>
-                            <div class="user-info">
-                                <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="User" class="user-avatar">
-                                <div class="user-details">
-                                    <h4>Pradeep Kumar Singh</h4>
-                                    <p>Unit 12B</p>
-                                </div>
-                            </div>
-                        </td>
-                        <td>
-                            <div class="service-info">
-                                <div class="service-icon">🧹</div>
-                                <span>House Cleaning</span>
-                            </div>
-                        </td>
-                        <td>
-                            <div class="date-time">
-                                <div class="date">May 25, 2023</div>
-                                <div class="time">10:00 AM</div>
-                            </div>
-                        </td>
-                        <td><span class="badge warning">Pending Approval</span></td>
-                        <td><span class="badge danger">Unpaid</span></td>
-                        <td>
-                            <button class="btn-icon view-details" title="View Details" data-id="1">
-                                <i class="fas fa-eye"></i>
-                            </button>
-                            <button class="btn-icon approve-request" title="Approve" data-id="1">
-                                <i class="fas fa-check"></i>
-                            </button>
-                            <button class="btn-icon reject-request" title="Reject" data-id="1">
-                                <i class="fas fa-times"></i>
-                            </button>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>#SR-2023-002</td>
-                        <td>
-                            <div class="user-info">
-                                <img src="https://randomuser.me/api/portraits/women/44.jpg" alt="User" class="user-avatar">
-                                <div class="user-details">
-                                    <h4>Priya Sharma</h4>
-                                    <p>Unit 5C</p>
-                                </div>
-                            </div>
-                        </td>
-                        <td>
-                            <div class="service-info">
-                                <div class="service-icon">🌿</div>
-                                <span>Garden Maintenance</span>
-                            </div>
-                        </td>
-                        <td>
-                            <div class="date-time">
-                                <div class="date">May 26, 2023</div>
-                                <div class="time">02:00 PM</div>
-                            </div>
-                        </td>
-                        <td><span class="badge primary">Approved</span></td>
-                        <td><span class="badge danger">Unpaid</span></td>
-                        <td>
-                            <button class="btn-icon view-details" title="View Details" data-id="2">
-                                <i class="fas fa-eye"></i>
-                            </button>
-                            <button class="btn-icon mark-paid" title="Mark as Paid" data-id="2">
-                                <i class="fas fa-dollar-sign"></i>
-                            </button>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>#SR-2023-003</td>
-                        <td>
-                            <div class="user-info">
-                                <img src="https://randomuser.me/api/portraits/men/67.jpg" alt="User" class="user-avatar">
-                                <div class="user-details">
-                                    <h4>Rahul Mehta</h4>
-                                    <p>Unit 8A</p>
-                                </div>
-                            </div>
-                        </td>
-                        <td>
-                            <div class="service-info">
-                                <div class="service-icon">🔧</div>
-                                <span>Handyman Services</span>
-                            </div>
-                        </td>
-                        <td>
-                            <div class="date-time">
-                                <div class="date">May 27, 2023</div>
-                                <div class="time">09:00 AM</div>
-                            </div>
-                        </td>
-                        <td><span class="badge primary">Approved</span></td>
-                        <td><span class="badge success">Paid</span></td>
-                        <td>
-                            <button class="btn-icon view-details" title="View Details" data-id="3">
-                                <i class="fas fa-eye"></i>
-                            </button>
-                            <button class="btn-icon mark-complete" title="Mark as Complete" data-id="3">
-                                <i class="fas fa-check-double"></i>
-                            </button>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>#SR-2023-004</td>
-                        <td>
-                            <div class="user-info">
-                                <img src="https://randomuser.me/api/portraits/women/28.jpg" alt="User" class="user-avatar">
-                                <div class="user-details">
-                                    <h4>Neha Gupta</h4>
-                                    <p>Unit 9D</p>
-                                </div>
-                            </div>
-                        </td>
-                        <td>
-                            <div class="service-info">
-                                <div class="service-icon">🧯</div>
-                                <span>Safety Inspection</span>
-                            </div>
-                        </td>
-                        <td>
-                            <div class="date-time">
-                                <div class="date">May 28, 2023</div>
-                                <div class="time">11:00 AM</div>
-                            </div>
-                        </td>
-                        <td><span class="badge danger">Rejected</span></td>
-                        <td><span class="badge secondary">N/A</span></td>
-                        <td>
-                            <button class="btn-icon view-details" title="View Details" data-id="4">
-                                <i class="fas fa-eye"></i>
-                            </button>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>#SR-2023-005</td>
-                        <td>
-                            <div class="user-info">
-                                <img src="https://randomuser.me/api/portraits/men/55.jpg" alt="User" class="user-avatar">
-                                <div class="user-details">
-                                    <h4>Vikram Patel</h4>
-                                    <p>Unit 3B</p>
-                                </div>
-                            </div>
-                        </td>
-                        <td>
-                            <div class="service-info">
-                                <div class="service-icon">🧼</div>
-                                <span>Deep Cleaning</span>
-                            </div>
-                        </td>
-                        <td>
-                            <div class="date-time">
-                                <div class="date">May 29, 2023</div>
-                                <div class="time">03:00 PM</div>
-                            </div>
-                        </td>
-                        <td><span class="badge success">Completed</span></td>
-                        <td><span class="badge success">Paid</span></td>
-                        <td>
-                            <button class="btn-icon view-details" title="View Details" data-id="5">
-                                <i class="fas fa-eye"></i>
-                            </button>
-                        </td>
-                    </tr>
+                <tbody id="serviceRequestsTableBody">
+                    <!-- Table rows will be populated by JavaScript -->
                 </tbody>
             </table>
         </div>
         
-        <div class="pagination">
-            <button class="active">1</button>
-            <button>2</button>
-            <button>3</button>
-            <button>Next <i class="fas fa-chevron-right"></i></button>
+        <div class="pagination" id="pagination">
+            <!-- Pagination will be populated by JavaScript -->
         </div>
     </div>
 </div>
 
-    <!-- Service Request Detail Modal -->
-    <div class="modal" id="serviceRequestModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>Service Request Details</h3>
-                <span class="close-modal">&times;</span>
-            </div>
-            <div class="modal-body">
-                <div class="request-detail">
-                    <!-- Modal content remains the same -->
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-secondary close-modal">Close</button>
-                <button class="btn btn-danger" id="rejectRequestBtn">
-                    <i class="fas fa-times"></i> Reject Request
-                </button>
-                <button class="btn btn-primary" id="approveRequestBtn">
-                    <i class="fas fa-check"></i> Approve Request
-                </button>
-                <button class="btn btn-success" id="markPaidBtn" style="display: none;">
-                    <i class="fas fa-dollar-sign"></i> Mark as Paid
-                </button>
-                <button class="btn btn-success" id="markCompleteBtn" style="display: none;">
-                    <i class="fas fa-check-double"></i> Mark as Complete
-                </button>
+<!-- Service Request Detail Modal -->
+<div class="modal" id="serviceRequestModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Service Request Details</h3>
+            <span class="close-modal">&times;</span>
+        </div>
+        <div class="modal-body">
+            <div class="request-detail">
+                <!-- Modal content will be populated by JavaScript -->
             </div>
         </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary close-modal">Close</button>
+            <button class="btn btn-danger" id="rejectRequestBtn">
+                <i class="fas fa-times"></i> Reject Request
+            </button>
+            <button class="btn btn-primary" id="approveRequestBtn">
+                <i class="fas fa-check"></i> Approve Request
+            </button>
+            <button class="btn btn-success" id="markPaidBtn" style="display: none;">
+                <i class="fas fa-dollar-sign"></i> Mark as Paid
+            </button>
+            <button class="btn btn-success" id="markCompleteBtn" style="display: none;">
+                <i class="fas fa-check-double"></i> Mark as Complete
+            </button>
+        </div>
     </div>
+</div>
 
-    <!-- Rejection Reason Modal -->
-    <div class="modal" id="rejectionModal">
-        <div class="modal-content small-modal">
-            <div class="modal-header">
-                <h3>Reason for Rejection</h3>
-                <span class="close-modal">&times;</span>
+<!-- Rejection Reason Modal -->
+<div class="modal" id="rejectionModal">
+    <div class="modal-content small-modal">
+        <div class="modal-header">
+            <h3>Reason for Rejection</h3>
+            <span class="close-modal">&times;</span>
+        </div>
+        <div class="modal-body">
+            <div class="form-group">
+                <label for="rejectionReason">Please specify the reason for rejecting this service request:</label>
+                <select id="rejectionReason" class="form-control">
+                    <option value="">Select a reason...</option>
+                    <option value="unavailable">Service provider unavailable</option>
+                    <option value="invalid">Invalid request</option>
+                    <option value="payment">Payment issue</option>
+                    <option value="other">Other reason</option>
+                </select>
             </div>
-            <div class="modal-body">
-                <div class="form-group">
-                    <label for="rejectionReason">Please specify the reason for rejecting this service request:</label>
-                    <select id="rejectionReason" class="form-control">
-                        <option value="">Select a reason...</option>
-                        <option value="unavailable">Service provider unavailable</option>
-                        <option value="invalid">Invalid request</option>
-                        <option value="payment">Payment issue</option>
-                        <option value="other">Other reason</option>
-                    </select>
-                </div>
-                <div class="form-group" id="customReasonGroup" style="display: none;">
-                    <label for="customReason">Please specify:</label>
-                    <textarea id="customReason" class="form-control" rows="3"></textarea>
-                </div>
+            <div class="form-group" id="customReasonGroup" style="display: none;">
+                <label for="customReason">Please specify:</label>
+                <textarea id="customReason" class="form-control" rows="3"></textarea>
             </div>
-            <div class="modal-footer">
-                <button class="btn btn-secondary close-modal">Cancel</button>
-                <button class="btn btn-danger" id="confirmRejectionBtn">Confirm Rejection</button>
-            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary close-modal">Cancel</button>
+            <button class="btn btn-danger" id="confirmRejectionBtn">Confirm Rejection</button>
         </div>
     </div>
 </div>
 
 <script src="~/js/admin/service-requests.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Sample data for service requests
-    const serviceRequests = {
-        1: {
-            id: "#SR-2023-001",
-            user: {
-                name: "Pradeep Kumar Singh",
-                unit: "Unit 12B",
-                avatar: "https://randomuser.me/api/portraits/men/32.jpg",
-                phone: "+1 (555) 123-4567",
-                email: "pradeep.singh@example.com"
-            },
-            service: {
-                name: "House Cleaning",
-                icon: "🧹",
-                price: "$120.00",
-                frequency: "One-time"
-            },
-            date: {
-                requested: "May 20, 2023",
-                scheduled: "May 25, 2023",
-                time: "10:00 AM"
-            },
-            status: "Pending Approval",
-            payment: "Unpaid",
-            notes: "Please pay special attention to the kitchen area and clean inside the refrigerator. Also, we have two cats so please be careful when opening doors.",
-            history: [
-                { date: "May 20, 2023 10:15 AM", event: "Request submitted by homeowner" }
-            ]
-        },
-        2: {
-            id: "#SR-2023-002",
-            user: {
-                name: "Priya Sharma",
-                unit: "Unit 5C",
-                avatar: "https://randomuser.me/api/portraits/women/44.jpg",
-                phone: "+1 (555) 987-6543",
-                email: "priya.sharma@example.com"
-            },
-            service: {
-                name: "Garden Maintenance",
-                icon: "🌿",
-                price: "$150.00",
-                frequency: "Monthly"
-            },
-            date: {
-                requested: "May 21, 2023",
-                scheduled: "May 26, 2023",
-                time: "02:00 PM"
-            },
-            status: "Approved",
-            payment: "Unpaid",
-            notes: "Please trim the hedges along the front walkway and remove weeds from the flower beds. The lawn needs mowing as well.",
-            history: [
-                { date: "May 21, 2023 09:30 AM", event: "Request submitted by homeowner" },
-                { date: "May 21, 2023 11:45 AM", event: "Request approved by admin" }
-            ]
-        },
-        3: {
-            id: "#SR-2023-003",
-            user: {
-                name: "Rahul Mehta",
-                unit: "Unit 8A",
-                avatar: "https://randomuser.me/api/portraits/men/67.jpg",
-                phone: "+1 (555) 456-7890",
-                email: "rahul.mehta@example.com"
-            },
-            service: {
-                name: "Handyman Services",
-                icon: "🔧",
-                price: "$85.00",
-                frequency: "One-time"
-            },
-            date: {
-                requested: "May 22, 2023",
-                scheduled: "May 27, 2023",
-                time: "09:00 AM"
-            },
-            status: "Approved",
-            payment: "Paid",
-            notes: "Need help fixing a leaky faucet in the kitchen and installing new shelves in the living room.",
-            history: [
-                { date: "May 22, 2023 02:15 PM", event: "Request submitted by homeowner" },
-                { date: "May 22, 2023 04:30 PM", event: "Request approved by admin" },
-                { date: "May 22, 2023 05:45 PM", event: "Payment received" }
-            ]
-        },
-        4: {
-            id: "#SR-2023-004",
-            user: {
-                name: "Neha Gupta",
-                unit: "Unit 9D",
-                avatar: "https://randomuser.me/api/portraits/women/28.jpg",
-                phone: "+1 (555) 789-0123",
-                email: "neha.gupta@example.com"
-            },
-            service: {
-                name: "Safety Inspection",
-                icon: "🧯",
-                price: "$200.00",
-                frequency: "One-time"
-            },
-            date: {
-                requested: "May 23, 2023",
-                scheduled: "May 28, 2023",
-                time: "11:00 AM"
-            },
-            status: "Rejected",
-            payment: "N/A",
-            notes: "Need a full safety inspection including fire extinguishers, smoke detectors, and emergency exits.",
-            history: [
-                { date: "May 23, 2023 10:00 AM", event: "Request submitted by homeowner" },
-                { date: "May 23, 2023 03:15 PM", event: "Request rejected by admin (Service provider unavailable)" }
-            ]
-        },
-        5: {
-            id: "#SR-2023-005",
-            user: {
-                name: "Vikram Patel",
-                unit: "Unit 3B",
-                avatar: "https://randomuser.me/api/portraits/men/55.jpg",
-                phone: "+1 (555) 234-5678",
-                email: "vikram.patel@example.com"
-            },
-            service: {
-                name: "Deep Cleaning",
-                icon: "🧼",
-                price: "$250.00",
-                frequency: "One-time"
-            },
-            date: {
-                requested: "May 24, 2023",
-                scheduled: "May 29, 2023",
-                time: "03:00 PM"
-            },
-            status: "Completed",
-            payment: "Paid",
-            notes: "Full deep cleaning required before moving out. Include carpets, windows, and appliances.",
-            history: [
-                { date: "May 24, 2023 09:45 AM", event: "Request submitted by homeowner" },
-                { date: "May 24, 2023 11:30 AM", event: "Request approved by admin" },
-                { date: "May 24, 2023 12:15 PM", event: "Payment received" },
-                { date: "May 29, 2023 05:00 PM", event: "Service marked as completed" }
-            ]
-        }
-    };
-
     // DOM Elements
     const modals = {
         serviceRequest: document.getElementById('serviceRequestModal'),
@@ -515,17 +208,19 @@ document.addEventListener('DOMContentLoaded', function() {
     };
     
     const closeButtons = document.querySelectorAll('.close-modal');
-    const viewDetailButtons = document.querySelectorAll('.view-details');
-    const approveButtons = document.querySelectorAll('.approve-request');
-    const rejectButtons = document.querySelectorAll('.reject-request');
-    const markPaidButtons = document.querySelectorAll('.mark-paid');
-    const markCompleteButtons = document.querySelectorAll('.mark-complete');
+    const refreshButton = document.getElementById('refreshRequests');
+    const exportButton = document.getElementById('exportRequests');
+    const tableBody = document.getElementById('serviceRequestsTableBody');
+    const pagination = document.getElementById('pagination');
     
     // Filter elements
     const statusFilter = document.getElementById('statusFilter');
     const serviceTypeFilter = document.getElementById('serviceTypeFilter');
+    const paymentFilter = document.getElementById('paymentFilter');
     const dateFilter = document.getElementById('dateFilter');
     const customDateRange = document.getElementById('customDateRange');
+    const startDate = document.getElementById('startDate');
+    const endDate = document.getElementById('endDate');
     
     // Modal action buttons
     const approveRequestBtn = document.getElementById('approveRequestBtn');
@@ -539,303 +234,464 @@ document.addEventListener('DOMContentLoaded', function() {
     const customReasonGroup = document.getElementById('customReasonGroup');
     const customReason = document.getElementById('customReason');
     
+    // Stats elements
+    const totalRequests = document.getElementById('totalRequests');
+    const pendingRequests = document.getElementById('pendingRequests');
+    const unpaidRequests = document.getElementById('unpaidRequests');
+    const completedRequests = document.getElementById('completedRequests');
+    
     // Current request being viewed
     let currentRequestId = null;
+    let currentPage = 1;
+    let totalPages = 1;
+    let currentFilters = {
+        status: 'all',
+        serviceType: 'all',
+        paymentStatus: 'all',
+        dateRange: 'all',
+        startDate: null,
+        endDate: null
+    };
+    
+    // Initialize WebSocket connection
+    let ws = null;
+    function initWebSocket() {
+        ws = new WebSocket(`ws://${window.location.host}/ws/admin/service-requests`);
+        
+        ws.onopen = function() {
+            console.log('WebSocket connection established');
+        };
+        
+        ws.onmessage = function(event) {
+            const data = JSON.parse(event.data);
+            if (data.type === 'stats_update') {
+                updateStats(data.stats);
+            } else if (data.type === 'request_update') {
+                loadServiceRequests();
+            }
+        };
+        
+        ws.onclose = function() {
+            console.log('WebSocket connection closed, attempting to reconnect...');
+            setTimeout(initWebSocket, 5000);
+        };
+        
+        ws.onerror = function(error) {
+            console.error('WebSocket error:', error);
+        };
+    }
+    
+    // Load service requests on page load
+    loadServiceRequests();
+    initWebSocket();
     
     // Event Listeners
     
-    // View details button click
-    viewDetailButtons.forEach(button => {
-        button.addEventListener('click', function() {
-            const requestId = this.getAttribute('data-id');
-            openServiceRequestModal(requestId);
-        });
+    // Filter changes
+    statusFilter.addEventListener('change', function() {
+        currentFilters.status = this.value;
+        currentPage = 1;
+        loadServiceRequests();
     });
     
-    // Approve request button click (from table)
-    approveButtons.forEach(button => {
-        button.addEventListener('click', function(e) {
-            e.stopPropagation();
-            const requestId = this.getAttribute('data-id');
-            if (confirm('Are you sure you want to approve this service request?')) {
-                approveRequest(requestId);
-            }
-        });
+    serviceTypeFilter.addEventListener('change', function() {
+        currentFilters.serviceType = this.value;
+        currentPage = 1;
+        loadServiceRequests();
     });
     
-    // Reject request button click (from table)
-    rejectButtons.forEach(button => {
-        button.addEventListener('click', function(e) {
-            e.stopPropagation();
-            const requestId = this.getAttribute('data-id');
-            currentRequestId = requestId;
-            openRejectionModal();
-        });
+    paymentFilter.addEventListener('change', function() {
+        currentFilters.paymentStatus = this.value;
+        currentPage = 1;
+        loadServiceRequests();
     });
     
-    // Mark as paid button click (from table)
-    markPaidButtons.forEach(button => {
-        button.addEventListener('click', function(e) {
-            e.stopPropagation();
-            const requestId = this.getAttribute('data-id');
-            if (confirm('Are you sure you want to mark this request as paid?')) {
-                markRequestAsPaid(requestId);
-            }
-        });
-    });
-    
-    // Mark as complete button click (from table)
-    markCompleteButtons.forEach(button => {
-        button.addEventListener('click', function(e) {
-            e.stopPropagation();
-            const requestId = this.getAttribute('data-id');
-            if (confirm('Are you sure you want to mark this request as complete?')) {
-                markRequestAsComplete(requestId);
-            }
-        });
-    });
-    
-    // Approve request button click (from modal)
-    if (approveRequestBtn) {
-        approveRequestBtn.addEventListener('click', function() {
-            if (confirm('Are you sure you want to approve this service request?')) {
-                approveRequest(currentRequestId);
-                closeAllModals();
-            }
-        });
-    }
-    
-    // Reject request button click (from modal)
-    if (rejectRequestBtn) {
-        rejectRequestBtn.addEventListener('click', function() {
-            currentRequestId = this.closest('.modal').getAttribute('data-request-id');
-            openRejectionModal();
-        });
-    }
-    
-    // Mark as paid button click (from modal)
-    if (markPaidBtn) {
-        markPaidBtn.addEventListener('click', function() {
-            if (confirm('Are you sure you want to mark this request as paid?')) {
-                markRequestAsPaid(currentRequestId);
-                closeAllModals();
-            }
-        });
-    }
-    
-    // Mark as complete button click (from modal)
-    if (markCompleteBtn) {
-        markCompleteBtn.addEventListener('click', function() {
-            if (confirm('Are you sure you want to mark this request as complete?')) {
-                markRequestAsComplete(currentRequestId);
-                closeAllModals();
-            }
-        });
-    }
-    
-    // Confirm rejection button click
-    if (confirmRejectionBtn) {
-        confirmRejectionBtn.addEventListener('click', function() {
-            const reason = rejectionReason.value;
-            let rejectionNote = '';
-            
-            if (!reason) {
-                alert('Please select a reason for rejection.');
-                return;
-            }
-            
-            if (reason === 'other') {
-                rejectionNote = customReason.value.trim();
-                if (!rejectionNote) {
-                    alert('Please specify the reason for rejection.');
-                    return;
-                }
-            } else {
-                // Get the text of the selected option
-                rejectionNote = rejectionReason.options[rejectionReason.selectedIndex].text;
-            }
-            
-            rejectRequest(currentRequestId, rejectionNote);
-            closeAllModals();
-        });
-    }
-    
-    // Rejection reason change
-    if (rejectionReason) {
-        rejectionReason.addEventListener('change', function() {
-            if (this.value === 'other') {
-                customReasonGroup.style.display = 'block';
-            } else {
-                customReasonGroup.style.display = 'none';
-            }
-        });
-    }
-    
-    // Date filter change
-    if (dateFilter) {
-        dateFilter.addEventListener('change', function() {
-            if (this.value === 'custom') {
-                customDateRange.style.display = 'flex';
-            } else {
-                customDateRange.style.display = 'none';
-                filterRequests();
-            }
-        });
-    }
-    
-    // Start/end date change
-    const startDateInput = document.getElementById('startDate');
-    const endDateInput = document.getElementById('endDate');
-    
-    if (startDateInput) {
-        startDateInput.addEventListener('change', filterRequests);
-    }
-    
-    if (endDateInput) {
-        endDateInput.addEventListener('change', filterRequests);
-    }
-    
-    // Status filter change
-    if (statusFilter) {
-        statusFilter.addEventListener('change', filterRequests);
-    }
-    
-    // Service type filter change
-    if (serviceTypeFilter) {
-        serviceTypeFilter.addEventListener('change', filterRequests);
-    }
-    
-    // Close buttons
-    closeButtons.forEach(button => {
-        button.addEventListener('click', closeAllModals);
-    });
-    
-    // Close modal when clicking outside
-    window.addEventListener('click', function(event) {
-        if (event.target.classList.contains('modal')) {
-            closeAllModals();
+    dateFilter.addEventListener('change', function() {
+        currentFilters.dateRange = this.value;
+        if (this.value === 'custom') {
+            customDateRange.style.display = 'flex';
+        } else {
+            customDateRange.style.display = 'none';
+            currentFilters.startDate = null;
+            currentFilters.endDate = null;
+            currentPage = 1;
+            loadServiceRequests();
         }
     });
     
-    // Functions
+    startDate.addEventListener('change', function() {
+        currentFilters.startDate = this.value;
+        if (currentFilters.endDate) {
+            currentPage = 1;
+            loadServiceRequests();
+        }
+    });
     
-    function openServiceRequestModal(requestId) {
-        const request = serviceRequests[requestId];
-        if (!request) return;
-        
-        currentRequestId = requestId;
-        
-        // Set modal content
-        const modalBody = document.querySelector('.modal-body .request-detail');
-        if (!modalBody) return;
-        
-        modalBody.innerHTML = `
-            <div class="request-header">
-                <div class="request-id">${request.id}</div>
-                <div class="request-status">
-                    <span class="badge ${getStatusClass(request.status)}">${request.status}</span>
-                </div>
-            </div>
+    endDate.addEventListener('change', function() {
+        currentFilters.endDate = this.value;
+        if (currentFilters.startDate) {
+            currentPage = 1;
+            loadServiceRequests();
+        }
+    });
+    
+    // Refresh button click
+    if (refreshButton) {
+        refreshButton.addEventListener('click', loadServiceRequests);
+    }
+    
+    // Export button click
+    if (exportButton) {
+        exportButton.addEventListener('click', exportServiceRequests);
+    }
+    
+    // Load service requests from server
+    async function loadServiceRequests() {
+        try {
+            const queryParams = new URLSearchParams({
+                page: currentPage,
+                status: currentFilters.status,
+                serviceType: currentFilters.serviceType,
+                paymentStatus: currentFilters.paymentStatus,
+                dateRange: currentFilters.dateRange,
+                startDate: currentFilters.startDate || '',
+                endDate: currentFilters.endDate || ''
+            });
             
-            <div class="request-content">
-                <div class="request-section">
-                    <h4>Homeowner Information</h4>
-                    <div class="request-user">
-                        <img src="${request.user.avatar}" alt="User" class="user-avatar">
+            const response = await fetch(`/Admin/GetServiceRequests?${queryParams}`);
+            const data = await response.json();
+            
+            if (data.success) {
+                updateServiceRequestsTable(data.requests);
+                updatePagination(data.totalPages);
+                updateStats(data.stats);
+            } else {
+                console.error('Error loading service requests:', data.message);
+                showError(data.message || 'Failed to load service requests');
+            }
+        } catch (error) {
+            console.error('Error loading service requests:', error);
+            showError('Failed to load service requests');
+        }
+    }
+    
+    // Update service requests table
+    function updateServiceRequestsTable(requests) {
+        if (!tableBody) return;
+        
+        tableBody.innerHTML = requests.map(request => `
+            <tr>
+                <td>#SR-${request.request_id}</td>
+                <td>
+                    <div class="user-info">
+                        <div class="user-avatar">${request.user.firstname.charAt(0)}${request.user.lastname.charAt(0)}</div>
                         <div class="user-details">
-                            <h4>${request.user.name}</h4>
-                            <p>${request.user.unit}</p>
-                            <div class="user-contact">
-                                <i class="fas fa-phone"></i> ${request.user.phone}<br>
-                                <i class="fas fa-envelope"></i> ${request.user.email}
-                            </div>
+                            <h4>${request.user.firstname} ${request.user.lastname}</h4>
+                            <p>${request.user.email}</p>
                         </div>
                     </div>
-                </div>
-                
-                <div class="request-section">
-                    <h4>Service Details</h4>
+                </td>
+                <td>
                     <div class="service-info">
-                        <div class="service-icon">${request.service.icon}</div>
-                        <div class="service-details">
-                            <h4>${request.service.name}</h4>
-                            <div class="service-meta">
-                                <span><strong>Price:</strong> ${request.service.price}</span>
-                                <span><strong>Frequency:</strong> ${request.service.frequency}</span>
-                            </div>
+                        <div class="service-icon">${request.service_icon}</div>
+                        <span>${request.service_type}</span>
+                    </div>
+                </td>
+                <td>
+                    <div class="date-time">
+                        <div class="date">${new Date(request.scheduled_date).toLocaleDateString()}</div>
+                        <div class="time">${request.scheduled_time}</div>
+                    </div>
+                </td>
+                <td><span class="badge ${getStatusClass(request.status)}">${request.status}</span></td>
+                <td><span class="badge ${request.payment_status === 'Paid' ? 'success' : 'danger'}">${request.payment_status}</span></td>
+                <td>
+                    <button class="btn-icon view-details" title="View Details" data-id="${request.request_id}">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                    ${request.status === 'Pending Approval' ? `
+                        <button class="btn-icon approve-request" title="Approve" data-id="${request.request_id}">
+                            <i class="fas fa-check"></i>
+                        </button>
+                        <button class="btn-icon reject-request" title="Reject" data-id="${request.request_id}">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    ` : ''}
+                    ${request.status === 'Approved' && request.payment_status === 'Unpaid' ? `
+                        <button class="btn-icon mark-paid" title="Mark as Paid" data-id="${request.request_id}">
+                            <i class="fas fa-dollar-sign"></i>
+                        </button>
+                    ` : ''}
+                    ${request.status === 'Approved' && request.payment_status === 'Paid' ? `
+                        <button class="btn-icon mark-complete" title="Mark as Complete" data-id="${request.request_id}">
+                            <i class="fas fa-check-double"></i>
+                        </button>
+                    ` : ''}
+                </td>
+            </tr>
+        `).join('');
+        
+        // Add event listeners to the new buttons
+        addEventListeners();
+    }
+    
+    // Update pagination
+    function updatePagination(totalPages) {
+        if (!pagination) return;
+        
+        totalPages = totalPages || 1;
+        let paginationHTML = '';
+        
+        if (currentPage > 1) {
+            paginationHTML += `<button class="pagination-btn" data-page="${currentPage - 1}">
+                <i class="fas fa-chevron-left"></i> Previous
+            </button>`;
+        }
+        
+        for (let i = 1; i <= totalPages; i++) {
+            paginationHTML += `<button class="pagination-btn ${i === currentPage ? 'active' : ''}" data-page="${i}">${i}</button>`;
+        }
+        
+        if (currentPage < totalPages) {
+            paginationHTML += `<button class="pagination-btn" data-page="${currentPage + 1}">
+                Next <i class="fas fa-chevron-right"></i>
+            </button>`;
+        }
+        
+        pagination.innerHTML = paginationHTML;
+        
+        // Add event listeners to pagination buttons
+        document.querySelectorAll('.pagination-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                currentPage = parseInt(this.getAttribute('data-page'));
+                loadServiceRequests();
+            });
+        });
+    }
+    
+    // Update stats
+    function updateStats(stats) {
+        if (!stats) return;
+        
+        if (totalRequests) totalRequests.textContent = stats.total;
+        if (pendingRequests) pendingRequests.textContent = stats.pending;
+        if (unpaidRequests) unpaidRequests.textContent = stats.unpaid;
+        if (completedRequests) completedRequests.textContent = stats.completed;
+        
+        // Update change indicators
+        updateChangeIndicator('totalRequestsChange', stats.totalChange);
+        updateChangeIndicator('pendingRequestsChange', stats.pendingChange);
+        updateChangeIndicator('unpaidRequestsChange', stats.unpaidChange);
+        updateChangeIndicator('completedRequestsChange', stats.completedChange);
+    }
+    
+    function updateChangeIndicator(elementId, change) {
+        const element = document.getElementById(elementId);
+        if (!element) return;
+        
+        const isPositive = change >= 0;
+        element.innerHTML = `<i class="fas fa-arrow-${isPositive ? 'up' : 'down'}"></i> ${Math.abs(change)}%`;
+        element.className = `stat-change ${isPositive ? 'positive' : 'negative'}`;
+    }
+    
+    // Export service requests
+    async function exportServiceRequests() {
+        try {
+            const queryParams = new URLSearchParams({
+                status: currentFilters.status,
+                serviceType: currentFilters.serviceType,
+                paymentStatus: currentFilters.paymentStatus,
+                dateRange: currentFilters.dateRange,
+                startDate: currentFilters.startDate || '',
+                endDate: currentFilters.endDate || ''
+            });
+            
+            const response = await fetch(`/Admin/ExportServiceRequests?${queryParams}`);
+            const blob = await response.blob();
+            
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `service-requests-${new Date().toISOString().split('T')[0]}.xlsx`;
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+        } catch (error) {
+            console.error('Error exporting service requests:', error);
+            showError('Failed to export service requests');
+        }
+    }
+    
+    // Add event listeners to table buttons
+    function addEventListeners() {
+        // View details button click
+        document.querySelectorAll('.view-details').forEach(button => {
+            button.addEventListener('click', function() {
+                const requestId = this.getAttribute('data-id');
+                openServiceRequestModal(requestId);
+            });
+        });
+        
+        // Approve request button click
+        document.querySelectorAll('.approve-request').forEach(button => {
+            button.addEventListener('click', function(e) {
+                e.stopPropagation();
+                const requestId = this.getAttribute('data-id');
+                if (confirm('Are you sure you want to approve this service request?')) {
+                    updateRequestStatus(requestId, 'Approved');
+                }
+            });
+        });
+        
+        // Reject request button click
+        document.querySelectorAll('.reject-request').forEach(button => {
+            button.addEventListener('click', function(e) {
+                e.stopPropagation();
+                const requestId = this.getAttribute('data-id');
+                currentRequestId = requestId;
+                openRejectionModal();
+            });
+        });
+        
+        // Mark as paid button click
+        document.querySelectorAll('.mark-paid').forEach(button => {
+            button.addEventListener('click', function(e) {
+                e.stopPropagation();
+                const requestId = this.getAttribute('data-id');
+                if (confirm('Are you sure you want to mark this request as paid?')) {
+                    updateRequestPaymentStatus(requestId, 'Paid');
+                }
+            });
+        });
+        
+        // Mark as complete button click
+        document.querySelectorAll('.mark-complete').forEach(button => {
+            button.addEventListener('click', function(e) {
+                e.stopPropagation();
+                const requestId = this.getAttribute('data-id');
+                if (confirm('Are you sure you want to mark this request as complete?')) {
+                    updateRequestStatus(requestId, 'Completed');
+                }
+            });
+        });
+    }
+    
+    // Open service request modal
+    async function openServiceRequestModal(requestId) {
+        try {
+            const response = await fetch(`/Admin/GetServiceRequest/${requestId}`);
+            const data = await response.json();
+            
+            if (data.success) {
+                const request = data.request;
+                currentRequestId = requestId;
+                
+                // Set modal content
+                const modalBody = document.querySelector('.modal-body .request-detail');
+                if (!modalBody) return;
+                
+                modalBody.innerHTML = `
+                    <div class="request-header">
+                        <div class="request-id">#SR-${request.request_id}</div>
+                        <div class="request-status">
+                            <span class="badge ${getStatusClass(request.status)}">${request.status}</span>
                         </div>
                     </div>
-                </div>
-                
-                <div class="request-section">
-                    <h4>Request Information</h4>
-                    <div class="request-meta">
-                        <div class="meta-item">
-                            <label>Request Date:</label>
-                            <span>${request.date.requested}</span>
-                        </div>
-                        <div class="meta-item">
-                            <label>Scheduled Date:</label>
-                            <span>${request.date.scheduled}</span>
-                        </div>
-                        <div class="meta-item">
-                            <label>Scheduled Time:</label>
-                            <span>${request.date.time}</span>
-                        </div>
-                        <div class="meta-item">
-                            <label>Payment Status:</label>
-                            <span>${request.payment}</span>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="request-section">
-                    <h4>Special Instructions</h4>
-                    <div class="special-instructions">
-                        ${request.notes}
-                    </div>
-                </div>
-                
-                <div class="request-section">
-                    <h4>Request History</h4>
-                    <div class="timeline">
-                        ${request.history.map(item => `
-                            <div class="timeline-item">
-                                <div class="timeline-dot"></div>
-                                <div class="timeline-content">
-                                    <div class="timeline-date">${item.date}</div>
-                                    <div class="timeline-event">${item.event}</div>
+                    
+                    <div class="request-content">
+                        <div class="request-section">
+                            <h4>Homeowner Information</h4>
+                            <div class="request-user">
+                                <div class="user-avatar">${request.user.firstname.charAt(0)}${request.user.lastname.charAt(0)}</div>
+                                <div class="user-details">
+                                    <h4>${request.user.firstname} ${request.user.lastname}</h4>
+                                    <p>${request.user.email}</p>
+                                    <div class="user-contact">
+                                        <i class="fas fa-phone"></i> ${request.user.contact_no || 'N/A'}<br>
+                                        <i class="fas fa-envelope"></i> ${request.user.email}
+                                    </div>
                                 </div>
                             </div>
-                        `).join('')}
+                        </div>
+                        
+                        <div class="request-section">
+                            <h4>Service Details</h4>
+                            <div class="service-info">
+                                <div class="service-icon">${request.service_icon}</div>
+                                <div class="service-details">
+                                    <h4>${request.service_type}</h4>
+                                    <div class="service-meta">
+                                        <span><strong>Price:</strong> $${request.price.toFixed(2)}</span>
+                                        <span><strong>Frequency:</strong> ${request.frequency}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="request-section">
+                            <h4>Request Information</h4>
+                            <div class="request-meta">
+                                <div class="meta-item">
+                                    <label>Request Date:</label>
+                                    <span>${new Date(request.date_created).toLocaleDateString()}</span>
+                                </div>
+                                <div class="meta-item">
+                                    <label>Scheduled Date:</label>
+                                    <span>${new Date(request.scheduled_date).toLocaleDateString()}</span>
+                                </div>
+                                <div class="meta-item">
+                                    <label>Scheduled Time:</label>
+                                    <span>${request.scheduled_time}</span>
+                                </div>
+                                <div class="meta-item">
+                                    <label>Payment Status:</label>
+                                    <span class="badge ${request.payment_status === 'Paid' ? 'success' : 'danger'}">${request.payment_status}</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="request-section">
+                            <h4>Special Instructions</h4>
+                            <div class="special-instructions">
+                                ${request.notes || 'No special instructions provided.'}
+                            </div>
+                        </div>
                     </div>
-                </div>
-            </div>
-        `;
-        
-        // Show/hide action buttons based on status
-        if (approveRequestBtn) approveRequestBtn.style.display = 'none';
-        if (rejectRequestBtn) rejectRequestBtn.style.display = 'none';
-        if (markPaidBtn) markPaidBtn.style.display = 'none';
-        if (markCompleteBtn) markCompleteBtn.style.display = 'none';
-        
-        if (request.status === 'Pending Approval') {
-            if (approveRequestBtn) approveRequestBtn.style.display = 'inline-block';
-            if (rejectRequestBtn) rejectRequestBtn.style.display = 'inline-block';
-        } else if (request.status === 'Approved' && request.payment === 'Unpaid') {
-            if (markPaidBtn) markPaidBtn.style.display = 'inline-block';
-        } else if (request.status === 'Approved' && request.payment === 'Paid') {
-            if (markCompleteBtn) markCompleteBtn.style.display = 'inline-block';
-        }
-        
-        // Open modal
-        if (modals.serviceRequest) {
-            modals.serviceRequest.style.display = 'flex';
-            document.body.style.overflow = 'hidden';
-            document.body.classList.add('modal-open');
+                `;
+                
+                // Show/hide action buttons based on status
+                if (approveRequestBtn) approveRequestBtn.style.display = 'none';
+                if (rejectRequestBtn) rejectRequestBtn.style.display = 'none';
+                if (markPaidBtn) markPaidBtn.style.display = 'none';
+                if (markCompleteBtn) markCompleteBtn.style.display = 'none';
+                
+                if (request.status === 'Pending Approval') {
+                    if (approveRequestBtn) approveRequestBtn.style.display = 'inline-block';
+                    if (rejectRequestBtn) rejectRequestBtn.style.display = 'inline-block';
+                } else if (request.status === 'Approved' && request.payment_status === 'Unpaid') {
+                    if (markPaidBtn) markPaidBtn.style.display = 'inline-block';
+                } else if (request.status === 'Approved' && request.payment_status === 'Paid') {
+                    if (markCompleteBtn) markCompleteBtn.style.display = 'inline-block';
+                }
+                
+                // Open modal
+                if (modals.serviceRequest) {
+                    modals.serviceRequest.style.display = 'flex';
+                    document.body.style.overflow = 'hidden';
+                    document.body.classList.add('modal-open');
+                }
+            } else {
+                console.error('Error loading service request:', data.message);
+                showError(data.message || 'Failed to load service request details');
+            }
+        } catch (error) {
+            console.error('Error loading service request:', error);
+            showError('Failed to load service request details');
         }
     }
     
+    // Open rejection modal
     function openRejectionModal() {
         // Reset rejection form
         if (rejectionReason) rejectionReason.value = '';
@@ -850,6 +706,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
+    // Close all modals
     function closeAllModals() {
         Object.values(modals).forEach(modal => {
             if (modal) modal.style.display = 'none';
@@ -858,276 +715,65 @@ document.addEventListener('DOMContentLoaded', function() {
         document.body.style.overflow = 'auto';
     }
     
-    function approveRequest(requestId) {
-        const request = serviceRequests[requestId];
-        if (!request) return;
-        
-        // Update status
-        request.status = "Approved";
-        
-        // Add to history
-        const now = new Date();
-        const dateStr = now.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
-        const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-        request.history.push({
-            date: `${dateStr} ${timeStr}`,
-            event: "Request approved by admin"
-        });
-        
-        // Update UI
-        updateRequestRow(requestId);
-        
-        // Show success message
-        alert('Service request approved successfully!');
-    }
-    
-    function rejectRequest(requestId, reason) {
-        const request = serviceRequests[requestId];
-        if (!request) return;
-        
-        // Update status
-        request.status = "Rejected";
-        request.payment = "N/A";
-        
-        // Add to history
-        const now = new Date();
-        const dateStr = now.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
-        const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-        request.history.push({
-            date: `${dateStr} ${timeStr}`,
-            event: `Request rejected by admin (${reason})`
-        });
-        
-        // Update UI
-        updateRequestRow(requestId);
-        
-        // Show success message
-        alert('Service request rejected successfully!');
-    }
-    
-    function markRequestAsPaid(requestId) {
-        const request = serviceRequests[requestId];
-        if (!request) return;
-        
-        // Update payment status
-        request.payment = "Paid";
-        
-        // Add to history
-        const now = new Date();
-        const dateStr = now.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
-        const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-        request.history.push({
-            date: `${dateStr} ${timeStr}`,
-            event: "Payment received"
-        });
-        
-        // Update UI
-        updateRequestRow(requestId);
-        
-        // Show success message
-        alert('Service request marked as paid successfully!');
-    }
-    
-    function markRequestAsComplete(requestId) {
-        const request = serviceRequests[requestId];
-        if (!request) return;
-        
-        // Update status
-        request.status = "Completed";
-        
-        // Add to history
-        const now = new Date();
-        const dateStr = now.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
-        const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-        request.history.push({
-            date: `${dateStr} ${timeStr}`,
-            event: "Service marked as completed"
-        });
-        
-        // Update UI
-        updateRequestRow(requestId);
-        
-        // Show success message
-        alert('Service request marked as complete successfully!');
-    }
-    
-    function updateRequestRow(requestId) {
-        const request = serviceRequests[requestId];
-        if (!request) return;
-        
-        // Find the table row
-        const row = document.querySelector(`[data-id="${requestId}"]`)?.closest('tr');
-        if (!row) return;
-        
-        // Update status cell
-        const statusCell = row.querySelector('td:nth-child(5)');
-        if (statusCell) {
-            statusCell.innerHTML = `<span class="badge ${getStatusClass(request.status)}">${request.status}</span>`;
-        }
-        
-        // Update payment cell
-        const paymentCell = row.querySelector('td:nth-child(6)');
-        if (paymentCell) {
-            if (request.status === 'Rejected') {
-                paymentCell.innerHTML = '<span class="badge secondary">N/A</span>';
-            } else {
-                paymentCell.innerHTML = `<span class="badge ${request.payment === 'Paid' ? 'success' : 'danger'}">${request.payment}</span>`;
-            }
-        }
-        
-        // Update action buttons
-        const actionsCell = row.querySelector('td:nth-child(7)');
-        if (actionsCell) {
-            actionsCell.innerHTML = '';
-            
-            // Always show view details button
-            const viewBtn = document.createElement('button');
-            viewBtn.className = 'btn-icon view-details';
-            viewBtn.title = 'View Details';
-            viewBtn.setAttribute('data-id', requestId);
-            viewBtn.innerHTML = '<i class="fas fa-eye"></i>';
-            viewBtn.addEventListener('click', function() {
-                openServiceRequestModal(requestId);
+    // Update request status
+    async function updateRequestStatus(requestId, status) {
+        try {
+            const response = await fetch('/Admin/UpdateServiceRequestStatus', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    request_id: requestId,
+                    status: status
+                })
             });
-            actionsCell.appendChild(viewBtn);
             
-            // Add other buttons based on status
-            if (request.status === 'Pending Approval') {
-                const approveBtn = document.createElement('button');
-                approveBtn.className = 'btn-icon approve-request';
-                approveBtn.title = 'Approve';
-                approveBtn.setAttribute('data-id', requestId);
-                approveBtn.innerHTML = '<i class="fas fa-check"></i>';
-                approveBtn.addEventListener('click', function(e) {
-                    e.stopPropagation();
-                    if (confirm('Are you sure you want to approve this service request?')) {
-                        approveRequest(requestId);
-                    }
-                });
-                actionsCell.appendChild(approveBtn);
-                
-                const rejectBtn = document.createElement('button');
-                rejectBtn.className = 'btn-icon reject-request';
-                rejectBtn.title = 'Reject';
-                rejectBtn.setAttribute('data-id', requestId);
-                rejectBtn.innerHTML = '<i class="fas fa-times"></i>';
-                rejectBtn.addEventListener('click', function(e) {
-                    e.stopPropagation();
-                    currentRequestId = requestId;
-                    openRejectionModal();
-                });
-                actionsCell.appendChild(rejectBtn);
-            } else if (request.status === 'Approved' && request.payment === 'Unpaid') {
-                const markPaidBtn = document.createElement('button');
-                markPaidBtn.className = 'btn-icon mark-paid';
-                markPaidBtn.title = 'Mark as Paid';
-                markPaidBtn.setAttribute('data-id', requestId);
-                markPaidBtn.innerHTML = '<i class="fas fa-dollar-sign"></i>';
-                markPaidBtn.addEventListener('click', function(e) {
-                    e.stopPropagation();
-                    if (confirm('Are you sure you want to mark this request as paid?')) {
-                        markRequestAsPaid(requestId);
-                    }
-                });
-                actionsCell.appendChild(markPaidBtn);
-            } else if (request.status === 'Approved' && request.payment === 'Paid') {
-                const markCompleteBtn = document.createElement('button');
-                markCompleteBtn.className = 'btn-icon mark-complete';
-                markCompleteBtn.title = 'Mark as Complete';
-                markCompleteBtn.setAttribute('data-id', requestId);
-                markCompleteBtn.innerHTML = '<i class="fas fa-check-double"></i>';
-                markCompleteBtn.addEventListener('click', function(e) {
-                    e.stopPropagation();
-                    if (confirm('Are you sure you want to mark this request as complete?')) {
-                        markRequestAsComplete(requestId);
-                    }
-                });
-                actionsCell.appendChild(markCompleteBtn);
-            }
-        }
-    }
-    
-    function filterRequests() {
-        const statusFilterValue = statusFilter ? statusFilter.value : 'all';
-        const serviceTypeFilterValue = serviceTypeFilter ? serviceTypeFilter.value : 'all';
-        const dateFilterValue = dateFilter ? dateFilter.value : 'all';
-        
-        let startDate, endDate;
-        if (dateFilterValue === 'custom') {
-            startDate = startDateInput ? startDateInput.value : '';
-            endDate = endDateInput ? endDateInput.value : '';
-            
-            if (startDate && endDate && startDate > endDate) {
-                alert('End date must be after start date');
-                return;
-            }
-        }
-        
-        const rows = document.querySelectorAll('tbody tr');
-        rows.forEach(row => {
-            const rowStatus = row.querySelector('td:nth-child(5) .badge').textContent.toLowerCase().replace(' ', '-');
-            const rowServiceType = row.querySelector('td:nth-child(3) span').textContent;
-            const rowDate = row.querySelector('td:nth-child(4) .date').textContent;
-            
-            // Convert row date to Date object for comparison
-            const rowDateObj = new Date(rowDate);
-            
-            // Status filter
-            const statusMatch = 
-                statusFilterValue === 'all' ||
-                (statusFilterValue === 'pending' && rowStatus === 'pending-approval') ||
-                (statusFilterValue === 'approved' && rowStatus === 'approved') ||
-                (statusFilterValue === 'payment-pending' && rowStatus === 'approved' && 
-                 row.querySelector('td:nth-child(6) .badge').textContent === 'Unpaid') ||
-                (statusFilterValue === 'rejected' && rowStatus === 'rejected') ||
-                (statusFilterValue === 'completed' && rowStatus === 'completed');
-            
-            // Service type filter
-            const serviceTypeMatch = 
-                serviceTypeFilterValue === 'all' || 
-                rowServiceType === serviceTypeFilterValue;
-            
-            // Date filter
-            let dateMatch = true;
-            if (dateFilterValue !== 'all' && dateFilterValue !== 'custom') {
-                const today = new Date();
-                const rowDate = new Date(rowDateObj);
-                
-                if (dateFilterValue === 'today') {
-                    dateMatch = 
-                        rowDate.getDate() === today.getDate() &&
-                        rowDate.getMonth() === today.getMonth() &&
-                        rowDate.getFullYear() === today.getFullYear();
-                } else if (dateFilterValue === 'week') {
-                    const weekStart = new Date(today);
-                    weekStart.setDate(today.getDate() - today.getDay());
-                    dateMatch = rowDate >= weekStart;
-                } else if (dateFilterValue === 'month') {
-                    dateMatch = 
-                        rowDate.getMonth() === today.getMonth() &&
-                        rowDate.getFullYear() === today.getFullYear();
-                }
-            } else if (dateFilterValue === 'custom' && (startDate || endDate)) {
-                const rowDateStr = rowDateObj.toISOString().split('T')[0];
-                
-                if (startDate && !endDate) {
-                    dateMatch = rowDateStr >= startDate;
-                } else if (!startDate && endDate) {
-                    dateMatch = rowDateStr <= endDate;
-                } else if (startDate && endDate) {
-                    dateMatch = rowDateStr >= startDate && rowDateStr <= endDate;
-                }
-            }
-            
-            // Show/hide row based on filters
-            if (statusMatch && serviceTypeMatch && dateMatch) {
-                row.style.display = '';
+            const data = await response.json();
+            if (data.success) {
+                loadServiceRequests();
+                closeAllModals();
+                showSuccess(`Service request ${status.toLowerCase()} successfully`);
             } else {
-                row.style.display = 'none';
+                console.error('Error updating request status:', data.message);
+                showError(data.message || 'Failed to update request status');
             }
-        });
+        } catch (error) {
+            console.error('Error updating request status:', error);
+            showError('Failed to update request status');
+        }
     }
     
+    // Update request payment status
+    async function updateRequestPaymentStatus(requestId, paymentStatus) {
+        try {
+            const response = await fetch('/Admin/UpdateServiceRequestStatus', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    request_id: requestId,
+                    payment_status: paymentStatus
+                })
+            });
+            
+            const data = await response.json();
+            if (data.success) {
+                loadServiceRequests();
+                closeAllModals();
+                showSuccess(`Service request marked as ${paymentStatus.toLowerCase()} successfully`);
+            } else {
+                console.error('Error updating payment status:', data.message);
+                showError(data.message || 'Failed to update payment status');
+            }
+        } catch (error) {
+            console.error('Error updating payment status:', error);
+            showError('Failed to update payment status');
+        }
+    }
+    
+    // Get status class for badge
     function getStatusClass(status) {
         switch(status) {
             case 'Pending Approval': return 'warning';
@@ -1136,6 +782,111 @@ document.addEventListener('DOMContentLoaded', function() {
             case 'Completed': return 'success';
             default: return 'secondary';
         }
+    }
+    
+    // Notification functions
+    function showSuccess(message) {
+        Swal.fire({
+            icon: 'success',
+            title: 'Success',
+            text: message,
+            timer: 3000,
+            showConfirmButton: false
+        });
+    }
+    
+    function showError(message) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: message
+        });
+    }
+    
+    // Event Listeners
+    
+    // Close buttons
+    closeButtons.forEach(button => {
+        button.addEventListener('click', closeAllModals);
+    });
+    
+    // Close modal when clicking outside
+    window.addEventListener('click', function(event) {
+        if (event.target.classList.contains('modal')) {
+            closeAllModals();
+        }
+    });
+    
+    // Approve request button click (from modal)
+    if (approveRequestBtn) {
+        approveRequestBtn.addEventListener('click', function() {
+            if (confirm('Are you sure you want to approve this service request?')) {
+                updateRequestStatus(currentRequestId, 'Approved');
+            }
+        });
+    }
+    
+    // Reject request button click (from modal)
+    if (rejectRequestBtn) {
+        rejectRequestBtn.addEventListener('click', function() {
+            openRejectionModal();
+        });
+    }
+    
+    // Mark as paid button click (from modal)
+    if (markPaidBtn) {
+        markPaidBtn.addEventListener('click', function() {
+            if (confirm('Are you sure you want to mark this request as paid?')) {
+                updateRequestPaymentStatus(currentRequestId, 'Paid');
+            }
+        });
+    }
+    
+    // Mark as complete button click (from modal)
+    if (markCompleteBtn) {
+        markCompleteBtn.addEventListener('click', function() {
+            if (confirm('Are you sure you want to mark this request as complete?')) {
+                updateRequestStatus(currentRequestId, 'Completed');
+            }
+        });
+    }
+    
+    // Confirm rejection button click
+    if (confirmRejectionBtn) {
+        confirmRejectionBtn.addEventListener('click', function() {
+            const reason = rejectionReason.value;
+            let rejectionNote = '';
+            
+            if (!reason) {
+                showError('Please select a reason for rejection.');
+                return;
+            }
+            
+            if (reason === 'other') {
+                rejectionNote = customReason.value.trim();
+                if (!rejectionNote) {
+                    showError('Please specify the reason for rejection.');
+                    return;
+                }
+            } else {
+                // Get the text of the selected option
+                rejectionNote = rejectionReason.options[rejectionReason.selectedIndex].text;
+            }
+            
+            updateRequestStatus(currentRequestId, 'Rejected');
+            closeAllModals();
+        });
+    }
+    
+    // Rejection reason change
+    if (rejectionReason) {
+        rejectionReason.addEventListener('change', function() {
+            if (this.value === 'other') {
+                customReasonGroup.style.display = 'block';
+            } else {
+                customReasonGroup.style.display = 'none';
+            }
+        });
     }
 });
 </script>
