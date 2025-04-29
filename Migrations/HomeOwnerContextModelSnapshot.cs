@@ -155,6 +155,61 @@ namespace HomeOwner.Migrations
                     b.ToTable("Report");
                 });
 
+            modelBuilder.Entity("HomeOwner.Models.ServiceRequest", b =>
+                {
+                    b.Property<int>("request_id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("request_id"));
+
+                    b.Property<DateTime>("date_created")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("frequency")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("notes")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("payment_status")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<decimal>("price")
+                        .HasColumnType("decimal(10,2)");
+
+                    b.Property<DateTime>("scheduled_date")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("scheduled_time")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("service_icon")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("service_type")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("status")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("user_id")
+                        .HasColumnType("int");
+
+                    b.HasKey("request_id");
+
+                    b.HasIndex("user_id");
+
+                    b.ToTable("ServiceRequest");
+                });
+
             modelBuilder.Entity("HomeOwner.Models.User", b =>
                 {
                     b.Property<int>("user_id")
@@ -236,6 +291,17 @@ namespace HomeOwner.Migrations
                     b.Navigation("Author");
                 });
 
+            modelBuilder.Entity("HomeOwner.Models.ServiceRequest", b =>
+                {
+                    b.HasOne("HomeOwner.Models.User", "User")
+                        .WithMany("ServiceRequests")
+                        .HasForeignKey("user_id")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("HomeOwner.Models.Post", b =>
                 {
                     b.Navigation("Comments");
@@ -248,6 +314,8 @@ namespace HomeOwner.Migrations
                     b.Navigation("Posts");
 
                     b.Navigation("Reports");
+
+                    b.Navigation("ServiceRequests");
                 });
 #pragma warning restore 612, 618
         }

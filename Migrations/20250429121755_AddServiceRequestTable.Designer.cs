@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace HomeOwner.Migrations
 {
     [DbContext(typeof(HomeOwnerContext))]
-    [Migration("20250404143545_addedCommunityClass")]
-    partial class addedCommunityClass
+    [Migration("20250429121755_AddServiceRequestTable")]
+    partial class AddServiceRequestTable
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -68,8 +68,10 @@ namespace HomeOwner.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("comment_id"));
 
+                    b.Property<int?>("author_id")
+                        .HasColumnType("int");
+
                     b.Property<string>("content")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime?>("created_date")
@@ -81,19 +83,11 @@ namespace HomeOwner.Migrations
                     b.Property<DateTime?>("updated_date")
                         .HasColumnType("datetime2");
 
-                    b.Property<int?>("user_id")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("user_id1")
-                        .HasColumnType("int");
-
                     b.HasKey("comment_id");
 
+                    b.HasIndex("author_id");
+
                     b.HasIndex("post_id");
-
-                    b.HasIndex("user_id");
-
-                    b.HasIndex("user_id1");
 
                     b.ToTable("Comment");
                 });
@@ -106,8 +100,10 @@ namespace HomeOwner.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("post_id"));
 
+                    b.Property<string>("ImagePath")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("content")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime?>("created_date")
@@ -124,6 +120,97 @@ namespace HomeOwner.Migrations
                     b.HasIndex("user_id");
 
                     b.ToTable("Post");
+                });
+
+            modelBuilder.Entity("HomeOwner.Models.Report", b =>
+                {
+                    b.Property<int>("report_id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("report_id"));
+
+                    b.Property<DateTime?>("created_date")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("report_description")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("report_facility")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("report_severity")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("report_type")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("updated_date")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("user_id")
+                        .HasColumnType("int");
+
+                    b.HasKey("report_id");
+
+                    b.HasIndex("user_id");
+
+                    b.ToTable("Report");
+                });
+
+            modelBuilder.Entity("HomeOwner.Models.ServiceRequest", b =>
+                {
+                    b.Property<int>("request_id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("request_id"));
+
+                    b.Property<DateTime>("date_created")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("frequency")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("notes")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("payment_status")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<decimal>("price")
+                        .HasColumnType("decimal(10,2)");
+
+                    b.Property<DateTime>("scheduled_date")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("scheduled_time")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("service_icon")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("service_type")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("status")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("user_id")
+                        .HasColumnType("int");
+
+                    b.HasKey("request_id");
+
+                    b.HasIndex("user_id");
+
+                    b.ToTable("ServiceRequest");
                 });
 
             modelBuilder.Entity("HomeOwner.Models.User", b =>
@@ -172,33 +259,50 @@ namespace HomeOwner.Migrations
 
             modelBuilder.Entity("HomeOwner.Models.Comment", b =>
                 {
-                    b.HasOne("HomeOwner.Models.Post", "post")
+                    b.HasOne("HomeOwner.Models.User", "Author")
+                        .WithMany("Comments")
+                        .HasForeignKey("author_id")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("HomeOwner.Models.Post", "Post")
                         .WithMany("Comments")
                         .HasForeignKey("post_id")
                         .OnDelete(DeleteBehavior.Cascade);
 
-                    b.HasOne("HomeOwner.Models.User", "user")
-                        .WithMany()
-                        .HasForeignKey("user_id")
-                        .OnDelete(DeleteBehavior.Restrict);
+                    b.Navigation("Author");
 
-                    b.HasOne("HomeOwner.Models.User", null)
-                        .WithMany("Comments")
-                        .HasForeignKey("user_id1");
-
-                    b.Navigation("post");
-
-                    b.Navigation("user");
+                    b.Navigation("Post");
                 });
 
             modelBuilder.Entity("HomeOwner.Models.Post", b =>
                 {
-                    b.HasOne("HomeOwner.Models.User", "user")
-                        .WithMany("Post")
+                    b.HasOne("HomeOwner.Models.User", "Author")
+                        .WithMany("Posts")
                         .HasForeignKey("user_id")
                         .OnDelete(DeleteBehavior.Restrict);
 
-                    b.Navigation("user");
+                    b.Navigation("Author");
+                });
+
+            modelBuilder.Entity("HomeOwner.Models.Report", b =>
+                {
+                    b.HasOne("HomeOwner.Models.User", "Author")
+                        .WithMany("Reports")
+                        .HasForeignKey("user_id")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("Author");
+                });
+
+            modelBuilder.Entity("HomeOwner.Models.ServiceRequest", b =>
+                {
+                    b.HasOne("HomeOwner.Models.User", "User")
+                        .WithMany("ServiceRequests")
+                        .HasForeignKey("user_id")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("HomeOwner.Models.Post", b =>
@@ -210,7 +314,11 @@ namespace HomeOwner.Migrations
                 {
                     b.Navigation("Comments");
 
-                    b.Navigation("Post");
+                    b.Navigation("Posts");
+
+                    b.Navigation("Reports");
+
+                    b.Navigation("ServiceRequests");
                 });
 #pragma warning restore 612, 618
         }

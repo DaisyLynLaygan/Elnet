@@ -13,6 +13,30 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
 </head>
 <style>
+    .notification-icon {
+        position: relative;
+        display: inline-block;
+        text-decoration: none;
+    }
+
+    .notification-icon i {
+        color: brown;
+        font-size: 24px;
+    }
+
+    .notification-badge {
+        position: absolute;
+        top: 0;
+        right: 0;
+        transform: translate(50%, -50%);
+        background-color: red;
+        color: white;
+        font-size: 12px;
+        padding: 2px 6px;
+        border-radius: 50%;
+        font-weight: bold;
+    }
+
     /* Survey Modal Styles */
 .modasurvey {
     position: fixed;
@@ -309,6 +333,13 @@
 
     <!-- User Profile and Hamburger Container -->
     <div class="user-hamburger-container">
+        <!-- Notification Bell Icon -->
+     <a asp-controller="Homeowner" asp-action="Notification" class="notification-icon">
+        <i class="fas fa-bell"></i> <!-- Font Awesome bell icon -->
+        <span class="notification-badge">3</span> <!-- Notification count -->
+    </a>
+        
+
         <!-- Hamburger Menu for Mobile -->
         <button class="hamburger" onclick="toggleMenu()">
             <span></span>
@@ -318,8 +349,8 @@
 
         <!-- User Profile with Dropdown -->
         <div class="user-profile" onclick="toggleProfileDropdown()">
-                <span style="text-transform: capitalize;">@user?.firstname @user?.lastname</span>
-                <img src="~/images/user-default-picture.jpg" alt="User profile" />
+            <span style="text-transform: capitalize;">@user?.firstname @user?.lastname</span>
+            <img src="~/images/user-default-picture.jpg" alt="User profile" />
             <!-- Dropdown Menu -->
             <div class="profile-dropdown">
                 <a asp-controller="Homeowner" asp-action="UserProfile" class="dropdown-link">Settings</a>
@@ -329,10 +360,8 @@
                 </form>
             </div>
         </div>
-        
     </div>
 </nav>
-
 <div>
     <main>
         @RenderBody()
@@ -797,5 +826,6 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 </script>
+<script src="~/js/stringHelpers.js"></script>
 </body>
 </html>

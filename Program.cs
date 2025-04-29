@@ -37,6 +37,7 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddSingleton<WebSocketManager>();
 builder.Services.AddSingleton<CommentWebSocketManager>();
 builder.Services.AddSingleton<LikeWebSocketManager>();
+builder.Services.AddSingleton<ServiceRequestWebSocketManager>();
 
 var app = builder.Build();
 
@@ -72,7 +73,8 @@ app.Use(async (context, next) =>
     if (context.Request.Path == "/ws/admin" || 
         context.Request.Path == "/ws/dashboard" || 
         context.Request.Path == "/ws/comments" ||
-        context.Request.Path == "/ws/likes")
+        context.Request.Path == "/ws/likes" ||
+        context.Request.Path == "/ws/admin/service-requests")
     {
         if (context.WebSockets.IsWebSocketRequest)
         {
@@ -97,6 +99,11 @@ app.Use(async (context, next) =>
             {
                 var likeWebSocketManager = context.RequestServices.GetRequiredService<LikeWebSocketManager>();
                 await likeWebSocketManager.HandleLikeConnection(webSocket);
+            }
+            else if (context.Request.Path == "/ws/admin/service-requests")
+            {
+                var serviceRequestWebSocketManager = context.RequestServices.GetRequiredService<ServiceRequestWebSocketManager>();
+                await serviceRequestWebSocketManager.HandleServiceRequestConnection(webSocket);
             }
         }
         else
@@ -402,6 +409,119 @@ public class LikeWebSocketManager
         var tasks = new List<Task>();
 
         foreach (var socket in _likeSockets.Where(s => s.State == WebSocketState.Open))
+        {
+            tasks.Add(socket.SendAsync(
+                new ArraySegment<byte>(buffer),
+                WebSocketMessageType.Text,
+                true,
+                CancellationToken.None));
+        }
+
+        await Task.WhenAll(tasks);
+    }
+}
+
+public class ServiceRequestWebSocketManager
+{
+    private readonly List<WebSocket> _serviceRequestSockets = new();
+    private readonly ILogger<ServiceRequestWebSocketManager> _logger;
+
+    public ServiceRequestWebSocketManager(ILogger<ServiceRequestWebSocketManager> logger)
+    {
+        _logger = logger;
+    }
+
+    public async Task HandleServiceRequestConnection(WebSocket webSocket)
+    {
+        _serviceRequestSockets.Add(webSocket);
+        await HandleConnection(webSocket);
+    }
+
+    private async Task HandleConnection(WebSocket webSocket)
+    {
+        var buffer = new byte[1024 * 4];
+        try
+        {
+            WebSocketReceiveResult result = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
+
+            while (!result.CloseStatus.HasValue)
+            {
+                result = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
+            }
+
+            await webSocket.CloseAsync(result.CloseStatus.Value, result.CloseStatusDescription, CancellationToken.None);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError($"Service Request WebSocket error: {ex.Message}");
+        }
+        finally
+        {
+            _serviceRequestSockets.Remove(webSocket);
+            _logger.LogInformation("Service Request WebSocket connection closed");
+        }
+    }
+
+    public async Task BroadcastNewServiceRequest(ServiceRequest request, User user)
+    {
+        var message = JsonConvert.SerializeObject(new
+        {
+            type = "new_service_request",
+            request = new
+            {
+                id = request.request_id,
+                serviceType = request.service_type,
+                serviceIcon = request.service_icon,
+                price = request.price,
+                frequency = request.frequency,
+                scheduledDate = request.scheduled_date.ToString("MMMM dd, yyyy"),
+                scheduledTime = request.scheduled_time,
+                status = request.status,
+                paymentStatus = request.payment_status,
+                notes = request.notes,
+                user = new
+                {
+                    id = user.user_id,
+                    name = $"{user.firstname} {user.lastname}",
+                    avatar = $"https://randomuser.me/api/portraits/men/{user.user_id % 100}.jpg",
+                    phone = user.contact_no,
+                    email = user.email
+                }
+            }
+        });
+
+        var buffer = Encoding.UTF8.GetBytes(message);
+        var tasks = new List<Task>();
+
+        foreach (var socket in _serviceRequestSockets.Where(s => s.State == WebSocketState.Open))
+        {
+            tasks.Add(socket.SendAsync(
+                new ArraySegment<byte>(buffer),
+                WebSocketMessageType.Text,
+                true,
+                CancellationToken.None));
+        }
+
+        await Task.WhenAll(tasks);
+    }
+
+    public async Task BroadcastServiceRequestUpdate(ServiceRequest request)
+    {
+        var message = JsonConvert.SerializeObject(new
+        {
+            type = "service_request_update",
+            request = new
+            {
+                id = request.request_id,
+                status = request.status,
+                paymentStatus = request.payment_status
+            }
+        });
+
+        var buffer = Encoding.UTF8.GetBytes(message);
+        var tasks = new List<Task>();
+
+        foreach (var socket in _serviceRequestSockets.Where(s => s.State == WebSocketState.Open))
         {
             tasks.Add(socket.SendAsync(
                 new ArraySegment<byte>(buffer),

@@ -40,6 +40,18 @@ namespace HomeOwner.Data
                 .WithMany(u => u.Reports)
                 .HasForeignKey(r => r.user_id)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            // ServiceRequest-User relationship
+            modelBuilder.Entity<ServiceRequest>()
+                .HasOne(s => s.User)
+                .WithMany(u => u.ServiceRequests)
+                .HasForeignKey(s => s.user_id)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Configure decimal precision for price
+            modelBuilder.Entity<ServiceRequest>()
+                .Property(s => s.price)
+                .HasColumnType("decimal(10,2)");
         }
 
         public DbSet<HomeOwner.Models.User> User { get; set; } = default!;
@@ -47,5 +59,6 @@ namespace HomeOwner.Data
         public DbSet<HomeOwner.Models.Post> Post { get; set; } = default!;
         public DbSet<HomeOwner.Models.Comment> Comment { get; set; } = default!;
         public DbSet<HomeOwner.Models.Report> Report { get; set; } = default!;
+        public DbSet<ServiceRequest> ServiceRequest { get; set; }
     }
 }

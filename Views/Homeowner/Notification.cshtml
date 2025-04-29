@@ -1,0 +1,77 @@
+@{
+    Layout = "~/Views/Shared/Dashboard_Layout.cshtml";
+    ViewData["Title"] = "Notifications";
+}
+
+<link rel="stylesheet" href="~/css/homeowners/notification.css" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+<div class="notification-container">
+    <div class="notification-header">
+        <h1><i class="fas fa-bell"></i> Notifications</h1>
+        <div class="notification-actions">
+            <button class="btn-mark-all"><i class="fas fa-check-double"></i> Mark all as read</button>
+            <button class="btn-settings"><i class="fas fa-cog"></i> Settings</button>
+        </div>
+    </div>
+
+    <div class="notification-tabs">
+        <button class="tab-btn active">All</button>
+        <button class="tab-btn">Unread</button>
+        <button class="tab-btn">Important</button>
+    </div>
+
+    <div class="notification-list">
+        <!-- Unread Notification -->
+        <div class="notification-item unread">
+            <div class="notification-icon">
+                <i class="fas fa-exclamation-circle"></i>
+            </div>
+            <div class="notification-content">
+                <h3 class="notification-title">Payment Received</h3>
+                <p class="notification-message">Your payment of $250 for maintenance fees has been successfully processed.</p>
+                <p class="notification-time">10 minutes ago</p>
+            </div>
+            <button class="notification-action"><i class="fas fa-ellipsis-v"></i></button>
+        </div>
+
+        <!-- Important Notification -->
+        <div class="notification-item important">
+            <div class="notification-icon">
+                <i class="fas fa-calendar-check"></i>
+            </div>
+            <div class="notification-content">
+                <h3 class="notification-title">Upcoming Meeting</h3>
+                <p class="notification-message">Reminder: Community meeting tomorrow at 7:00 PM in the clubhouse.</p>
+                <p class="notification-time">2 hours ago</p>
+            </div>
+            <button class="notification-action"><i class="fas fa-ellipsis-v"></i></button>
+        </div>
+
+        <!-- Read Notification -->
+        <div class="notification-item">
+            <div class="notification-icon">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <div class="notification-content">
+                <h3 class="notification-title">Maintenance Scheduled</h3>
+                <p class="notification-message">Landscaping maintenance is scheduled for this Friday from 9 AM to 12 PM.</p>
+                <p class="notification-time">1 day ago</p>
+            </div>
+            <button class="notification-action"><i class="fas fa-ellipsis-v"></i></button>
+        </div>
+
+        <!-- Warning Notification -->
+        <div class="notification-item warning">
+            <div class="notification-icon">
+                <i class="fas fa-exclamation-triangle"></i>
+            </div>
+            <div class="notification-content">
+                <h3 class="notification-title">Water Shut-off Notice</h3>
+                <p class="notification-message">Water will be temporarily shut off on Tuesday from 8 AM to 2 PM for pipe repairs.</p>
+                <p class="notification-time">3 days ago</p>
+            </div>
+            <button class="notification-action"><i class="fas fa-ellipsis-v"></i></button>
+        </div>
+    </div>
+</div>

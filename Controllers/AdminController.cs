@@ -355,6 +355,193 @@ namespace HomeOwner.Controllers
             return View(issues);
         }
 
-       
+        [HttpPost]
+        public async Task<JsonResult> UpdateServiceRequestStatus([FromBody] ServiceRequest request)
+        {
+            try
+            {
+                var existingRequest = _context.ServiceRequest.FirstOrDefault(r => r.request_id == request.request_id);
+                if (existingRequest == null)
+                {
+                    return Json(new { success = false, message = "Service request not found." });
+                }
+
+                existingRequest.status = request.status;
+                existingRequest.payment_status = request.payment_status;
+
+                await _context.SaveChangesAsync();
+
+                // Broadcast service request update
+                var serviceRequestWebSocketManager = HttpContext.RequestServices.GetRequiredService<ServiceRequestWebSocketManager>();
+                await serviceRequestWebSocketManager.BroadcastServiceRequestUpdate(existingRequest);
+
+                return Json(new { success = true, message = "Service request updated successfully!" });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+
+        [HttpGet]
+        public JsonResult GetServiceRequests(string status = "all", string serviceType = "all", string paymentStatus = "all", 
+            string dateRange = "all", string startDate = null, string endDate = null, int page = 1, int pageSize = 5)
+        {
+            try
+            {
+                var query = _context.ServiceRequest
+                    .Include(r => r.User)
+                    .AsQueryable();
+
+                // Apply filters
+                if (status != "all")
+                {
+                    query = query.Where(r => r.status == status);
+                }
+
+                if (serviceType != "all")
+                {
+                    query = query.Where(r => r.service_type == serviceType);
+                }
+
+                if (paymentStatus != "all")
+                {
+                    query = query.Where(r => r.payment_status == paymentStatus);
+                }
+
+                if (dateRange != "all")
+                {
+                    var today = DateTime.Today;
+                    switch (dateRange)
+                    {
+                        case "today":
+                            query = query.Where(r => r.scheduled_date == today);
+                            break;
+                        case "week":
+                            var weekStart = today.AddDays(-7);
+                            query = query.Where(r => r.scheduled_date >= weekStart && r.scheduled_date <= today);
+                            break;
+                        case "month":
+                            var monthStart = today.AddMonths(-1);
+                            query = query.Where(r => r.scheduled_date >= monthStart && r.scheduled_date <= today);
+                            break;
+                        case "custom":
+                            if (!string.IsNullOrEmpty(startDate) && !string.IsNullOrEmpty(endDate))
+                            {
+                                var start = DateTime.Parse(startDate);
+                                var end = DateTime.Parse(endDate);
+                                query = query.Where(r => r.scheduled_date >= start && r.scheduled_date <= end);
+                            }
+                            break;
+                    }
+                }
+
+                // Get total count for pagination
+                var totalCount = query.Count();
+                var totalPages = (int)Math.Ceiling(totalCount / (double)pageSize);
+
+                // Apply pagination
+                var requests = query
+                    .OrderByDescending(r => r.date_created)
+                    .Skip((page - 1) * pageSize)
+                    .Take(pageSize)
+                    .Select(r => new
+                    {
+                        request_id = r.request_id,
+                        service_type = r.service_type,
+                        service_icon = r.service_icon,
+                        price = r.price,
+                        frequency = r.frequency,
+                        scheduled_date = r.scheduled_date,
+                        scheduled_time = r.scheduled_time,
+                        status = r.status,
+                        payment_status = r.payment_status,
+                        notes = r.notes,
+                        date_created = r.date_created,
+                        user = new
+                        {
+                            user_id = r.User.user_id,
+                            firstname = r.User.firstname,
+                            lastname = r.User.lastname,
+                            email = r.User.email,
+                            contact_no = r.User.contact_no
+                        }
+                    })
+                    .ToList();
+
+                // Calculate statistics
+                var stats = new
+                {
+                    total = totalCount,
+                    pending = _context.ServiceRequest.Count(r => r.status == "Pending Approval"),
+                    unpaid = _context.ServiceRequest.Count(r => r.payment_status == "Unpaid"),
+                    completed = _context.ServiceRequest.Count(r => r.status == "Completed")
+                };
+
+                return Json(new { 
+                    success = true, 
+                    requests, 
+                    stats,
+                    pagination = new {
+                        currentPage = page,
+                        totalPages = totalPages,
+                        totalItems = totalCount
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+
+        [HttpGet]
+        public JsonResult GetServiceRequest(int id)
+        {
+            try
+            {
+                var request = _context.ServiceRequest
+                    .Include(r => r.User)
+                    .FirstOrDefault(r => r.request_id == id);
+
+                if (request == null)
+                {
+                    return Json(new { success = false, message = "Service request not found." });
+                }
+
+                var response = new
+                {
+                    success = true,
+                    request = new
+                    {
+                        request_id = request.request_id,
+                        service_type = request.service_type,
+                        service_icon = request.service_icon,
+                        price = request.price,
+                        frequency = request.frequency,
+                        scheduled_date = request.scheduled_date,
+                        scheduled_time = request.scheduled_time,
+                        status = request.status,
+                        payment_status = request.payment_status,
+                        notes = request.notes,
+                        date_created = request.date_created,
+                        user = new
+                        {
+                            user_id = request.User.user_id,
+                            firstname = request.User.firstname,
+                            lastname = request.User.lastname,
+                            email = request.User.email,
+                            contact_no = request.User.contact_no
+                        }
+                    }
+                };
+
+                return Json(response);
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
     }
 }

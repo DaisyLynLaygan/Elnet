@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System;
+using System.ComponentModel.DataAnnotations;
 
 namespace HomeOwner.Models
 {
@@ -23,9 +24,8 @@ namespace HomeOwner.Models
 
         // Collection of Posts
         public ICollection<Post>? Posts { get; set; }
-         public ICollection<Report>? Reports { get; set; }
-
-        // Add if you want to track user's comments
+        public ICollection<Report>? Reports { get; set; }
         public ICollection<Comment>? Comments { get; set; }
+        public ICollection<ServiceRequest>? ServiceRequests { get; set; }
     }
 }
