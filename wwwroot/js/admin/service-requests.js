@@ -1,8 +1,9 @@
-// WebSocket connection for real-time updates
-let socket;
-let reconnectAttempts = 0;
-const maxReconnectAttempts = 5;
-const reconnectDelay = 5000; // 5 seconds
+// WebSocket connection
+let ws = null;
+let wsConnected = false;
+let wsRetryCount = 0;
+const wsMaxRetries = 5;
+const wsRetryDelay = 3000;
 
 // Filter and pagination state
 let currentFilters = {
@@ -15,87 +16,163 @@ let currentFilters = {
 };
 let currentPage = 1;
 let totalPages = 1;
+let isLoading = false;
+let isInitialLoad = true;
 
-function connectWebSocket() {
-    const protocol = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
-    const host = window.location.host;
-    socket = new WebSocket(`${protocol}${host}/ws/admin/service-requests`);
-
-    socket.onopen = () => {
-        console.log('WebSocket connected');
-        reconnectAttempts = 0;
-    };
-
-    socket.onmessage = (event) => {
-        const data = JSON.parse(event.data);
-        handleWebSocketMessage(data);
-    };
-
-    socket.onclose = () => {
-        console.log('WebSocket disconnected');
-        if (reconnectAttempts < maxReconnectAttempts) {
-            setTimeout(connectWebSocket, reconnectDelay);
-            reconnectAttempts++;
-        }
-    };
-
-    socket.onerror = (error) => {
-        console.error('WebSocket error:', error);
-    };
-}
-
-function handleWebSocketMessage(data) {
-    switch (data.type) {
-        case 'new_request':
-            addNewRequest(data.request);
-            updateStats();
-            break;
-        case 'request_updated':
-            updateRequest(data.request);
-            updateStats();
-            break;
-        case 'request_deleted':
-            removeRequest(data.requestId);
-            updateStats();
-            break;
-    }
-}
-
-// Modal management
-const serviceRequestModal = document.getElementById('serviceRequestModal');
-const rejectionModal = document.getElementById('rejectionModal');
-let currentRequestId = null;
-
-function openModal(modal) {
-    modal.style.display = 'block';
-    document.body.style.overflow = 'hidden';
-}
-
-function closeModal(modal) {
-    modal.style.display = 'none';
-    document.body.style.overflow = 'auto';
-}
-
-// Close modals when clicking outside
-window.onclick = (event) => {
-    if (event.target === serviceRequestModal) {
-        closeModal(serviceRequestModal);
-    }
-    if (event.target === rejectionModal) {
-        closeModal(rejectionModal);
-    }
+// DOM Elements
+const tableBody = document.getElementById('serviceRequestsTableBody');
+const pagination = document.getElementById('pagination');
+const modals = {
+    serviceRequest: document.getElementById('serviceRequestModal'),
+    rejection: document.getElementById('rejectionModal')
 };
 
-// Close modals when clicking close buttons
-document.querySelectorAll('.close-modal').forEach(button => {
-    button.onclick = () => {
-        closeModal(serviceRequestModal);
-        closeModal(rejectionModal);
-    };
-});
+// Filter elements
+const statusFilter = document.getElementById('statusFilter');
+const serviceTypeFilter = document.getElementById('serviceTypeFilter');
+const paymentFilter = document.getElementById('paymentFilter');
+const dateFilter = document.getElementById('dateFilter');
+const customDateRange = document.getElementById('customDateRange');
+const startDate = document.getElementById('startDate');
+const endDate = document.getElementById('endDate');
 
-// Load service requests with current filters and pagination
+// Modal action buttons
+const approveRequestBtn = document.getElementById('approveRequestBtn');
+const rejectRequestBtn = document.getElementById('rejectRequestBtn');
+const markPaidBtn = document.getElementById('markPaidBtn');
+const markCompleteBtn = document.getElementById('markCompleteBtn');
+const confirmRejectionBtn = document.getElementById('confirmRejectionBtn');
+
+// Rejection modal elements
+const rejectionReason = document.getElementById('rejectionReason');
+const customReasonGroup = document.getElementById('customReasonGroup');
+const customReason = document.getElementById('customReason');
+
+// Stats elements
+const totalRequests = document.getElementById('totalRequests');
+const pendingRequests = document.getElementById('pendingRequests');
+const unpaidRequests = document.getElementById('unpaidRequests');
+const completedRequests = document.getElementById('completedRequests');
+
+// Current request being viewed
+let currentRequestId = null;
+
+// Initialize WebSocket connection
+function initWebSocket() {
+    if (ws && (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING)) {
+        return; // Already connected or connecting
+    }
+
+    try {
+        const protocol = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
+        ws = new WebSocket(`${protocol}${window.location.host}/ws/admin/service-requests`);
+        
+        ws.onopen = function() {
+            console.log('Service Request WebSocket connection established');
+            wsConnected = true;
+            wsRetryCount = 0;
+            if (isInitialLoad) {
+                loadServiceRequests();
+                isInitialLoad = false;
+            }
+        };
+        
+        ws.onmessage = function(event) {
+            try {
+                const data = JSON.parse(event.data);
+                console.log('Received WebSocket message:', data);
+                
+                if (data.type === 'new_service_request') {
+                    // Format the request data to match the table structure
+                    const formattedRequest = {
+                        request_id: data.request.id || data.request.request_id,
+                        service_type: data.request.serviceType || data.request.service_type,
+                        service_icon: data.request.serviceIcon || data.request.service_icon,
+                        scheduled_date: data.request.scheduledDate || data.request.scheduled_date,
+                        scheduled_time: data.request.scheduledTime || data.request.scheduled_time,
+                        status: data.request.status || 'Pending Approval',
+                        payment_status: data.request.paymentStatus || data.request.payment_status || 'Unpaid',
+                        price: data.request.price,
+                        frequency: data.request.frequency,
+                        notes: data.request.notes,
+                        user: {
+                            firstname: data.request.user.firstname || (data.request.user.name ? data.request.user.name.split(' ')[0] : ''),
+                            lastname: data.request.user.lastname || (data.request.user.name ? data.request.user.name.split(' ')[1] : ''),
+                            email: data.request.user.email,
+                            contact_no: data.request.user.contact_no || data.request.user.phone
+                        }
+                    };
+                    
+                    if (currentPage === 1) {
+                        addNewRequestToTable(formattedRequest);
+                    }
+                    if (data.stats) {
+                        updateStats(data.stats);
+                    } else {
+                        // If stats not provided, refresh them
+                        loadServiceRequests();
+                    }
+                } else if (data.type === 'service_request_update') {
+                    // Format the update data
+                    const formattedUpdate = {
+                        id: data.request.id || data.request.request_id,
+                        status: data.request.status,
+                        paymentStatus: data.request.paymentStatus || data.request.payment_status
+                    };
+                    updateRequestInTable(formattedUpdate);
+                    if (data.stats) {
+                        updateStats(data.stats);
+                    }
+                } else if (data.type === 'stats_update') {
+                    updateStats(data.stats);
+                } else if (data.type === 'pong') {
+                    console.log('Received pong from server');
+                }
+            } catch (error) {
+                console.error('Error processing WebSocket message:', error);
+            }
+        };
+        
+        ws.onclose = function(event) {
+            console.log('Service Request WebSocket connection closed', event.code, event.reason);
+            wsConnected = false;
+            if (wsRetryCount < wsMaxRetries) {
+                console.log(`Attempting to reconnect (${wsRetryCount + 1}/${wsMaxRetries})...`);
+                wsRetryCount++;
+                setTimeout(initWebSocket, wsRetryDelay);
+            } else {
+                console.log('Max retries reached for WebSocket, functionality will continue without real-time updates');
+            }
+        };
+        
+        ws.onerror = function(error) {
+            console.error('Service Request WebSocket error:', error);
+            wsConnected = false;
+        };
+    } catch (error) {
+        console.error('Service Request WebSocket initialization failed:', error);
+        wsConnected = false;
+        if (wsRetryCount < wsMaxRetries) {
+            wsRetryCount++;
+            setTimeout(initWebSocket, wsRetryDelay);
+        }
+    }
+}
+
+// Keep WebSocket alive
+setInterval(() => {
+    if (ws && wsConnected && ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify({ type: 'ping' }));
+    } else if (!wsConnected && wsRetryCount < wsMaxRetries) {
+        initWebSocket();
+    }
+}, 30000); // Every 30 seconds
+
+// Load service requests
 async function loadServiceRequests() {
+    if (isLoading) return;
+    isLoading = true;
+
     try {
         const queryParams = new URLSearchParams({
             page: currentPage,
@@ -106,20 +183,23 @@ async function loadServiceRequests() {
             startDate: currentFilters.startDate || '',
             endDate: currentFilters.endDate || ''
         });
-
+        
         const response = await fetch(`/Admin/GetServiceRequests?${queryParams}`);
         const data = await response.json();
-
+        
         if (data.success) {
             updateServiceRequestsTable(data.requests);
             updatePagination(data.pagination);
             updateStats(data.stats);
         } else {
+            console.error('Error loading service requests:', data.message);
             showError(data.message || 'Failed to load service requests');
         }
     } catch (error) {
         console.error('Error loading service requests:', error);
         showError('Failed to load service requests');
+    } finally {
+        isLoading = false;
     }
 }
 
@@ -129,7 +209,7 @@ function updateServiceRequestsTable(requests) {
     if (!tbody) return;
 
     tbody.innerHTML = requests.map(request => `
-        <tr>
+        <tr data-id="${request.request_id}">
             <td>#SR-${request.request_id}</td>
             <td>
                 <div class="user-info">
@@ -159,21 +239,8 @@ function updateServiceRequestsTable(requests) {
                     <i class="fas fa-eye"></i>
                 </button>
                 ${request.status === 'Pending Approval' ? `
-                    <button class="btn-icon approve-request" title="Approve" data-id="${request.request_id}">
-                        <i class="fas fa-check"></i>
-                    </button>
                     <button class="btn-icon reject-request" title="Reject" data-id="${request.request_id}">
                         <i class="fas fa-times"></i>
-                    </button>
-                ` : ''}
-                ${request.status === 'Approved' && request.payment_status === 'Unpaid' ? `
-                    <button class="btn-icon mark-paid" title="Mark as Paid" data-id="${request.request_id}">
-                        <i class="fas fa-dollar-sign"></i>
-                    </button>
-                ` : ''}
-                ${request.status === 'Approved' && request.payment_status === 'Paid' ? `
-                    <button class="btn-icon mark-complete" title="Mark as Complete" data-id="${request.request_id}">
-                        <i class="fas fa-check-double"></i>
                     </button>
                 ` : ''}
             </td>
@@ -194,35 +261,61 @@ function updatePagination(pagination) {
 
     let paginationHTML = '';
 
-    if (currentPage > 1) {
+    // Previous button
+    paginationHTML += `
+        <button class="pagination-btn ${currentPage <= 1 ? 'disabled' : ''}" 
+                data-page="${currentPage - 1}" 
+                ${currentPage <= 1 ? 'disabled' : ''}>
+            <i class="fas fa-chevron-left"></i> Previous
+        </button>
+    `;
+
+    // Page numbers
+    let startPage = Math.max(1, currentPage - 2);
+    let endPage = Math.min(totalPages, startPage + 4);
+    
+    if (endPage - startPage < 4) {
+        startPage = Math.max(1, endPage - 4);
+    }
+
+    if (startPage > 1) {
         paginationHTML += `
-            <button class="pagination-btn" data-page="${currentPage - 1}">
-                <i class="fas fa-chevron-left"></i> Previous
-            </button>
+            <button class="pagination-btn" data-page="1">1</button>
+            ${startPage > 2 ? '<span class="pagination-ellipsis">...</span>' : ''}
         `;
     }
 
-    for (let i = 1; i <= totalPages; i++) {
+    for (let i = startPage; i <= endPage; i++) {
         paginationHTML += `
-            <button class="pagination-btn ${i === currentPage ? 'active' : ''}" data-page="${i}">
+            <button class="pagination-btn ${i === currentPage ? 'active' : ''}" 
+                    data-page="${i}">
                 ${i}
             </button>
         `;
     }
 
-    if (currentPage < totalPages) {
+    if (endPage < totalPages) {
         paginationHTML += `
-            <button class="pagination-btn" data-page="${currentPage + 1}">
-                Next <i class="fas fa-chevron-right"></i>
-            </button>
+            ${endPage < totalPages - 1 ? '<span class="pagination-ellipsis">...</span>' : ''}
+            <button class="pagination-btn" data-page="${totalPages}">${totalPages}</button>
         `;
     }
+
+    // Next button
+    paginationHTML += `
+        <button class="pagination-btn ${currentPage >= totalPages ? 'disabled' : ''}" 
+                data-page="${currentPage + 1}" 
+                ${currentPage >= totalPages ? 'disabled' : ''}>
+            Next <i class="fas fa-chevron-right"></i>
+        </button>
+    `;
 
     paginationContainer.innerHTML = paginationHTML;
 
     // Add event listeners to pagination buttons
-    document.querySelectorAll('.pagination-btn').forEach(button => {
+    document.querySelectorAll('.pagination-btn:not(.disabled)').forEach(button => {
         button.addEventListener('click', function() {
+            if (this.classList.contains('disabled')) return;
             currentPage = parseInt(this.getAttribute('data-page'));
             loadServiceRequests();
         });
@@ -232,11 +325,6 @@ function updatePagination(pagination) {
 // Update stats
 function updateStats(stats) {
     if (!stats) return;
-
-    const totalRequests = document.getElementById('totalRequests');
-    const pendingRequests = document.getElementById('pendingRequests');
-    const unpaidRequests = document.getElementById('unpaidRequests');
-    const completedRequests = document.getElementById('completedRequests');
 
     if (totalRequests) totalRequests.textContent = stats.total;
     if (pendingRequests) pendingRequests.textContent = stats.pending;
@@ -257,14 +345,6 @@ function getStatusClass(status) {
 
 // Initialize filters
 function initializeFilters() {
-    const statusFilter = document.getElementById('statusFilter');
-    const serviceTypeFilter = document.getElementById('serviceTypeFilter');
-    const paymentFilter = document.getElementById('paymentFilter');
-    const dateFilter = document.getElementById('dateFilter');
-    const startDate = document.getElementById('startDate');
-    const endDate = document.getElementById('endDate');
-    const customDateRange = document.getElementById('customDateRange');
-
     if (statusFilter) {
         statusFilter.addEventListener('change', function() {
             currentFilters.status = this.value;
@@ -410,11 +490,6 @@ function addEventListeners() {
                         `;
                         
                         // Show/hide action buttons based on status
-                        const approveRequestBtn = document.getElementById('approveRequestBtn');
-                        const rejectRequestBtn = document.getElementById('rejectRequestBtn');
-                        const markPaidBtn = document.getElementById('markPaidBtn');
-                        const markCompleteBtn = document.getElementById('markCompleteBtn');
-                        
                         if (approveRequestBtn) approveRequestBtn.style.display = 'none';
                         if (rejectRequestBtn) rejectRequestBtn.style.display = 'none';
                         if (markPaidBtn) markPaidBtn.style.display = 'none';
@@ -489,7 +564,7 @@ async function approveRequest(requestId) {
 
         if (response.ok) {
             showSuccess('Service request approved successfully');
-            closeModal(serviceRequestModal);
+            closeModal(modals.serviceRequest);
             loadServiceRequests();
         } else {
             throw new Error('Failed to approve request');
@@ -502,7 +577,7 @@ async function approveRequest(requestId) {
 
 function showRejectionModal(requestId) {
     currentRequestId = requestId;
-    openModal(rejectionModal);
+    openModal(modals.rejection);
 }
 
 async function confirmRejection() {
@@ -532,7 +607,7 @@ async function confirmRejection() {
 
         if (response.ok) {
             showSuccess('Service request rejected successfully');
-            closeModal(rejectionModal);
+            closeModal(modals.rejection);
             loadServiceRequests();
         } else {
             throw new Error('Failed to reject request');
@@ -551,7 +626,7 @@ async function markRequestAsPaid(requestId) {
 
         if (response.ok) {
             showSuccess('Service request marked as paid');
-            closeModal(serviceRequestModal);
+            closeModal(modals.serviceRequest);
             loadServiceRequests();
         } else {
             throw new Error('Failed to mark request as paid');
@@ -570,7 +645,7 @@ async function markRequestAsComplete(requestId) {
 
         if (response.ok) {
             showSuccess('Service request marked as complete');
-            closeModal(serviceRequestModal);
+            closeModal(modals.serviceRequest);
             loadServiceRequests();
         } else {
             throw new Error('Failed to mark request as complete');
@@ -596,13 +671,18 @@ function getPaymentClass(status) {
 
 // Notification functions
 function showSuccess(message) {
-    Swal.fire({
-        icon: 'success',
-        title: 'Success',
-        text: message,
-        timer: 3000,
-        showConfirmButton: false
-    });
+    // Only show success for important actions, not connections
+    if (!message.includes('updates connected')) {
+        Swal.fire({
+            icon: 'success',
+            title: 'Success',
+            text: message,
+            timer: 2000,
+            showConfirmButton: false,
+            toast: true,
+            position: 'top-end'
+        });
+    }
 }
 
 function showError(message) {
@@ -615,20 +695,169 @@ function showError(message) {
 
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
-    connectWebSocket();
-    initializeFilters();
+    // Load data immediately
     loadServiceRequests();
     
+    // Initialize WebSocket after initial data load
+    initWebSocket();
+    
+    // Initialize filters
+    initializeFilters();
+    
     // Add event listeners for modal buttons
-    document.getElementById('approveRequestBtn').addEventListener('click', () => approveRequest(currentRequestId));
-    document.getElementById('rejectRequestBtn').addEventListener('click', () => showRejectionModal(currentRequestId));
-    document.getElementById('markPaidBtn').addEventListener('click', () => markRequestAsPaid(currentRequestId));
-    document.getElementById('markCompleteBtn').addEventListener('click', () => markRequestAsComplete(currentRequestId));
-    document.getElementById('confirmRejectionBtn').addEventListener('click', confirmRejection);
+    document.getElementById('approveRequestBtn')?.addEventListener('click', () => approveRequest(currentRequestId));
+    document.getElementById('rejectRequestBtn')?.addEventListener('click', () => showRejectionModal(currentRequestId));
+    document.getElementById('markPaidBtn')?.addEventListener('click', () => markRequestAsPaid(currentRequestId));
+    document.getElementById('markCompleteBtn')?.addEventListener('click', () => markRequestAsComplete(currentRequestId));
+    document.getElementById('confirmRejectionBtn')?.addEventListener('click', confirmRejection);
     
     // Add event listener for rejection reason selection
-    document.getElementById('rejectionReason').addEventListener('change', (e) => {
+    document.getElementById('rejectionReason')?.addEventListener('change', (e) => {
         const customReasonGroup = document.getElementById('customReasonGroup');
-        customReasonGroup.style.display = e.target.value === 'other' ? 'block' : 'none';
+        if (customReasonGroup) {
+            customReasonGroup.style.display = e.target.value === 'other' ? 'block' : 'none';
+        }
     });
 });
+
+// Add these helper functions
+function addNewRequestToTable(request) {
+    if (!request || !request.user) {
+        console.error('Invalid request data:', request);
+        return;
+    }
+
+    const tbody = document.getElementById('serviceRequestsTableBody');
+    if (!tbody) return;
+
+    const newRow = document.createElement('tr');
+    newRow.setAttribute('data-id', request.request_id);
+    
+    const userInitials = `${(request.user.firstname || '').charAt(0)}${(request.user.lastname || '').charAt(0)}`;
+    
+    newRow.innerHTML = `
+        <td>#SR-${request.request_id}</td>
+        <td>
+            <div class="user-info">
+                <div class="user-avatar">${userInitials}</div>
+                <div class="user-details">
+                    <h4>${request.user.firstname} ${request.user.lastname}</h4>
+                    <p>${request.user.email}</p>
+                </div>
+            </div>
+        </td>
+        <td>
+            <div class="service-info">
+                <div class="service-icon">${request.service_icon || '🔧'}</div>
+                <span>${request.service_type}</span>
+            </div>
+        </td>
+        <td>
+            <div class="date-time">
+                <div class="date">${new Date(request.scheduled_date).toLocaleDateString()}</div>
+                <div class="time">${request.scheduled_time}</div>
+            </div>
+        </td>
+        <td><span class="badge ${getStatusClass(request.status)}">${request.status}</span></td>
+        <td><span class="badge ${request.payment_status === 'Paid' ? 'success' : 'danger'}">${request.payment_status}</span></td>
+        <td>
+            <button class="btn-icon view-details" title="View Details" data-id="${request.request_id}">
+                <i class="fas fa-eye"></i>
+            </button>
+            ${request.status === 'Pending Approval' ? `
+                <button class="btn-icon reject-request" title="Reject" data-id="${request.request_id}">
+                    <i class="fas fa-times"></i>
+                </button>
+            ` : ''}
+        </td>
+    `;
+
+    // Add the new row at the beginning of the table
+    if (tbody.firstChild) {
+        tbody.insertBefore(newRow, tbody.firstChild);
+    } else {
+        tbody.appendChild(newRow);
+    }
+
+    // Add event listeners to the new buttons
+    addEventListenersToRow(newRow);
+}
+
+function updateRequestInTable(request) {
+    const row = document.querySelector(`tr[data-id="${request.id}"]`);
+    if (!row) {
+        console.warn(`Request row with ID ${request.id} not found`);
+        return;
+    }
+
+    // Update status badge
+    const statusCell = row.querySelector('td:nth-child(5)');
+    if (statusCell) {
+        statusCell.innerHTML = `<span class="badge ${getStatusClass(request.status)}">${request.status}</span>`;
+    }
+
+    // Update payment status badge
+    const paymentCell = row.querySelector('td:nth-child(6)');
+    if (paymentCell) {
+        paymentCell.innerHTML = `<span class="badge ${request.paymentStatus === 'Paid' ? 'success' : 'danger'}">${request.paymentStatus}</span>`;
+    }
+
+    // Update action buttons based on status
+    const actionsCell = row.querySelector('td:nth-child(7)');
+    if (actionsCell) {
+        let buttonsHtml = `
+            <button class="btn-icon view-details" title="View Details" data-id="${request.id}">
+                <i class="fas fa-eye"></i>
+            </button>
+        `;
+
+        if (request.status === 'Pending Approval') {
+            buttonsHtml += `
+                <button class="btn-icon reject-request" title="Reject" data-id="${request.id}">
+                    <i class="fas fa-times"></i>
+                </button>
+            `;
+        }
+
+        actionsCell.innerHTML = buttonsHtml;
+        addEventListenersToRow(row);
+    }
+}
+
+function addEventListenersToRow(row) {
+    // View details button
+    const viewButton = row.querySelector('.view-details');
+    if (viewButton) {
+        viewButton.addEventListener('click', function() {
+            const requestId = this.getAttribute('data-id');
+            openServiceRequestModal(requestId);
+        });
+    }
+
+    // Reject button
+    const rejectButton = row.querySelector('.reject-request');
+    if (rejectButton) {
+        rejectButton.addEventListener('click', function() {
+            const requestId = this.getAttribute('data-id');
+            showRejectionModal(requestId);
+        });
+    }
+
+    // Mark as paid button
+    const markPaidButton = row.querySelector('.mark-paid');
+    if (markPaidButton) {
+        markPaidButton.addEventListener('click', function() {
+            const requestId = this.getAttribute('data-id');
+            markRequestAsPaid(requestId);
+        });
+    }
+
+    // Mark as complete button
+    const markCompleteButton = row.querySelector('.mark-complete');
+    if (markCompleteButton) {
+        markCompleteButton.addEventListener('click', function() {
+            const requestId = this.getAttribute('data-id');
+            markRequestAsComplete(requestId);
+        });
+    }
+}
