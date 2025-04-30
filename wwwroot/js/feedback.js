@@ -232,24 +232,47 @@
         const tabs = document.querySelectorAll('.tab-button');
         const tabContents = document.querySelectorAll('.feedback-content');
         
-        tabs.forEach(tab => {
-            tab.addEventListener('click', function() {
-                // Remove active class from all tabs and contents
-                tabs.forEach(t => t.classList.remove('active'));
-                tabContents.forEach(c => c.classList.remove('active'));
-                
-                // Add active class to clicked tab and corresponding content
-                this.classList.add('active');
-                const tabId = this.getAttribute('data-tab');
-                document.getElementById(tabId).classList.add('active');
+        // Function to switch tabs
+        function switchTab(tabId) {
+            // Remove active class from all tabs and contents
+            tabs.forEach(t => t.classList.remove('active'));
+            tabContents.forEach(c => c.classList.remove('active'));
+            
+            // Add active class to clicked tab and corresponding content
+            const activeTab = document.querySelector(`.tab-button[data-tab="${tabId}"]`);
+            const activeContent = document.getElementById(tabId);
+            
+            if (activeTab && activeContent) {
+                activeTab.classList.add('active');
+                activeContent.classList.add('active');
                 
                 // If switching to complaints tab, load complaints
                 if (tabId === 'service-complaints') {
                     loadComplaints('all');
+                } else if (tabId === 'facility-feedback') {
+                    // Reset to first facility when switching back to feedback
+                    const firstFacility = document.querySelector('.facility-card');
+                    if (firstFacility) {
+                        const facilityId = parseInt(firstFacility.getAttribute('data-facility-id'));
+                        updateFacilityDetails(facilityId);
+                        setActiveFacilityCard(facilityId);
+                    }
                 }
+            }
+        }
+        
+        // Add click event listeners to tabs
+        tabs.forEach(tab => {
+            tab.addEventListener('click', function(e) {
+                e.preventDefault();
+                const tabId = this.getAttribute('data-tab');
+                switchTab(tabId);
             });
         });
-    
+        
+        // Initialize with facility feedback tab
+        switchTab('facility-feedback');
+        
         // Function to generate star rating HTML
         function generateStarRating(rating) {
             const fullStars = Math.floor(rating);

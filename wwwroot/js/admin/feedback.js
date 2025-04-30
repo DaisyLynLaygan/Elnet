@@ -1,73 +1,8 @@
 document.addEventListener('DOMContentLoaded', function() {
-    // Sample data for modals
-    const feedbackData = {
-        1: {
-            userAvatar: "https://randomuser.me/api/portraits/men/32.jpg",
-            userName: "Pradeep Kumar Singh",
-            userUnit: "Unit 12B",
-            facility: "Function Hall",
-            rating: "★★★★★ (5/5)",
-            date: "May 15, 2023",
-            status: "Published",
-            fullText: "Perfect for our wedding! The staff went above and beyond to make our special day memorable. The hall was beautifully decorated exactly as we requested. The sound system was excellent, and the catering area was well-organized. We couldn't have asked for a better venue for our wedding reception."
-        },
-        2: {
-            userAvatar: "https://randomuser.me/api/portraits/women/44.jpg",
-            userName: "Priya Sharma",
-            userUnit: "Unit 5C",
-            facility: "Swimming Pool",
-            rating: "★★★☆☆ (3/5)",
-            date: "May 14, 2023",
-            status: "Pending",
-            fullText: "Water was too cold and the pool wasn't cleaned properly. There were leaves floating in the water and the tiles around the pool were slippery. The lifeguard wasn't very attentive either. I hope management can improve the maintenance and temperature control of the pool."
-        },
-        3: {
-            userAvatar: "https://randomuser.me/api/portraits/men/67.jpg",
-            userName: "Rahul Mehta",
-            userUnit: "Unit 8A",
-            facility: "Gym Facility",
-            rating: "★★★★☆ (4/5)",
-            date: "May 12, 2023",
-            status: "Published",
-            fullText: "Good equipment but needs more maintenance. Some of the treadmill belts are wearing out and a few weight machines make strange noises. The space is well-organized though and there's a good variety of equipment. The air conditioning works well which is important for a workout space."
-        }
-    };
-
-    const complaintData = {
-        101: {
-            userAvatar: "https://randomuser.me/api/portraits/women/28.jpg",
-            userName: "Neha Gupta",
-            userUnit: "Unit 9D",
-            serviceType: "House Cleaning",
-            severity: "High",
-            date: "May 15, 2023",
-            status: "Open",
-            fullText: "Incomplete cleaning service. The cleaners only vacuumed the living room and didn't touch the bedrooms or bathrooms as promised. The kitchen counters were wiped but the stove wasn't cleaned. I paid for a full cleaning service but only received partial service.",
-            resolutionNotes: ""
-        },
-        102: {
-            userAvatar: "https://randomuser.me/api/portraits/men/55.jpg",
-            userName: "Vikram Patel",
-            userUnit: "Unit 3B",
-            serviceType: "Garden Maintenance",
-            severity: "Medium",
-            date: "May 14, 2023",
-            status: "In Progress",
-            fullText: "Overgrown bushes blocking pathway. The shrubs near the entrance to my unit have grown so much that they're obstructing the walkway. It's becoming difficult to get through, especially with packages. This also creates a security concern as it provides hiding spots near the entrance.",
-            resolutionNotes: "Gardening team scheduled for tomorrow morning to trim the bushes."
-        },
-        103: {
-            userAvatar: "https://randomuser.me/api/portraits/women/63.jpg",
-            userName: "Ananya Reddy",
-            userUnit: "Unit 7E",
-            serviceType: "Safety Inspection",
-            severity: "High",
-            date: "May 10, 2023",
-            status: "Resolved",
-            fullText: "Fire extinguisher expired in common area. I noticed that the fire extinguisher on the 7th floor near the elevators has an expiration date from last month. This is a serious safety concern that needs immediate attention. All fire safety equipment should be regularly inspected and maintained.",
-            resolutionNotes: "Expired extinguisher replaced on May 11. All other extinguishers in the building checked and found to be in compliance."
-        }
-    };
+    // Global variables for pagination
+    let currentFeedbackPage = 1;
+    let currentComplaintsPage = 1;
+    const pageSize = 10;
 
     // Tab functionality
     const tabs = document.querySelectorAll('.tab-button');
@@ -85,6 +20,13 @@ document.addEventListener('DOMContentLoaded', function() {
         if (selectedTab && selectedContent) {
             selectedTab.classList.add('active');
             selectedContent.classList.add('active');
+
+            // Load data for the selected tab
+            if (tabId === 'facility-feedback') {
+                loadFeedback();
+            } else if (tabId === 'service-complaints') {
+                loadComplaints();
+            }
         }
     }
     
@@ -95,258 +37,358 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // Modal functionality
-    const modals = {
-        feedback: document.getElementById('feedbackDetailModal'),
-        complaint: document.getElementById('complaintDetailModal')
-    };
-    
-    const closeButtons = document.querySelectorAll('.close, .close-modal');
-    
-    // Open modals when clicking view buttons
-    document.querySelectorAll('.view-details').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const type = this.getAttribute('data-type');
-            const id = this.getAttribute('data-id');
-            
-            if (type === 'feedback' && feedbackData[id]) {
-                openFeedbackModal(id);
-            } else if (type === 'complaint' && complaintData[id]) {
-                openComplaintModal(id);
+    // Function to load feedback data
+    async function loadFeedback() {
+        try {
+            const facility = document.getElementById('facilityFilter').value;
+            const response = await fetch(`/Admin/GetFeedback?page=${currentFeedbackPage}&pageSize=${pageSize}&facility=${facility}`);
+            const result = await response.json();
+
+            if (result.success) {
+                updateFeedbackTable(result.feedbacks);
+                updateFeedbackStats(result.stats);
+                updateFeedbackPagination(result.pagination);
+            } else {
+                console.error('Error loading feedback:', result.message);
             }
-        });
-    });
-    
-    function openFeedbackModal(id) {
-        const data = feedbackData[id];
-        if (!data) return;
-        
-        document.getElementById('feedbackUserAvatar').src = data.userAvatar;
-        document.getElementById('feedbackUserName').textContent = data.userName;
-        document.getElementById('feedbackUserUnit').textContent = data.userUnit;
-        document.getElementById('feedbackFacility').textContent = data.facility;
-        document.getElementById('feedbackRating').textContent = data.rating;
-        document.getElementById('feedbackDate').textContent = data.date;
-        document.getElementById('feedbackStatus').textContent = data.status;
-        document.getElementById('feedbackFullText').textContent = data.fullText;
-        
-        // Set the delete button data-id
-        document.getElementById('deleteFeedbackBtn').setAttribute('data-id', id);
-        
-        // Show the modal
-        modals.feedback.classList.add('show');
-    }
-    
-    function openComplaintModal(id) {
-        const data = complaintData[id];
-        if (!data) return;
-        
-        document.getElementById('complaintUserAvatar').src = data.userAvatar;
-        document.getElementById('complaintUserName').textContent = data.userName;
-        document.getElementById('complaintUserUnit').textContent = data.userUnit;
-        document.getElementById('complaintServiceType').textContent = data.serviceType;
-        document.getElementById('complaintSeverity').textContent = data.severity;
-        document.getElementById('complaintDate').textContent = data.date;
-        document.getElementById('complaintStatus').textContent = data.status;
-        document.getElementById('complaintFullText').textContent = data.fullText;
-        document.getElementById('resolutionNotes').value = data.resolutionNotes || '';
-        
-        // Set the resolve button data-id
-        document.getElementById('resolveComplaintBtn').setAttribute('data-id', id);
-        
-        // Show resolution section only if not resolved
-        const resolutionSection = document.getElementById('resolutionSection');
-        if (data.status === 'Resolved') {
-            resolutionSection.style.display = 'none';
-            document.getElementById('resolveComplaintBtn').style.display = 'none';
-        } else {
-            resolutionSection.style.display = 'block';
-            document.getElementById('resolveComplaintBtn').style.display = 'inline-block';
+        } catch (error) {
+            console.error('Error loading feedback:', error);
         }
-        
-        // Show the modal
-        modals.complaint.classList.add('show');
     }
-    
-    // Close modals
-    closeButtons.forEach(button => {
-        button.addEventListener('click', closeAllModals);
-    });
-    
-    // Close modal when clicking outside
-    window.addEventListener('click', function(event) {
-        if (event.target.classList.contains('modal')) {
-            closeAllModals();
+
+    // Function to load complaints data
+    async function loadComplaints() {
+        try {
+            const status = document.getElementById('statusFilter').value;
+            const serviceType = document.getElementById('serviceTypeFilter').value;
+            const response = await fetch(`/Admin/GetComplaints?page=${currentComplaintsPage}&pageSize=${pageSize}&status=${status}&serviceType=${serviceType}`);
+            const result = await response.json();
+
+            if (result.success) {
+                updateComplaintsTable(result.complaints);
+                updateComplaintsStats(result.stats);
+                updateComplaintsPagination(result.pagination);
+            } else {
+                console.error('Error loading complaints:', result.message);
+            }
+        } catch (error) {
+            console.error('Error loading complaints:', error);
         }
-    });
-    
-    function closeAllModals() {
-        Object.values(modals).forEach(modal => {
-            modal.classList.remove('show');
+    }
+
+    // Function to update feedback table
+    function updateFeedbackTable(feedbacks) {
+        const tbody = document.querySelector('#facility-feedback tbody');
+        tbody.innerHTML = '';
+
+        feedbacks.forEach(feedback => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>
+                    <div class="feedback-user">
+                        <div class="feedback-user-info">
+                            <h4>${feedback.user.name}</h4>
+                            <p>${feedback.user.unit}</p>
+                        </div>
+                    </div>
+                </td>
+                <td>${feedback.facility}</td>
+                <td>
+                    <div class="rating-stars">${generateStarRating(feedback.overall_rating)}</div>
+                </td>
+                <td>${feedback.title}</td>
+                <td>${feedback.created_date}</td>
+                <td><span class="badge success">${feedback.status}</span></td>
+                <td>
+                    <button class="btn-icon view-details" title="View Details" data-type="feedback" data-id="${feedback.feedback_id}">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                    <button class="btn-icon delete-feedback" title="Delete" data-id="${feedback.feedback_id}">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </td>
+            `;
+            tbody.appendChild(row);
         });
     }
-    
-    // Delete feedback
-    document.getElementById('deleteFeedbackBtn')?.addEventListener('click', function() {
-        const id = this.getAttribute('data-id');
-        if (confirm('Are you sure you want to delete this feedback?')) {
-            // In a real app, you would send a request to your server here
-            console.log(`Deleting feedback with ID: ${id}`);
-            alert('Feedback deleted successfully!');
-            closeAllModals();
-            
-            // Remove the row from the table
-            const row = document.querySelector(`.delete-feedback[data-id="${id}"]`)?.closest('tr');
-            if (row) {
-                row.remove();
-            }
-        }
-    });
-    
-    // Approve feedback
-    document.getElementById('approveFeedbackBtn')?.addEventListener('click', function() {
-        const id = this.getAttribute('data-id');
-        // In a real app, you would send a request to your server here
-        console.log(`Approving feedback with ID: ${id}`);
-        alert('Feedback approved and published!');
-        closeAllModals();
-        
-        // Update the status in the table
-        const statusBadge = document.querySelector(`.delete-feedback[data-id="${id}"]`)?.closest('tr')?.querySelector('.badge');
-        if (statusBadge) {
-            statusBadge.textContent = 'Published';
-            statusBadge.className = 'badge success';
-        }
-    });
-    
-    // Resolve complaint
-    document.getElementById('resolveComplaintBtn')?.addEventListener('click', function() {
-        const id = this.getAttribute('data-id');
-        const resolutionNotes = document.getElementById('resolutionNotes').value;
-        
-        if (!resolutionNotes.trim()) {
-            alert('Please enter resolution notes before marking as resolved.');
-            return;
-        }
-        
-        // In a real app, you would send a request to your server here
-        console.log(`Resolving complaint with ID: ${id}`, { resolutionNotes });
-        alert('Complaint marked as resolved!');
-        closeAllModals();
-        
-        // Update the status in the table
-        const row = document.querySelector(`.resolve-complaint[data-id="${id}"]`)?.closest('tr');
-        if (row) {
-            const statusBadge = row.querySelector('.badge');
-            if (statusBadge) {
-                statusBadge.textContent = 'Resolved';
-                statusBadge.className = 'badge success';
-            }
-        }
-    });
-    
-    // Delete feedback from table (without opening modal)
-    document.querySelectorAll('.delete-feedback').forEach(btn => {
-        btn.addEventListener('click', function(e) {
-            e.stopPropagation();
-            const id = this.getAttribute('data-id');
-            if (confirm('Are you sure you want to delete this feedback?')) {
-                // In a real app, you would send a request to your server here
-                console.log(`Deleting feedback with ID: ${id}`);
-                this.closest('tr').remove();
-                alert('Feedback deleted successfully!');
-            }
+
+    // Function to update complaints table
+    function updateComplaintsTable(complaints) {
+        const tbody = document.querySelector('#service-complaints tbody');
+        tbody.innerHTML = '';
+
+        complaints.forEach(complaint => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>
+                    <div class="feedback-user">
+                        <div class="feedback-user-info">
+                            <h4>${complaint.user.name}</h4>
+                            <p>${complaint.user.unit}</p>
+                        </div>
+                    </div>
+                </td>
+                <td>${complaint.service_type}</td>
+                <td>${complaint.title}</td>
+                <td><span class="badge ${getSeverityClass(complaint.severity)}">${complaint.severity}</span></td>
+                <td>${complaint.date_created}</td>
+                <td><span class="badge ${getStatusClass(complaint.status)}">${complaint.status}</span></td>
+                <td>
+                    <button class="btn-icon view-details" title="View Details" data-type="complaint" data-id="${complaint.request_id}">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                    <button class="btn-icon resolve-complaint" title="Resolve" data-id="${complaint.request_id}">
+                        <i class="fas fa-check"></i>
+                    </button>
+                </td>
+            `;
+            tbody.appendChild(row);
         });
-    });
-    
-    // Resolve complaint from table (without opening modal)
-    document.querySelectorAll('.resolve-complaint').forEach(btn => {
-        btn.addEventListener('click', function(e) {
-            e.stopPropagation();
-            const id = this.getAttribute('data-id');
-            if (confirm('Are you sure you want to mark this complaint as resolved?')) {
-                // In a real app, you would send a request to your server here
-                console.log(`Resolving complaint with ID: ${id}`);
-                const row = this.closest('tr');
-                if (row) {
-                    const statusBadge = row.querySelector('.badge');
-                    if (statusBadge) {
-                        statusBadge.textContent = 'Resolved';
-                        statusBadge.className = 'badge success';
-                    }
-                }
-                alert('Complaint marked as resolved!');
+    }
+
+    // Helper function to generate star rating display
+    function generateStarRating(rating) {
+        const fullStars = Math.floor(rating);
+        const hasHalfStar = rating % 1 >= 0.5;
+        const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
+        
+        let stars = '';
+        for (let i = 0; i < fullStars; i++) {
+            stars += '★';
+        }
+        if (hasHalfStar) {
+            stars += '½';
+        }
+        for (let i = 0; i < emptyStars; i++) {
+            stars += '☆';
+        }
+        return stars;
+    }
+
+    // Helper function to get severity class
+    function getSeverityClass(severity) {
+        switch (severity.toLowerCase()) {
+            case 'high': return 'danger';
+            case 'medium': return 'warning';
+            case 'low': return 'info';
+            default: return 'secondary';
+        }
+    }
+
+    // Helper function to get status class
+    function getStatusClass(status) {
+        switch (status.toLowerCase()) {
+            case 'open': return 'danger';
+            case 'in-progress': return 'primary';
+            case 'resolved': return 'success';
+            default: return 'secondary';
+        }
+    }
+
+    // Function to update feedback stats
+    function updateFeedbackStats(stats) {
+        document.querySelector('#facility-feedback .stat-card:nth-child(1) .stat-value').textContent = stats.total;
+        document.querySelector('#facility-feedback .stat-card:nth-child(2) .stat-value').textContent = stats.average_rating.toFixed(1);
+        document.querySelector('#facility-feedback .stat-card:nth-child(3) .stat-value').textContent = stats.new_this_week;
+        document.querySelector('#facility-feedback .stat-card:nth-child(4) .stat-value').textContent = stats.facilities;
+    }
+
+    // Function to update complaints stats
+    function updateComplaintsStats(stats) {
+        document.querySelector('#service-complaints .stat-card:nth-child(1) .stat-value').textContent = stats.total;
+        document.querySelector('#service-complaints .stat-card:nth-child(2) .stat-value').textContent = stats.open;
+        document.querySelector('#service-complaints .stat-card:nth-child(3) .stat-value').textContent = stats.avg_resolution_time;
+        document.querySelector('#service-complaints .stat-card:nth-child(4) .stat-value').textContent = stats.satisfaction_rate + '%';
+    }
+
+    // Function to update feedback pagination
+    function updateFeedbackPagination(pagination) {
+        const paginationContainer = document.querySelector('#facility-feedback .pagination');
+        paginationContainer.innerHTML = '';
+
+        // Previous button
+        if (pagination.currentPage > 1) {
+            const prevButton = document.createElement('button');
+            prevButton.innerHTML = '<i class="fas fa-chevron-left"></i> Previous';
+            prevButton.addEventListener('click', () => {
+                currentFeedbackPage--;
+                loadFeedback();
+            });
+            paginationContainer.appendChild(prevButton);
+        }
+
+        // Page buttons
+        for (let i = 1; i <= pagination.totalPages; i++) {
+            const pageButton = document.createElement('button');
+            pageButton.textContent = i;
+            if (i === pagination.currentPage) {
+                pageButton.classList.add('active');
             }
-        });
-    });
-    
-    // Filter functionality
+            pageButton.addEventListener('click', () => {
+                currentFeedbackPage = i;
+                loadFeedback();
+            });
+            paginationContainer.appendChild(pageButton);
+        }
+
+        // Next button
+        if (pagination.currentPage < pagination.totalPages) {
+            const nextButton = document.createElement('button');
+            nextButton.innerHTML = 'Next <i class="fas fa-chevron-right"></i>';
+            nextButton.addEventListener('click', () => {
+                currentFeedbackPage++;
+                loadFeedback();
+            });
+            paginationContainer.appendChild(nextButton);
+        }
+    }
+
+    // Function to update complaints pagination
+    function updateComplaintsPagination(pagination) {
+        const paginationContainer = document.querySelector('#service-complaints .pagination');
+        paginationContainer.innerHTML = '';
+
+        // Previous button
+        if (pagination.currentPage > 1) {
+            const prevButton = document.createElement('button');
+            prevButton.innerHTML = '<i class="fas fa-chevron-left"></i> Previous';
+            prevButton.addEventListener('click', () => {
+                currentComplaintsPage--;
+                loadComplaints();
+            });
+            paginationContainer.appendChild(prevButton);
+        }
+
+        // Page buttons
+        for (let i = 1; i <= pagination.totalPages; i++) {
+            const pageButton = document.createElement('button');
+            pageButton.textContent = i;
+            if (i === pagination.currentPage) {
+                pageButton.classList.add('active');
+            }
+            pageButton.addEventListener('click', () => {
+                currentComplaintsPage = i;
+                loadComplaints();
+            });
+            paginationContainer.appendChild(pageButton);
+        }
+
+        // Next button
+        if (pagination.currentPage < pagination.totalPages) {
+            const nextButton = document.createElement('button');
+            nextButton.innerHTML = 'Next <i class="fas fa-chevron-right"></i>';
+            nextButton.addEventListener('click', () => {
+                currentComplaintsPage++;
+                loadComplaints();
+            });
+            paginationContainer.appendChild(nextButton);
+        }
+    }
+
+    // Filter event listeners
     document.getElementById('facilityFilter')?.addEventListener('change', function() {
-        const facility = this.value;
-        const rows = document.querySelectorAll('#facility-feedback tbody tr');
-        
-        rows.forEach(row => {
-            const rowFacility = row.querySelector('td:nth-child(2)').textContent;
-            if (facility === 'all' || rowFacility === facility) {
-                row.style.display = '';
-            } else {
-                row.style.display = 'none';
-            }
-        });
+        currentFeedbackPage = 1;
+        loadFeedback();
     });
-    
+
     document.getElementById('statusFilter')?.addEventListener('change', function() {
-        const status = this.value;
-        const rows = document.querySelectorAll('#service-complaints tbody tr');
-        
-        rows.forEach(row => {
-            const rowStatus = row.querySelector('td:nth-child(6) .badge').textContent;
-            const statusMatch = 
-                (status === 'all') ||
-                (status === 'open' && rowStatus === 'Open') ||
-                (status === 'in-progress' && rowStatus === 'In Progress') ||
-                (status === 'resolved' && rowStatus === 'Resolved');
-            
-            if (statusMatch) {
-                row.style.display = '';
-            } else {
-                row.style.display = 'none';
-            }
-        });
+        currentComplaintsPage = 1;
+        loadComplaints();
     });
-    
+
     document.getElementById('serviceTypeFilter')?.addEventListener('change', function() {
-        const serviceType = this.value;
-        const rows = document.querySelectorAll('#service-complaints tbody tr');
-        
-        rows.forEach(row => {
-            const rowServiceType = row.querySelector('td:nth-child(2)').textContent;
-            if (serviceType === 'all' || rowServiceType === serviceType) {
-                row.style.display = '';
-            } else {
-                row.style.display = 'none';
-            }
-        });
+        currentComplaintsPage = 1;
+        loadComplaints();
     });
-    
-    // Pagination
-    document.querySelectorAll('.pagination button').forEach(button => {
-        button.addEventListener('click', function() {
-            if (!this.classList.contains('active')) {
-                const paginationContainer = this.closest('.pagination');
-                if (paginationContainer) {
-                    const activeButton = paginationContainer.querySelector('button.active');
-                    if (activeButton) {
-                        activeButton.classList.remove('active');
-                    }
-                }
-                this.classList.add('active');
-                // In a real app, you would load the corresponding page of data here
-                console.log('Page changed to:', this.textContent.trim());
-            }
-        });
-    });
-    
+
     // Initialize with first tab active
     switchTab('facility-feedback');
+
+    // Function to show feedback details in modal
+    async function showFeedbackDetails(feedbackId) {
+        try {
+            const response = await fetch(`/Admin/GetFeedbackDetails?id=${feedbackId}`);
+            const result = await response.json();
+
+            if (result.success) {
+                const feedback = result.feedback;
+                const modal = document.getElementById('feedbackDetailModal');
+                
+                // Set modal content
+                document.getElementById('feedbackUserName').textContent = feedback.user.name;
+                document.getElementById('feedbackUserUnit').textContent = feedback.user.unit || 'N/A';
+                document.getElementById('feedbackFacility').textContent = feedback.facility;
+                document.getElementById('feedbackRating').innerHTML = generateStarRating(feedback.overall_rating);
+                document.getElementById('feedbackDate').textContent = feedback.created_date;
+                document.getElementById('feedbackStatus').textContent = feedback.status;
+                document.getElementById('feedbackFullText').textContent = feedback.comment;
+                
+                // Set user avatar (if available)
+                const userAvatar = document.getElementById('feedbackUserAvatar');
+                if (feedback.user.avatar) {
+                    userAvatar.src = feedback.user.avatar;
+                } else {
+                    // Generate initials avatar if no avatar is available
+                    const initials = feedback.user.name.split(' ').map(n => n[0]).join('');
+                    userAvatar.src = `https://ui-avatars.com/api/?name=${initials}&background=random`;
+                }
+                
+                // Show modal
+                modal.style.display = 'block';
+                document.body.style.overflow = 'hidden'; // Prevent scrolling when modal is open
+                
+                // Add event listener for closing the modal
+                const closeModal = function() {
+                    modal.style.display = 'none';
+                    document.body.style.overflow = ''; // Restore scrolling
+                };
+                
+                // Close when clicking the close button
+                document.querySelector('.close-modal').onclick = closeModal;
+                
+                // Close when clicking outside the modal
+                window.onclick = function(event) {
+                    if (event.target === modal) {
+                        closeModal();
+                    }
+                };
+                
+                // Close when pressing Escape key
+                document.onkeydown = function(event) {
+                    if (event.key === 'Escape') {
+                        closeModal();
+                    }
+                };
+            } else {
+                console.error('Error loading feedback details:', result.message);
+                alert('Failed to load feedback details. Please try again.');
+            }
+        } catch (error) {
+            console.error('Error loading feedback details:', error);
+            alert('An error occurred while loading feedback details. Please try again.');
+        }
+    }
+
+    // Add event listener for view details buttons
+    document.addEventListener('click', function(e) {
+        if (e.target.closest('.view-details')) {
+            const button = e.target.closest('.view-details');
+            const feedbackId = button.getAttribute('data-id');
+            showFeedbackDetails(feedbackId);
+        }
+    });
+
+    // Close modal functionality
+    document.querySelectorAll('.close-modal, .close').forEach(button => {
+        button.addEventListener('click', function() {
+            document.getElementById('feedbackDetailModal').style.display = 'none';
+        });
+    });
+
+    // Close modal when clicking outside
+    window.addEventListener('click', function(e) {
+        if (e.target === document.getElementById('feedbackDetailModal')) {
+            document.getElementById('feedbackDetailModal').style.display = 'none';
+        }
+    });
 });

@@ -50,6 +50,9 @@ namespace HomeOwner.Models
 
         [ForeignKey("user_id")]
         public User User { get; set; }
+
+        [ForeignKey("facility_id")]
+        public Facility Facility { get; set; }
     }
 
     public class Facility

@@ -337,6 +337,189 @@ namespace HomeOwner.Controllers
             return View("AdminFeedback");
         }
 
+        [HttpGet]
+        public JsonResult GetFeedback(int page = 1, int pageSize = 10, string facility = "all")
+        {
+            try
+            {
+                var query = _context.Feedback
+                    .Include(f => f.User)
+                    .Include(f => f.Facility)
+                    .AsQueryable();
+
+                // Apply facility filter if not "all"
+                if (facility != "all")
+                {
+                    query = query.Where(f => f.Facility.name == facility);
+                }
+
+                // Get total count for pagination
+                var totalCount = query.Count();
+                var totalPages = (int)Math.Ceiling(totalCount / (double)pageSize);
+
+                // Apply pagination
+                var feedbacks = query
+                    .OrderByDescending(f => f.created_date)
+                    .Skip((page - 1) * pageSize)
+                    .Take(pageSize)
+                    .Select(f => new
+                    {
+                        feedback_id = f.feedback_id,
+                        user = new
+                        {
+                            name = f.User.firstname + " " + f.User.lastname
+                        },
+                        facility = f.Facility.name,
+                        overall_rating = f.overall_rating,
+                        title = f.title,
+                        created_date = f.created_date.ToString("MMMM dd, yyyy"),
+                        status = "Published"
+                    })
+                    .ToList();
+
+                // Calculate statistics
+                var stats = new
+                {
+                    total = totalCount,
+                    average_rating = query.Average(f => f.overall_rating),
+                    new_this_week = query.Count(f => f.created_date >= DateTime.Now.AddDays(-7)),
+                    facilities = _context.Facility.Count()
+                };
+
+                return Json(new
+                {
+                    success = true,
+                    feedbacks,
+                    stats,
+                    pagination = new
+                    {
+                        currentPage = page,
+                        totalPages = totalPages,
+                        totalItems = totalCount
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+
+        [HttpGet]
+        public JsonResult GetFeedbackDetails(int id)
+        {
+            try
+            {
+                var feedback = _context.Feedback
+                    .Include(f => f.User)
+                    .Include(f => f.Facility)
+                    .FirstOrDefault(f => f.feedback_id == id);
+
+                if (feedback == null)
+                {
+                    return Json(new { success = false, message = "Feedback not found." });
+                }
+
+                var response = new
+                {
+                    success = true,
+                    feedback = new
+                    {
+                        feedback_id = feedback.feedback_id,
+                        user = new
+                        {
+                            name = feedback.User.firstname + " " + feedback.User.lastname
+                        },
+                        facility = feedback.Facility.name,
+                        overall_rating = feedback.overall_rating,
+                        title = feedback.title,
+                        comment = feedback.comment,
+                        photos = feedback.photos,
+                        created_date = feedback.created_date.ToString("MMMM dd, yyyy"),
+                        status = "Published"
+                    }
+                };
+
+                return Json(response);
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+
+        [HttpGet]
+        public JsonResult GetComplaints(int page = 1, int pageSize = 10, string status = "all", string serviceType = "all")
+        {
+            try
+            {
+                var query = _context.ServiceRequest
+                    .Include(s => s.User)
+                    .AsQueryable();
+
+                // Apply filters
+                if (status != "all")
+                {
+                    query = query.Where(s => s.status == status);
+                }
+
+                if (serviceType != "all")
+                {
+                    query = query.Where(s => s.service_type == serviceType);
+                }
+
+                // Get total count for pagination
+                var totalCount = query.Count();
+                var totalPages = (int)Math.Ceiling(totalCount / (double)pageSize);
+
+                // Apply pagination
+                var complaints = query
+                    .OrderByDescending(s => s.date_created)
+                    .Skip((page - 1) * pageSize)
+                    .Take(pageSize)
+                    .Select(s => new
+                    {
+                        request_id = s.request_id,
+                        user = new
+                        {
+                            name = s.User.firstname + " " + s.User.lastname
+                        },
+                        service_type = s.service_type,
+                        title = s.notes,
+                        severity = s.status, // Using status as severity for now
+                        date_created = s.date_created.ToString("MMMM dd, yyyy"),
+                        status = s.status
+                    })
+                    .ToList();
+
+                // Calculate statistics
+                var stats = new
+                {
+                    total = totalCount,
+                    open = _context.ServiceRequest.Count(s => s.status == "Pending Approval"),
+                    avg_resolution_time = 3.2, // You can calculate this based on your data
+                    satisfaction_rate = 92 // You can calculate this based on your data
+                };
+
+                return Json(new
+                {
+                    success = true,
+                    complaints,
+                    stats,
+                    pagination = new
+                    {
+                        currentPage = page,
+                        totalPages = totalPages,
+                        totalItems = totalCount
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+
         public IActionResult ServiceRequests()
         {
             ViewContents();
