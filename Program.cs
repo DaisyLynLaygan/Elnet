@@ -74,7 +74,8 @@ app.Use(async (context, next) =>
         context.Request.Path == "/ws/dashboard" || 
         context.Request.Path == "/ws/comments" ||
         context.Request.Path == "/ws/likes" ||
-        context.Request.Path == "/ws/admin/service-requests")
+        context.Request.Path == "/ws/admin/service-requests" ||
+        context.Request.Path == "/ws/homeowner/service-requests")
     {
         if (context.WebSockets.IsWebSocketRequest)
         {
@@ -100,10 +101,11 @@ app.Use(async (context, next) =>
                 var likeWebSocketManager = context.RequestServices.GetRequiredService<LikeWebSocketManager>();
                 await likeWebSocketManager.HandleLikeConnection(webSocket);
             }
-            else if (context.Request.Path == "/ws/admin/service-requests")
+            else if (context.Request.Path == "/ws/admin/service-requests" || 
+                     context.Request.Path == "/ws/homeowner/service-requests")
             {
                 var serviceRequestWebSocketManager = context.RequestServices.GetRequiredService<ServiceRequestWebSocketManager>();
-                await serviceRequestWebSocketManager.HandleServiceRequestConnection(webSocket);
+                await serviceRequestWebSocketManager.HandleServiceRequestConnection(webSocket, context);
             }
         }
         else
@@ -439,7 +441,8 @@ public class LikeWebSocketManager
 
 public class ServiceRequestWebSocketManager
 {
-    private readonly List<WebSocket> _serviceRequestSockets = new();
+    private readonly List<WebSocket> _adminSockets = new();
+    private readonly List<WebSocket> _homeownerSockets = new();
     private readonly ILogger<ServiceRequestWebSocketManager> _logger;
 
     public ServiceRequestWebSocketManager(ILogger<ServiceRequestWebSocketManager> logger)
@@ -447,13 +450,23 @@ public class ServiceRequestWebSocketManager
         _logger = logger;
     }
 
-    public async Task HandleServiceRequestConnection(WebSocket webSocket)
+    public async Task HandleServiceRequestConnection(WebSocket webSocket, HttpContext context)
     {
-        _serviceRequestSockets.Add(webSocket);
-        await HandleConnection(webSocket);
+        if (context.Request.Path == "/ws/admin/service-requests")
+        {
+            _adminSockets.Add(webSocket);
+            _logger.LogInformation("New admin service request connection established");
+        }
+        else if (context.Request.Path == "/ws/homeowner/service-requests")
+        {
+            _homeownerSockets.Add(webSocket);
+            _logger.LogInformation("New homeowner service request connection established");
+        }
+
+        await HandleConnection(webSocket, context);
     }
 
-    private async Task HandleConnection(WebSocket webSocket)
+    private async Task HandleConnection(WebSocket webSocket, HttpContext context)
     {
         var buffer = new byte[1024 * 4];
         try
@@ -462,6 +475,29 @@ public class ServiceRequestWebSocketManager
 
             while (!result.CloseStatus.HasValue)
             {
+                var message = Encoding.UTF8.GetString(buffer, 0, result.Count);
+                _logger.LogInformation($"Received message: {message}");
+
+                try
+                {
+                    var data = JsonConvert.DeserializeObject<dynamic>(message);
+                    if (data?.type == "ping")
+                    {
+                        // Send pong response
+                        var pongMessage = JsonConvert.SerializeObject(new { type = "pong" });
+                        var pongBuffer = Encoding.UTF8.GetBytes(pongMessage);
+                        await webSocket.SendAsync(
+                            new ArraySegment<byte>(pongBuffer),
+                            WebSocketMessageType.Text,
+                            true,
+                            CancellationToken.None);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError($"Error processing message: {ex.Message}");
+                }
+
                 result = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
             }
 
@@ -473,8 +509,16 @@ public class ServiceRequestWebSocketManager
         }
         finally
         {
-            _serviceRequestSockets.Remove(webSocket);
-            _logger.LogInformation("Service Request WebSocket connection closed");
+            if (context.Request.Path == "/ws/admin/service-requests")
+            {
+                _adminSockets.Remove(webSocket);
+                _logger.LogInformation("Admin service request connection closed");
+            }
+            else if (context.Request.Path == "/ws/homeowner/service-requests")
+            {
+                _homeownerSockets.Remove(webSocket);
+                _logger.LogInformation("Homeowner service request connection closed");
+            }
         }
     }
 
@@ -499,26 +543,13 @@ public class ServiceRequestWebSocketManager
                 {
                     id = user.user_id,
                     name = $"{user.firstname} {user.lastname}",
-                    avatar = $"https://randomuser.me/api/portraits/men/{user.user_id % 100}.jpg",
-                    phone = user.contact_no,
-                    email = user.email
+                    email = user.email,
+                    contact_no = user.contact_no
                 }
             }
         });
 
-        var buffer = Encoding.UTF8.GetBytes(message);
-        var tasks = new List<Task>();
-
-        foreach (var socket in _serviceRequestSockets.Where(s => s.State == WebSocketState.Open))
-        {
-            tasks.Add(socket.SendAsync(
-                new ArraySegment<byte>(buffer),
-                WebSocketMessageType.Text,
-                true,
-                CancellationToken.None));
-        }
-
-        await Task.WhenAll(tasks);
+        await BroadcastToAll(message);
     }
 
     public async Task BroadcastServiceRequestUpdate(ServiceRequest request)
@@ -534,10 +565,26 @@ public class ServiceRequestWebSocketManager
             }
         });
 
+        await BroadcastToAll(message);
+    }
+
+    private async Task BroadcastToAll(string message)
+    {
         var buffer = Encoding.UTF8.GetBytes(message);
         var tasks = new List<Task>();
 
-        foreach (var socket in _serviceRequestSockets.Where(s => s.State == WebSocketState.Open))
+        // Broadcast to admin sockets
+        foreach (var socket in _adminSockets.Where(s => s.State == WebSocketState.Open))
+        {
+            tasks.Add(socket.SendAsync(
+                new ArraySegment<byte>(buffer),
+                WebSocketMessageType.Text,
+                true,
+                CancellationToken.None));
+        }
+
+        // Broadcast to homeowner sockets
+        foreach (var socket in _homeownerSockets.Where(s => s.State == WebSocketState.Open))
         {
             tasks.Add(socket.SendAsync(
                 new ArraySegment<byte>(buffer),
