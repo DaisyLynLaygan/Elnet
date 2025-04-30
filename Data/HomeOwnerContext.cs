@@ -60,5 +60,7 @@ namespace HomeOwner.Data
         public DbSet<HomeOwner.Models.Comment> Comment { get; set; } = default!;
         public DbSet<HomeOwner.Models.Report> Report { get; set; } = default!;
         public DbSet<ServiceRequest> ServiceRequest { get; set; }
+        public DbSet<Feedback> Feedback { get; set; }
+        public DbSet<Facility> Facility { get; set; }
     }
 }
