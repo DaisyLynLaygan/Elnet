@@ -107,26 +107,84 @@ function initializeFacilityStatuses() {
 
 // Service Request WebSocket
 let serviceRequestSocket;
+let serviceRequestRetryCount = 0;
+const serviceRequestMaxRetries = 5;
+const serviceRequestRetryDelay = 3000;
+let wsConnected = false;
 
 function connectServiceRequestWebSocket() {
-    serviceRequestSocket = new WebSocket(`ws://${window.location.host}/ws/service-requests`);
-    
-    serviceRequestSocket.onmessage = function(event) {
-        const data = JSON.parse(event.data);
-        if (data.type === 'new_service_request') {
-            // Handle new service request notification
-            showServiceRequestNotification(data.request);
-        } else if (data.type === 'service_request_update') {
-            // Handle service request update
-            updateServiceRequestStatus(data.request);
+    if (serviceRequestSocket && (serviceRequestSocket.readyState === WebSocket.OPEN || serviceRequestSocket.readyState === WebSocket.CONNECTING)) {
+        return; // Already connected or connecting
+    }
+
+    try {
+        // Skip websocket connection if on certain pages where it's not needed
+        if (!document.getElementById('maintenanceBookingModal')) {
+            console.log('Skipping service request WebSocket on this page');
+            return;
         }
-    };
-    
-    serviceRequestSocket.onclose = function() {
-        // Reconnect after 5 seconds
-        setTimeout(connectServiceRequestWebSocket, 5000);
-    };
+        
+        const protocol = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
+        const host = window.location.host;
+        
+        // Connect to WebSocket
+        serviceRequestSocket = new WebSocket(`${protocol}${host}/ws/homeowner/service-requests`);
+        
+        serviceRequestSocket.onopen = function() {
+            console.log('Service Request WebSocket connection established');
+            wsConnected = true;
+            serviceRequestRetryCount = 0;
+        };
+        
+        serviceRequestSocket.onmessage = function(event) {
+            try {
+                const data = JSON.parse(event.data);
+                if (data.type === 'new_service_request') {
+                    // Handle new service request notification
+                    showServiceRequestNotification(data.request);
+                } else if (data.type === 'service_request_update') {
+                    // Handle service request update
+                    updateServiceRequestStatus(data.request);
+                }
+            } catch (error) {
+                console.error('Error processing service request message:', error);
+            }
+        };
+        
+        serviceRequestSocket.onerror = function(error) {
+            console.error('Service Request WebSocket error:', error);
+            wsConnected = false;
+        };
+        
+        serviceRequestSocket.onclose = function(event) {
+            console.log('Service Request WebSocket connection closed', event.code, event.reason);
+            wsConnected = false;
+            if (serviceRequestRetryCount < serviceRequestMaxRetries) {
+                console.log(`Attempting to reconnect (${serviceRequestRetryCount + 1}/${serviceRequestMaxRetries})...`);
+                serviceRequestRetryCount++;
+                setTimeout(connectServiceRequestWebSocket, serviceRequestRetryDelay);
+            } else {
+                console.log('Max retries reached for WebSocket, functionality will continue without real-time updates');
+            }
+        };
+    } catch (error) {
+        console.error('Service Request WebSocket initialization failed:', error);
+        wsConnected = false;
+        if (serviceRequestRetryCount < serviceRequestMaxRetries) {
+            serviceRequestRetryCount++;
+            setTimeout(connectServiceRequestWebSocket, serviceRequestRetryDelay);
+        }
+    }
 }
+
+// Keep WebSocket alive
+setInterval(() => {
+    if (serviceRequestSocket && wsConnected && serviceRequestSocket.readyState === WebSocket.OPEN) {
+        serviceRequestSocket.send(JSON.stringify({ type: 'ping' }));
+    } else if (!wsConnected && serviceRequestRetryCount < serviceRequestMaxRetries) {
+        connectServiceRequestWebSocket();
+    }
+}, 30000); // Every 30 seconds
 
 // Service Request Modal Functions
 function openServiceRequestModal(serviceType, serviceIcon, price) {
@@ -190,14 +248,44 @@ function prevStep(currentStep) {
 function confirmMaintenanceBooking() {
     const serviceType = document.getElementById('service-name-display').textContent;
     const serviceIcon = document.getElementById('service-icon-display').textContent;
-    const price = parseFloat(document.getElementById('service-price-display').textContent.replace('From $', '').replace('/service', ''));
+    const price = parseFloat(document.getElementById('service-price-display').textContent.replace(/[^0-9.]/g, ''));
     const frequency = document.querySelector('.frequency-option.active').dataset.frequency;
     const scheduledDate = document.getElementById('service-date').value;
     const scheduledTime = document.getElementById('service-time').value;
     const notes = document.getElementById('service-notes').value;
     
+    // Validate inputs
+    if (!scheduledDate) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'Please select a date for your service',
+        });
+        return;
+    }
+    
+    if (!scheduledTime) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'Please select a time for your service',
+        });
+        return;
+    }
+    
+    // Show loading state
+    Swal.fire({
+        title: 'Submitting request...',
+        text: 'Please wait',
+        allowOutsideClick: false,
+        allowEscapeKey: false,
+        didOpen: () => {
+            Swal.showLoading();
+        }
+    });
+    
     const requestData = {
-        request_id: 0, // This will be auto-generated by the database
+        request_id: 0,
         user_id: currentUserId,
         service_type: serviceType,
         service_icon: serviceIcon,
@@ -205,11 +293,13 @@ function confirmMaintenanceBooking() {
         frequency: frequency,
         scheduled_date: new Date(scheduledDate).toISOString(),
         scheduled_time: scheduledTime,
-        notes: notes,
-        status: "Pending Approval",
-        payment_status: "Unpaid",
-        date_created: new Date().toISOString()
+        notes: notes || '',
+        status: 'Pending Approval',
+        payment_status: 'Unpaid'
     };
+    
+    // Log the data being sent
+    console.log('Submitting service request:', requestData);
     
     fetch('/Homeowner/CreateServiceRequest', {
         method: 'POST',
@@ -218,36 +308,48 @@ function confirmMaintenanceBooking() {
         },
         body: JSON.stringify(requestData)
     })
-    .then(response => {
-        if (!response.ok) {
-            return response.text().then(text => {
-                throw new Error(text);
-            });
+    .then(async response => {
+        const contentType = response.headers.get('content-type');
+        if (contentType && contentType.includes('application/json')) {
+            return response.json().then(data => ({
+                ok: response.ok,
+                data: data
+            }));
+        } else {
+            return response.text().then(text => ({
+                ok: response.ok,
+                data: text
+            }));
         }
-        return response.json();
     })
-    .then(data => {
-        if (data.success) {
+    .then(result => {
+        if (result.ok && result.data.success) {
             Swal.fire({
                 icon: 'success',
-                title: 'Service Request Submitted',
-                text: 'Your service request has been submitted successfully!',
+                title: 'Success!',
+                text: result.data.message || 'Your service request has been submitted successfully!',
                 confirmButtonText: 'OK'
             }).then(() => {
                 closeServiceRequestModal();
-                // Reset form
-                document.querySelector('.booking-form-step[data-step="1"]').classList.add('active');
-                document.querySelector('.booking-form-step[data-step="2"]').classList.remove('active');
-                document.querySelector('.booking-form-step[data-step="3"]').classList.remove('active');
-                document.querySelector('.booking-step[data-step="1"]').classList.add('active');
-                document.querySelector('.booking-step[data-step="2"]').classList.remove('active');
-                document.querySelector('.booking-step[data-step="3"]').classList.remove('active');
+                resetMaintenanceForm();
             });
         } else {
+            let errorMessage = 'Failed to submit service request. Please try again.';
+            if (result.data && typeof result.data === 'object') {
+                errorMessage = result.data.message || result.data.details || errorMessage;
+            } else if (typeof result.data === 'string') {
+                try {
+                    const parsed = JSON.parse(result.data);
+                    errorMessage = parsed.message || parsed.details || result.data;
+                } catch {
+                    errorMessage = result.data;
+                }
+            }
+            
             Swal.fire({
                 icon: 'error',
                 title: 'Error',
-                text: data.message || 'Failed to submit service request. Please try again.',
+                text: errorMessage,
                 confirmButtonText: 'OK'
             });
         }
@@ -257,16 +359,50 @@ function confirmMaintenanceBooking() {
         Swal.fire({
             icon: 'error',
             title: 'Error',
-            text: 'An error occurred while submitting your request. Please try again.',
+            text: error.message || 'An error occurred while submitting your request. Please try again.',
             confirmButtonText: 'OK'
         });
     });
 }
 
+function resetMaintenanceForm() {
+    // Reset form steps
+    document.querySelector('.booking-form-step[data-step="1"]').classList.add('active');
+    document.querySelector('.booking-form-step[data-step="2"]').classList.remove('active');
+    document.querySelector('.booking-form-step[data-step="3"]').classList.remove('active');
+    
+    // Reset step indicators
+    document.querySelector('.booking-step[data-step="1"]').classList.add('active');
+    document.querySelector('.booking-step[data-step="2"]').classList.remove('active');
+    document.querySelector('.booking-step[data-step="3"]').classList.remove('active');
+    
+    // Reset form inputs
+    const serviceDate = document.getElementById('service-date');
+    const serviceTime = document.getElementById('service-time');
+    const serviceNotes = document.getElementById('service-notes');
+    
+    if (serviceDate) serviceDate.value = '';
+    if (serviceTime) serviceTime.value = '';
+    if (serviceNotes) serviceNotes.value = '';
+    
+    // Reset frequency selection
+    const frequencyOptions = document.querySelectorAll('.frequency-option');
+    frequencyOptions.forEach(opt => opt.classList.remove('active'));
+    if (frequencyOptions.length > 0) {
+        frequencyOptions[0].classList.add('active');
+    }
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     initializeFacilityStatuses();
     connectDashboardWebSocket();
-    connectServiceRequestWebSocket();
+    
+    // Try to connect to service request WebSocket but don't block if it fails
+    try {
+        connectServiceRequestWebSocket();
+    } catch (error) {
+        console.log('WebSocket connection failed, proceeding without real-time updates');
+    }
     
     // Initialize Swiper for facilities
     var facilitiesSwiper = new Swiper('.facilitiesSwiper', {
@@ -502,4 +638,57 @@ function confirmFacilityBooking() {
             document.body.style.overflow = 'auto';
         }
     });
+}
+
+// Add notification function if it doesn't exist
+function showServiceRequestNotification(request) {
+    try {
+        if (!request) return;
+        
+        Swal.fire({
+            icon: 'info',
+            title: 'Service Request Update',
+            text: `Your ${request.service_type} request has been updated.`,
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 3000
+        });
+    } catch (error) {
+        console.error('Error showing notification:', error);
+    }
+}
+
+function updateServiceRequestStatus(request) {
+    try {
+        if (!request) return;
+        
+        // Update UI if needed
+        const requestElement = document.querySelector(`.service-request-item[data-id="${request.id}"]`);
+        if (requestElement) {
+            const statusBadge = requestElement.querySelector('.status-badge');
+            if (statusBadge) {
+                statusBadge.textContent = request.status;
+                statusBadge.className = `status-badge ${getStatusClass(request.status)}`;
+            }
+            
+            const paymentBadge = requestElement.querySelector('.payment-badge');
+            if (paymentBadge) {
+                paymentBadge.textContent = request.payment_status;
+                paymentBadge.className = `payment-badge ${request.payment_status === 'Paid' ? 'paid' : 'unpaid'}`;
+            }
+        }
+    } catch (error) {
+        console.error('Error updating request status:', error);
+    }
+}
+
+function getStatusClass(status) {
+    switch(status) {
+        case 'Pending Approval': return 'pending';
+        case 'Approved': return 'approved';
+        case 'Rejected': return 'rejected';
+        case 'Completed': return 'completed';
+        default: return '';
+    }
 }
