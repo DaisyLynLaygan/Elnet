@@ -4,7 +4,9 @@
 }
 
 <link rel="stylesheet" href="https://unpkg.com/swiper/swiper-bundle.min.css" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 <link rel="stylesheet" href="~/css/homeowners/feedback.css" />
+<script src="~/js/stringHelpers.js" type="text/javascript"></script>
 <div class="container">
     <!-- Feedback Tabs -->
     <div class="feedback-tabs">
@@ -25,7 +27,7 @@
                     <div class="swiper-slide facility-card" data-facility-id="1">
                         <div class="facility-image">
                             <img src="~/images/function-hall.jpg" alt="Function Hall">
-                            <div class="facility-rating"><span>4.8 ★</span></div>
+                            <div class="facility-rating"><span>4.8</span></div>
                         </div>
                         <div class="facility-details">
                             <h3>Function Hall</h3>
@@ -36,7 +38,7 @@
                     <div class="swiper-slide facility-card" data-facility-id="2">
                         <div class="facility-image">
                             <img src="~/images/sports-court.jpg" alt="Sports Court">
-                            <div class="facility-rating"><span>4.6 ★</span></div>
+                            <div class="facility-rating"><span>4.6</span></div>
                         </div>
                         <div class="facility-details">
                             <h3>Sports Court</h3>
@@ -47,7 +49,7 @@
                     <div class="swiper-slide facility-card" data-facility-id="3">
                         <div class="facility-image">
                             <img src="~/images/swimming-pool.jpg" alt="Swimming Pool">
-                            <div class="facility-rating"><span>4.9 ★</span></div>
+                            <div class="facility-rating"><span>4.9</span></div>
                         </div>
                         <div class="facility-details">
                             <h3>Swimming Pool</h3>
@@ -58,7 +60,7 @@
                     <div class="swiper-slide facility-card" data-facility-id="4">
                         <div class="facility-image">
                             <img src="~/images/gym.jpg" alt="Gym Facility">
-                            <div class="facility-rating"><span>4.7 ★</span></div>
+                            <div class="facility-rating"><span>4.7</span></div>
                         </div>
                         <div class="facility-details">
                             <h3>Gym Facility</h3>
@@ -142,48 +144,48 @@
                         <div class="category-ratings">
                             <div class="category-item">
                                 <span>Cleanliness</span>
-                                <div class="category-stars">
-                                    <span class="cat-star" data-category="cleanliness" data-value="1">★</span>
-                                    <span class="cat-star" data-category="cleanliness" data-value="2">★</span>
-                                    <span class="cat-star" data-category="cleanliness" data-value="3">★</span>
-                                    <span class="cat-star" data-category="cleanliness" data-value="4">★</span>
-                                    <span class="cat-star" data-category="cleanliness" data-value="5">★</span>
+                                <div class="category-stars" data-category="cleanliness">
+                                    <span class="cat-star" data-value="1">★</span>
+                                    <span class="cat-star" data-value="2">★</span>
+                                    <span class="cat-star" data-value="3">★</span>
+                                    <span class="cat-star" data-value="4">★</span>
+                                    <span class="cat-star" data-value="5">★</span>
                                     <input type="hidden" id="cleanlinessRating" name="cleanlinessRating" required>
                                 </div>
                             </div>
                             
                             <div class="category-item">
                                 <span>Equipment</span>
-                                <div class="category-stars">
-                                    <span class="cat-star" data-category="equipment" data-value="1">★</span>
-                                    <span class="cat-star" data-category="equipment" data-value="2">★</span>
-                                    <span class="cat-star" data-category="equipment" data-value="3">★</span>
-                                    <span class="cat-star" data-category="equipment" data-value="4">★</span>
-                                    <span class="cat-star" data-category="equipment" data-value="5">★</span>
+                                <div class="category-stars" data-category="equipment">
+                                    <span class="cat-star" data-value="1">★</span>
+                                    <span class="cat-star" data-value="2">★</span>
+                                    <span class="cat-star" data-value="3">★</span>
+                                    <span class="cat-star" data-value="4">★</span>
+                                    <span class="cat-star" data-value="5">★</span>
                                     <input type="hidden" id="equipmentRating" name="equipmentRating" required>
                                 </div>
                             </div>
                             
                             <div class="category-item">
                                 <span>Staff</span>
-                                <div class="category-stars">
-                                    <span class="cat-star" data-category="staff" data-value="1">★</span>
-                                    <span class="cat-star" data-category="staff" data-value="2">★</span>
-                                    <span class="cat-star" data-category="staff" data-value="3">★</span>
-                                    <span class="cat-star" data-category="staff" data-value="4">★</span>
-                                    <span class="cat-star" data-category="staff" data-value="5">★</span>
+                                <div class="category-stars" data-category="staff">
+                                    <span class="cat-star" data-value="1">★</span>
+                                    <span class="cat-star" data-value="2">★</span>
+                                    <span class="cat-star" data-value="3">★</span>
+                                    <span class="cat-star" data-value="4">★</span>
+                                    <span class="cat-star" data-value="5">★</span>
                                     <input type="hidden" id="staffRating" name="staffRating" required>
                                 </div>
                             </div>
                             
                             <div class="category-item">
                                 <span>Value</span>
-                                <div class="category-stars">
-                                    <span class="cat-star" data-category="value" data-value="1">★</span>
-                                    <span class="cat-star" data-category="value" data-value="2">★</span>
-                                    <span class="cat-star" data-category="value" data-value="3">★</span>
-                                    <span class="cat-star" data-category="value" data-value="4">★</span>
-                                    <span class="cat-star" data-category="value" data-value="5">★</span>
+                                <div class="category-stars" data-category="value">
+                                    <span class="cat-star" data-value="1">★</span>
+                                    <span class="cat-star" data-value="2">★</span>
+                                    <span class="cat-star" data-value="3">★</span>
+                                    <span class="cat-star" data-value="4">★</span>
+                                    <span class="cat-star" data-value="5">★</span>
                                     <input type="hidden" id="valueRating" name="valueRating" required>
                                 </div>
                             </div>
@@ -223,8 +225,8 @@
                     <div class="sort-options">
                         <span>Sort by:</span>
                         <select id="sortReviews">
+                            <option value="highest" selected>Highest Rating</option>
                             <option value="newest">Newest First</option>
-                            <option value="highest">Highest Rating</option>
                             <option value="lowest">Lowest Rating</option>
                         </select>
                     </div>
@@ -356,11 +358,11 @@
     </section>
 </div>
 
-<!-- Success Modal -->
+<!-- Success/Error Modal -->
 <div class="modal" id="successModal">
     <div class="modal-content">
         <span class="close-modal">&times;</span>
-        <div class="modal-icon success">
+        <div class="modal-icon" id="modalIcon">
             <i class="fas fa-check-circle"></i>
         </div>
         <h3 id="modalTitle">Thank You!</h3>
@@ -422,6 +424,6 @@
 </div>
 
 <script src="https://unpkg.com/swiper/swiper-bundle.min.js"></script>
-<script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
 <script src="~/js/feedback.js" asp-append-version="true"></script>
 

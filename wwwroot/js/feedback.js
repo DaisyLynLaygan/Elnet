@@ -116,7 +116,7 @@
                     staff: 4,
                     value: 4,
                     photos: [
-                        "https://images.unsplash.com/photo-1571902943202-507ec2618e8f?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1975&q=80"
+                        "https://images.unsplash.com/photo-1571902943202-507eb2618e8f?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1975&q=80"
                     ]
                 }
             ]
@@ -203,7 +203,10 @@
         ]
     };
     
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', async function() {
+        // Update all facility card ratings first
+        await updateAllFacilityRatings();
+        
         // Initialize Swiper with responsive settings
         const swiper = new Swiper('.swiper-container', {
             slidesPerView: 1,
@@ -247,153 +250,164 @@
             });
         });
     
-        // Function to update facility details and reviews
-        function updateFacilityDetails(facilityId) {
-            const facility = facilities[facilityId];
+        // Function to generate star rating HTML
+        function generateStarRating(rating) {
+            const fullStars = Math.floor(rating);
+            const hasHalfStar = rating % 1 >= 0.5;
+            const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
             
-            // Update header
-            document.querySelector('.selected-facility').textContent = facility.name;
+            let html = '';
             
-            // Update overall rating
-            document.querySelector('.rating-number').textContent = facility.overallRating;
-            document.querySelector('.rating-count').textContent = `${facility.reviewCount} reviews`;
+            // Add full stars
+            for (let i = 0; i < fullStars; i++) {
+                html += '<span class="star-filled" aria-hidden="true">★</span>';
+            }
             
-            // Update star display (simple version - in real app you'd calculate exact stars)
-            const starDisplay = '★★★★★'.slice(0, Math.floor(facility.overallRating)) + 
-                              (facility.overallRating % 1 >= 0.5 ? '☆' : '');
-            document.querySelector('.rating-stars').innerHTML = starDisplay;
+            // Add half star if needed
+            if (hasHalfStar) {
+                html += '<span class="star-half" aria-hidden="true">★</span>';
+            }
             
-            // Update category ratings
-            document.querySelector('.cleanliness-value').textContent = facility.cleanliness;
-            document.querySelector('.cleanliness-bar').style.width = `${(facility.cleanliness / 5) * 100}%`;
+            // Add empty stars
+            for (let i = 0; i < emptyStars; i++) {
+                html += '<span class="star-empty" aria-hidden="true">☆</span>';
+            }
             
-            document.querySelector('.equipment-value').textContent = facility.equipment;
-            document.querySelector('.equipment-bar').style.width = `${(facility.equipment / 5) * 100}%`;
+            // Add screen reader text for accessibility
+            html += `<span class="sr-only">${rating} out of 5 stars</span>`;
             
-            document.querySelector('.staff-value').textContent = facility.staff;
-            document.querySelector('.staff-bar').style.width = `${(facility.staff / 5) * 100}%`;
-            
-            document.querySelector('.value-value').textContent = facility.value;
-            document.querySelector('.value-bar').style.width = `${(facility.value / 5) * 100}%`;
-            
-            // Update facility ID in form
-            document.getElementById('facilityId').value = facilityId;
-            
-            // Update reviews
-            const reviewsContainer = document.querySelector('.feedback-items-container');
-            reviewsContainer.innerHTML = '';
-            
-            facility.reviews.forEach(review => {
-                const reviewItem = document.createElement('div');
-                reviewItem.className = 'feedback-item';
-                
-                // Create star display for review
-                const reviewStars = '★★★★★'.slice(0, review.rating) + '☆☆☆☆☆'.slice(review.rating);
-                
-                // Create category ratings display
-                let categoryRatings = '';
-                for (const [category, rating] of Object.entries(review)) {
-                    if (['cleanliness', 'equipment', 'staff', 'value'].includes(category)) {
-                        const stars = '★★★★★'.slice(0, rating) + '☆☆☆☆☆'.slice(rating);
-                        categoryRatings += `
-                            <div class="category-rating-item">
-                                <span>${category.charAt(0).toUpperCase() + category.slice(1)}</span>
-                                <span class="category-rating-stars">${stars}</span>
-                            </div>
-                        `;
-                    }
-                }
-                
-                // Create photos display if they exist
-                let photosDisplay = '';
-                if (review.photos && review.photos.length > 0) {
-                    photosDisplay = `<div class="feedback-photos">`;
-                    review.photos.forEach(photo => {
-                        photosDisplay += `<img src="${photo}" alt="Review photo">`;
-                    });
-                    photosDisplay += `</div>`;
-                }
-                
-                reviewItem.innerHTML = `
-                    <div class="user-info">
-                        <div class="user-avatar">
-                            <img src="${review.avatar}" alt="${review.user}">
-                        </div>
-                        <div class="user-details">
-                            <h4>${review.user}</h4>
-                            <div class="review-meta">
-                                <span class="review-rating">${reviewStars}</span>
-                                <span class="review-date">${review.date}</span>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="feedback-content">
-                        <h5>${review.title}</h5>
-                        <p>${review.comment}</p>
-                        
-                        <div class="category-ratings-review">
-                            ${categoryRatings}
-                        </div>
-                    </div>
-                    
-                    ${photosDisplay}
-                    
-                    <div class="feedback-actions">
-                        <button class="action-button helpful-button">
-                            <i class="far fa-thumbs-up"></i> Helpful (0)
-                        </button>
-                        <button class="action-button reply-button">
-                            <i class="far fa-comment"></i> Reply
-                        </button>
-                    </div>
-                    
-                    <div class="feedback-reply" style="display: none;">
-                        <textarea placeholder="Write a reply..."></textarea>
-                        <button class="submit-reply">Post Reply</button>
-                    </div>
-                `;
-                
-                reviewsContainer.appendChild(reviewItem);
-            });
+            return html;
         }
     
-        // Facility selection
-        const facilityCards = document.querySelectorAll('.facility-card');
-        facilityCards.forEach(card => {
-            card.addEventListener('click', function() {
-                // Remove active class from all cards
-                facilityCards.forEach(c => c.classList.remove('active'));
+        // Function to update facility details and reviews
+        async function updateFacilityDetails(facilityId) {
+            try {
+                // Show loading indicators
+                document.querySelector('.rating-number').innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+                document.querySelector('.rating-stars').innerHTML = '';
+                document.querySelector('.rating-count').innerHTML = '';
                 
-                // Add active class to selected card
-                this.classList.add('active');
+                // Clear rating bars
+                document.querySelectorAll('.bar-fill').forEach(bar => {
+                    bar.style.width = '0%';
+                    bar.style.transition = 'none';
+                });
                 
-                // Update facility details
-                const facilityId = parseInt(this.getAttribute('data-facility-id'));
-                updateFacilityDetails(facilityId);
-            });
-        });
+                // Clear rating values
+                document.querySelectorAll('.rating-value').forEach(value => {
+                    value.textContent = '0.0';
+                });
+                
+                const response = await fetch(`/Homeowner/GetFacilityDetails?facilityId=${facilityId}`);
+                const result = await response.json();
+                
+                // Re-enable transitions after a small delay
+                setTimeout(() => {
+                    document.querySelectorAll('.bar-fill').forEach(bar => {
+                        bar.style.transition = 'width 0.3s ease';
+                    });
+                }, 50);
+                
+                if (result.success) {
+                    const facility = result.facility;
+                    
+                    // Update header and facility name
+                    document.querySelector('.selected-facility').textContent = facility.name;
+                    
+                    // Update overall rating
+                    document.querySelector('.rating-number').textContent = facility.overall_rating.toFixed(1);
+                    document.querySelector('.rating-count').textContent = `${facility.review_count} ${facility.review_count === 1 ? 'review' : 'reviews'}`;
+                    
+                    // Update star display with custom function
+                    document.querySelector('.rating-stars').innerHTML = generateStarRating(facility.overall_rating);
+                    
+                    // Update category ratings
+                    document.querySelector('.cleanliness-value').textContent = facility.cleanliness_rating.toFixed(1);
+                    document.querySelector('.cleanliness-bar').style.width = `${(facility.cleanliness_rating / 5) * 100}%`;
+                    
+                    document.querySelector('.equipment-value').textContent = facility.equipment_rating.toFixed(1);
+                    document.querySelector('.equipment-bar').style.width = `${(facility.equipment_rating / 5) * 100}%`;
+                    
+                    document.querySelector('.staff-value').textContent = facility.staff_rating.toFixed(1);
+                    document.querySelector('.staff-bar').style.width = `${(facility.staff_rating / 5) * 100}%`;
+                    
+                    document.querySelector('.value-value').textContent = facility.value_rating.toFixed(1);
+                    document.querySelector('.value-bar').style.width = `${(facility.value_rating / 5) * 100}%`;
+                    
+                    // Update the facility card rating
+                    const facilityCard = document.querySelector(`.facility-card[data-facility-id="${facilityId}"]`);
+                    if (facilityCard) {
+                        const ratingSpan = facilityCard.querySelector('.facility-rating span');
+                        if (ratingSpan) {
+                            ratingSpan.textContent = facility.overall_rating.toFixed(1);
+                        }
+                    }
+                    
+                    // Update facility ID in form and show form
+                    document.getElementById('facilityId').value = facilityId;
+                    document.querySelector('.feedback-form').style.display = 'block';
+                    
+                    // Reset rating stars
+                    resetRatingStars();
+                    
+                    // Load feedback for this facility
+                    await loadFacilityFeedback(facilityId);
+                } else {
+                    // Show error message if the result was not successful
+                    showModal('Error', result.message || 'Failed to load facility details', false);
+                }
+            } catch (error) {
+                console.error('Error updating facility details:', error);
+                // Show error message
+                showModal('Error', 'Failed to load facility details. Please try again later.', false);
+            }
+        }
     
-        // Initialize with first facility
-        updateFacilityDetails(1);
+        // Function to reset rating stars
+        function resetRatingStars() {
+            // Reset overall rating
+            document.querySelectorAll('.star-rating .star').forEach(star => {
+                star.classList.remove('active');
+            });
+            document.getElementById('overallRating').value = '';
+
+            // Reset category ratings
+            ['cleanliness', 'equipment', 'staff', 'value'].forEach(category => {
+                document.querySelectorAll(`.category-stars[data-category="${category}"] .cat-star`).forEach(star => {
+                    star.classList.remove('active');
+                });
+                document.getElementById(`${category}Rating`).value = '';
+            });
+        }
     
         // Star rating functionality
         const stars = document.querySelectorAll('.star-rating .star');
         stars.forEach(star => {
             star.addEventListener('click', function() {
                 const value = parseInt(this.getAttribute('data-value'));
-                const starContainer = this.parentElement;
+                document.getElementById('overallRating').value = value;
                 
-                // Set active class
+                // Update star display
                 stars.forEach(s => {
                     s.classList.remove('active');
                     if (parseInt(s.getAttribute('data-value')) <= value) {
                         s.classList.add('active');
                     }
                 });
-                
-                // Update hidden input
-                document.getElementById('overallRating').value = value;
+            });
+
+            // Add hover effect
+            star.addEventListener('mouseover', function() {
+                const value = parseInt(this.getAttribute('data-value'));
+                stars.forEach(s => {
+                    if (parseInt(s.getAttribute('data-value')) <= value) {
+                        s.classList.add('hover');
+                    }
+                });
+            });
+
+            star.addEventListener('mouseout', function() {
+                stars.forEach(s => s.classList.remove('hover'));
             });
         });
     
@@ -402,22 +416,69 @@
         categoryStars.forEach(star => {
             star.addEventListener('click', function() {
                 const value = parseInt(this.getAttribute('data-value'));
-                const category = this.getAttribute('data-category');
-                const starContainer = this.parentElement;
+                const category = this.closest('.category-stars').getAttribute('data-category');
+                document.getElementById(`${category}Rating`).value = value;
                 
-                // Set active class for this category
-                const categoryStars = starContainer.querySelectorAll('.cat-star');
-                categoryStars.forEach(s => {
+                // Update star display for this category
+                const categoryStarsElements = this.closest('.category-stars').querySelectorAll('.cat-star');
+                categoryStarsElements.forEach(s => {
                     s.classList.remove('active');
                     if (parseInt(s.getAttribute('data-value')) <= value) {
                         s.classList.add('active');
                     }
                 });
-                
-                // Update hidden input
-                document.getElementById(`${category}Rating`).value = value;
+            });
+
+            // Add hover effect
+            star.addEventListener('mouseover', function() {
+                const value = parseInt(this.getAttribute('data-value'));
+                const categoryStarsElements = this.closest('.category-stars').querySelectorAll('.cat-star');
+                categoryStarsElements.forEach(s => {
+                    if (parseInt(s.getAttribute('data-value')) <= value) {
+                        s.classList.add('hover');
+                    }
             });
         });
+
+            star.addEventListener('mouseout', function() {
+                const categoryStarsElements = this.closest('.category-stars').querySelectorAll('.cat-star');
+                categoryStarsElements.forEach(s => s.classList.remove('hover'));
+            });
+        });
+    
+        // Facility selection
+        const facilityCards = document.querySelectorAll('.facility-card');
+
+        // Function to set active facility card
+        function setActiveFacilityCard(facilityId) {
+            // Remove active class from all cards
+            facilityCards.forEach(card => {
+                card.classList.remove('active');
+                if (parseInt(card.getAttribute('data-facility-id')) === facilityId) {
+                    card.classList.add('active');
+                }
+            });
+        }
+
+        facilityCards.forEach(card => {
+            card.addEventListener('click', function() {
+                const facilityId = parseInt(this.getAttribute('data-facility-id'));
+                
+                // Update facility details
+                updateFacilityDetails(facilityId);
+                
+                // Set active class
+                setActiveFacilityCard(facilityId);
+                
+                // Scroll to feedback form
+                document.querySelector('.feedback-section').scrollIntoView({ behavior: 'smooth' });
+            });
+        });
+    
+        // Initialize with first facility
+        const initialFacilityId = 1;
+        updateFacilityDetails(initialFacilityId);
+        setActiveFacilityCard(initialFacilityId);
     
         // Photo upload functionality for facility feedback
         const facilityUploadTrigger = document.getElementById('facilityUploadTrigger');
@@ -495,22 +556,146 @@
             }
         });
     
+        // Function to show modal with appropriate icon
+        function showModal(title, message, isSuccess = true) {
+            document.getElementById('modalTitle').textContent = title;
+            document.getElementById('modalMessage').textContent = message;
+            
+            // Set the appropriate icon
+            const modalIcon = document.getElementById('modalIcon');
+            if (isSuccess) {
+                modalIcon.innerHTML = '<i class="fas fa-check-circle"></i>';
+                modalIcon.className = 'modal-icon success';
+            } else {
+                modalIcon.innerHTML = '<i class="fas fa-exclamation-circle"></i>';
+                modalIcon.className = 'modal-icon error';
+            }
+            
+            document.getElementById('successModal').style.display = 'flex';
+        }
+    
         // Form submission for facility feedback
         const feedbackForm = document.getElementById('facilityFeedbackForm');
         if (feedbackForm) {
-            feedbackForm.addEventListener('submit', function(e) {
+            feedbackForm.addEventListener('submit', async function(e) {
                 e.preventDefault();
                 
-                // Show success modal
-                document.getElementById('modalTitle').textContent = 'Thank You!';
-                document.getElementById('modalMessage').textContent = 'Your feedback has been submitted successfully.';
-                document.getElementById('successModal').style.display = 'flex';
+                // Disable submit button and show loading state
+                const submitButton = this.querySelector('.submit-button');
+                const originalButtonText = submitButton.textContent;
+                submitButton.disabled = true;
+                submitButton.textContent = 'Submitting...';
+                submitButton.style.opacity = '0.7';
                 
-                // Reset form
-                this.reset();
-                facilityUploadPreview.innerHTML = '';
-                stars.forEach(star => star.classList.remove('active'));
-                categoryStars.forEach(star => star.classList.remove('active'));
+                try {
+                    // Validate that ratings are selected
+                    const overallRating = document.getElementById('overallRating').value;
+                    const cleanlinessRating = document.getElementById('cleanlinessRating').value;
+                    const equipmentRating = document.getElementById('equipmentRating').value;
+                    const staffRating = document.getElementById('staffRating').value;
+                    const valueRating = document.getElementById('valueRating').value;
+                    const title = document.getElementById('feedback-title').value;
+                    const comment = document.getElementById('feedback-comment').value;
+                    
+                    // Validate title and comment with more detailed validation
+                    const trimmedTitle = title.trim();
+                    const trimmedComment = comment.trim();
+                    
+                    if (!trimmedTitle) {
+                        showModal('Missing Title', 'Please provide a title for your feedback.', false);
+                        submitButton.disabled = false;
+                        submitButton.textContent = originalButtonText;
+                        submitButton.style.opacity = '1';
+                        return;
+                    }
+                    
+                    if (trimmedTitle.length < 3 || trimmedTitle.length > 100) {
+                        showModal('Invalid Title', 'Title must be between 3 and 100 characters.', false);
+                        submitButton.disabled = false;
+                        submitButton.textContent = originalButtonText;
+                        submitButton.style.opacity = '1';
+                        return;
+                    }
+                    
+                    if (!trimmedComment) {
+                        showModal('Missing Comment', 'Please provide a comment for your feedback.', false);
+                        submitButton.disabled = false;
+                        submitButton.textContent = originalButtonText;
+                        submitButton.style.opacity = '1';
+                        return;
+                    }
+                    
+                    if (trimmedComment.length < 10) {
+                        showModal('Comment Too Short', 'Please provide a more detailed comment for your feedback (at least 10 characters).', false);
+                        submitButton.disabled = false;
+                        submitButton.textContent = originalButtonText;
+                        submitButton.style.opacity = '1';
+                        return;
+                    }
+                    
+                    if (!overallRating || !cleanlinessRating || !equipmentRating || !staffRating || !valueRating) {
+                        showModal('Missing Ratings', 'Please select a rating for all categories.', false);
+                        
+                        // Reset button state
+                        submitButton.disabled = false;
+                        submitButton.textContent = originalButtonText;
+                        submitButton.style.opacity = '1';
+                        return;
+                    }
+                    
+                    const formData = {
+                        FacilityId: parseInt(document.getElementById('facilityId').value),
+                        OverallRating: parseInt(overallRating),
+                        CleanlinessRating: parseInt(cleanlinessRating),
+                        EquipmentRating: parseInt(equipmentRating),
+                        StaffRating: parseInt(staffRating),
+                        ValueRating: parseInt(valueRating),
+                        Title: trimmedTitle,
+                        Comment: trimmedComment,
+                        Photos: Array.from(document.querySelectorAll('#facilityUploadPreview img')).map(img => img.src)
+                    };
+
+                    console.log('Submitting feedback:', formData);
+
+                    const response = await fetch('/Homeowner/SubmitFeedback', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(formData)
+                    });
+
+                    const result = await response.json();
+                    console.log('Feedback submission result:', result);
+                    
+                    if (result.success) {
+                        // Show success modal
+                        showModal('Thank You!', 'Your feedback has been submitted successfully.', true);
+                        
+                        // Reset form
+                        this.reset();
+                        document.getElementById('facilityUploadPreview').innerHTML = '';
+                        document.querySelectorAll('.star-rating .star, .category-stars .cat-star').forEach(star => star.classList.remove('active'));
+                        
+                        // Update both the facility details and feedback list
+                        const facilityId = formData.FacilityId;
+                        await updateFacilityDetails(facilityId);
+                        
+                        // Also update all facility cards with latest ratings
+                        await updateAllFacilityRatings();
+                    } else {
+                        console.error('Error submitting feedback:', result.message);
+                        showModal('Submission Error', result.message || 'Failed to submit feedback. Please try again.', false);
+                    }
+                } catch (error) {
+                    console.error('Error submitting feedback:', error);
+                    showModal('Error', 'An error occurred while submitting feedback. Please try again later.', false);
+                } finally {
+                    // Reset button state
+                    submitButton.disabled = false;
+                    submitButton.textContent = originalButtonText;
+                    submitButton.style.opacity = '1';
+                }
             });
         }
     
@@ -957,20 +1142,33 @@
                 const feedbackContainer = document.querySelector('.feedback-items-container');
                 const feedbackItems = Array.from(document.querySelectorAll('.feedback-item'));
                 
+                // Skip if no feedback items
+                if (feedbackItems.length === 0) return;
+                
+                console.log('Sorting reviews by:', sortValue);
+                
                 feedbackItems.sort((a, b) => {
                     if (sortValue === 'newest') {
-                        return 0; // In real app, you'd compare dates
+                        // Get dates from the date attributes
+                        const dateA = new Date(a.getAttribute('data-date'));
+                        const dateB = new Date(b.getAttribute('data-date'));
+                        return dateB - dateA; // Newest first
                     } else if (sortValue === 'highest') {
-                        const aRating = a.querySelector('.review-rating').textContent.length;
-                        const bRating = b.querySelector('.review-rating').textContent.length;
-                        return bRating - aRating;
+                        // Get rating from the rating attribute
+                        const ratingA = parseFloat(a.getAttribute('data-rating'));
+                        const ratingB = parseFloat(b.getAttribute('data-rating'));
+                        return ratingB - ratingA; // Highest first
                     } else if (sortValue === 'lowest') {
-                        const aRating = a.querySelector('.review-rating').textContent.length;
-                        const bRating = b.querySelector('.review-rating').textContent.length;
-                        return aRating - bRating;
+                        // Get rating from the rating attribute
+                        const ratingA = parseFloat(a.getAttribute('data-rating'));
+                        const ratingB = parseFloat(b.getAttribute('data-rating'));
+                        return ratingA - ratingB; // Lowest first
                     }
                     return 0;
                 });
+                
+                // Clear container
+                feedbackContainer.innerHTML = '';
                 
                 // Re-append sorted items
                 feedbackItems.forEach(item => {
@@ -985,5 +1183,227 @@
             loadMoreBtn.addEventListener('click', function() {
                 alert('In a real implementation, this would load more reviews from the server.');
             });
+        }
+
+        // Global variables for pagination
+        let currentFacilityId = 1;
+        let currentPage = 1;
+        let totalPages = 1;
+
+        // Function to censor bad words
+        function censorBadWords(text) {
+            if (!text) return '';
+            
+            // List of bad words to censor
+            const badWords = [
+                'damn', 'shit', 'fuck', 'asshole', 'bitch', 'crap', 'piss', 'dick', 
+                'bastard', 'hell', 'jerk', 'idiot', 'stupid', 'dumb', 'loser', 'retard',
+                'slut', 'whore', 'wtf', 'stfu', 'lmao', 'lmfao', 'ass', 'tits'
+            ];
+            
+            let censoredText = text;
+            
+            // Replace each bad word with asterisks
+            badWords.forEach(word => {
+                const regex = new RegExp(`\\b${word}\\b`, 'gi');
+                censoredText = censoredText.replace(regex, '*'.repeat(word.length));
+            });
+            
+            return censoredText;
+        }
+
+        // Function to load facility feedback
+        async function loadFacilityFeedback(facilityId, page = 1) {
+            try {
+                // Update current facility and page
+                currentFacilityId = facilityId;
+                currentPage = page;
+                
+                // Show loading indicator
+                const reviewsContainer = document.querySelector('.feedback-items-container');
+                reviewsContainer.innerHTML = '<div class="loading-spinner"><i class="fas fa-spinner fa-spin"></i> Loading reviews...</div>';
+
+                const response = await fetch(`/Homeowner/GetFacilityFeedback?facilityId=${facilityId}&page=${page}`);
+                const result = await response.json();
+                
+                console.log("Feedback response:", result); // Log the response to debug
+                
+                reviewsContainer.innerHTML = ''; // Clear loading spinner
+                
+                if (result.success) {
+                    // Update pagination info
+                    if (result.pagination) {
+                        totalPages = result.pagination.totalPages;
+                        currentPage = result.pagination.currentPage;
+                        
+                        // Update load more button
+                        const loadMoreButton = document.querySelector('.load-more-button');
+                        if (currentPage < totalPages) {
+                            loadMoreButton.style.display = 'block';
+                            loadMoreButton.textContent = `Load More Reviews (${result.pagination.totalItems - (page * result.pagination.pageSize) > 0 ? 
+                                                          result.pagination.totalItems - (page * result.pagination.pageSize) : 0} remaining)`;
+                        } else {
+                            loadMoreButton.style.display = 'none';
+                        }
+                    }
+                    
+                    if (result.feedbacks && result.feedbacks.length > 0) {
+                        // Remember sort order
+                        const sortOrder = document.getElementById('sortReviews').value || 'newest';
+                        
+                        // Sort the feedbacks according to current sort order
+                        let sortedFeedbacks = [...result.feedbacks];
+                        if (sortOrder === 'highest') {
+                            sortedFeedbacks.sort((a, b) => b.overallRating - a.overallRating);
+                        } else if (sortOrder === 'lowest') {
+                            sortedFeedbacks.sort((a, b) => a.overallRating - b.overallRating);
+                        } else {
+                            // Default: newest first
+                            sortedFeedbacks.sort((a, b) => new Date(b.createdDate) - new Date(a.createdDate));
+                        }
+                        
+                        sortedFeedbacks.forEach(feedback => {
+                            const reviewItem = document.createElement('div');
+                            reviewItem.className = 'feedback-item';
+                            
+                            // Store date and rating as data attributes for sorting
+                            reviewItem.setAttribute('data-date', feedback.createdDate);
+                            reviewItem.setAttribute('data-rating', feedback.overallRating);
+                            
+                            // Format date
+                            const date = new Date(feedback.createdDate);
+                            const formattedDate = date.toLocaleDateString('en-US', {
+                                year: 'numeric',
+                                month: 'long',
+                                day: 'numeric'
+                            });
+                            
+                            // Create star display for review using our helper function
+                            const reviewStars = generateStarRating(feedback.overallRating);
+                            
+                            // Create category ratings display
+                            const categoryRatings = `
+                                <div class="category-rating-item">
+                                    <span>Cleanliness</span>
+                                    <span class="category-rating-stars">${generateStarRating(feedback.cleanlinessRating)}</span>
+                                </div>
+                                <div class="category-rating-item">
+                                    <span>Equipment</span>
+                                    <span class="category-rating-stars">${generateStarRating(feedback.equipmentRating)}</span>
+                                </div>
+                                <div class="category-rating-item">
+                                    <span>Staff</span>
+                                    <span class="category-rating-stars">${generateStarRating(feedback.staffRating)}</span>
+                                </div>
+                                <div class="category-rating-item">
+                                    <span>Value</span>
+                                    <span class="category-rating-stars">${generateStarRating(feedback.valueRating)}</span>
+                                </div>
+                            `;
+                            
+                            // Create photos display if they exist
+                            let photosDisplay = '';
+                            if (feedback.photos && feedback.photos.length > 0) {
+                                photosDisplay = `<div class="feedback-photos">`;
+                                feedback.photos.forEach(photo => {
+                                    // Make photos clickable to open in new tab with improved styling
+                                    photosDisplay += `<img src="${photo}" alt="Review photo" onclick="window.open('${photo}', '_blank')" title="Click to view full size">`;
+                                });
+                                photosDisplay += `</div>`;
+                            }
+                            
+                            // Ensure title and comment are properly displayed - required fields
+                            const title = feedback.title ? censorBadWords(feedback.title.trim()) : 'Review';
+                            const comment = feedback.comment ? censorBadWords(feedback.comment.trim()) : 'No comment provided.';
+                            
+                            reviewItem.innerHTML = `
+                                <div class="user-info">
+                                    <div class="user-avatar">
+                                        <div class="avatar-initials">${feedback.user.name.split(' ').map(n => n[0]).join('')}</div>
+                                    </div>
+                                    <div class="user-details">
+                                        <h4>${feedback.user.name}</h4>
+                                        <div class="review-meta">
+                                            <span class="review-rating">${reviewStars}</span>
+                                            <span class="review-date">${formattedDate}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="feedback-content">
+                                    <h5 class="review-title">${title}</h5>
+                                    <p class="review-comment">${comment}</p>
+                                    
+                                    <div class="category-ratings-review">
+                                        ${categoryRatings}
+                                    </div>
+                                </div>
+                                
+                                ${photosDisplay}
+                            `;
+                            
+                            reviewsContainer.appendChild(reviewItem);
+                        });
+                    } else {
+                        // No reviews message
+                        reviewsContainer.innerHTML = `
+                            <div class="no-reviews">
+                                <p>No reviews yet. Be the first to share your experience!</p>
+                            </div>
+                        `;
+                        // Hide load more button
+                        document.querySelector('.load-more-button').style.display = 'none';
+                    }
+                } else {
+                    reviewsContainer.innerHTML = `
+                        <div class="error-message">
+                            <p>Failed to load reviews: ${result.message || 'Unknown error'}</p>
+                        </div>
+                    `;
+                    // Hide load more button
+                    document.querySelector('.load-more-button').style.display = 'none';
+                }
+            } catch (error) {
+                console.error('Error loading feedback:', error);
+                const reviewsContainer = document.querySelector('.feedback-items-container');
+                reviewsContainer.innerHTML = `
+                    <div class="error-message">
+                        <p>Error loading reviews. Please try again later.</p>
+                    </div>
+                `;
+                // Hide load more button
+                document.querySelector('.load-more-button').style.display = 'none';
+            }
+        }
+
+        // Update load more button handler
+        document.querySelector('.load-more-button').addEventListener('click', function() {
+            if (currentPage < totalPages) {
+                loadFacilityFeedback(currentFacilityId, currentPage + 1);
+            }
+        });
+
+        // Function to update all facility card ratings
+        async function updateAllFacilityRatings() {
+            try {
+                // Get all facility cards
+                const facilityCards = document.querySelectorAll('.facility-card');
+                
+                // Update each facility card rating
+                for (const card of facilityCards) {
+                    const facilityId = parseInt(card.getAttribute('data-facility-id'));
+                    const response = await fetch(`/Homeowner/GetFacilityDetails?facilityId=${facilityId}`);
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        const ratingSpan = card.querySelector('.facility-rating span');
+                        if (ratingSpan) {
+                            ratingSpan.textContent = result.facility.overall_rating.toFixed(1);
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('Error updating facility ratings:', error);
+            }
         }
     });
