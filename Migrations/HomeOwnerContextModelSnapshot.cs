@@ -183,6 +183,8 @@ namespace HomeOwner.Migrations
 
                     b.HasKey("feedback_id");
 
+                    b.HasIndex("facility_id");
+
                     b.HasIndex("user_id");
 
                     b.ToTable("Feedback");
@@ -372,11 +374,19 @@ namespace HomeOwner.Migrations
 
             modelBuilder.Entity("HomeOwner.Models.Feedback", b =>
                 {
+                    b.HasOne("HomeOwner.Models.Facility", "Facility")
+                        .WithMany()
+                        .HasForeignKey("facility_id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("HomeOwner.Models.User", "User")
                         .WithMany()
                         .HasForeignKey("user_id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Facility");
 
                     b.Navigation("User");
                 });

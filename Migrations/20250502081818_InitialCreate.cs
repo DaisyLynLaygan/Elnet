@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace HomeOwner.Migrations
 {
     /// <inheritdoc />
-    public partial class AddServiceRequestTable : Migration
+    public partial class InitialCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -31,6 +31,27 @@ namespace HomeOwner.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Facility",
+                columns: table => new
+                {
+                    facility_id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    name = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    description = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    image_path = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    overall_rating = table.Column<decimal>(type: "decimal(3,1)", nullable: false),
+                    review_count = table.Column<int>(type: "int", nullable: false),
+                    cleanliness_rating = table.Column<decimal>(type: "decimal(3,1)", nullable: false),
+                    equipment_rating = table.Column<decimal>(type: "decimal(3,1)", nullable: false),
+                    staff_rating = table.Column<decimal>(type: "decimal(3,1)", nullable: false),
+                    value_rating = table.Column<decimal>(type: "decimal(3,1)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Facility", x => x.facility_id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "User",
                 columns: table => new
                 {
@@ -50,6 +71,42 @@ namespace HomeOwner.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_User", x => x.user_id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Feedback",
+                columns: table => new
+                {
+                    feedback_id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    facility_id = table.Column<int>(type: "int", nullable: false),
+                    user_id = table.Column<int>(type: "int", nullable: false),
+                    overall_rating = table.Column<decimal>(type: "decimal(3,1)", nullable: false),
+                    cleanliness_rating = table.Column<decimal>(type: "decimal(3,1)", nullable: false),
+                    equipment_rating = table.Column<decimal>(type: "decimal(3,1)", nullable: false),
+                    staff_rating = table.Column<decimal>(type: "decimal(3,1)", nullable: false),
+                    value_rating = table.Column<decimal>(type: "decimal(3,1)", nullable: false),
+                    title = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
+                    comment = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    photos = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    created_date = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    updated_date = table.Column<DateTime>(type: "datetime2", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Feedback", x => x.feedback_id);
+                    table.ForeignKey(
+                        name: "FK_Feedback_Facility_facility_id",
+                        column: x => x.facility_id,
+                        principalTable: "Facility",
+                        principalColumn: "facility_id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Feedback_User_user_id",
+                        column: x => x.user_id,
+                        principalTable: "User",
+                        principalColumn: "user_id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -169,6 +226,16 @@ namespace HomeOwner.Migrations
                 column: "post_id");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Feedback_facility_id",
+                table: "Feedback",
+                column: "facility_id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Feedback_user_id",
+                table: "Feedback",
+                column: "user_id");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Post_user_id",
                 table: "Post",
                 column: "user_id");
@@ -194,6 +261,9 @@ namespace HomeOwner.Migrations
                 name: "Comment");
 
             migrationBuilder.DropTable(
+                name: "Feedback");
+
+            migrationBuilder.DropTable(
                 name: "Report");
 
             migrationBuilder.DropTable(
@@ -201,6 +271,9 @@ namespace HomeOwner.Migrations
 
             migrationBuilder.DropTable(
                 name: "Post");
+
+            migrationBuilder.DropTable(
+                name: "Facility");
 
             migrationBuilder.DropTable(
                 name: "User");

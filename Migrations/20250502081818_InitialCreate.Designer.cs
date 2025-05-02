@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace HomeOwner.Migrations
 {
     [DbContext(typeof(HomeOwnerContext))]
-    [Migration("20250429123351_InitialCreate")]
+    [Migration("20250502081818_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -90,6 +90,107 @@ namespace HomeOwner.Migrations
                     b.HasIndex("post_id");
 
                     b.ToTable("Comment");
+                });
+
+            modelBuilder.Entity("HomeOwner.Models.Facility", b =>
+                {
+                    b.Property<int>("facility_id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("facility_id"));
+
+                    b.Property<decimal>("cleanliness_rating")
+                        .HasColumnType("decimal(3,1)");
+
+                    b.Property<string>("description")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<decimal>("equipment_rating")
+                        .HasColumnType("decimal(3,1)");
+
+                    b.Property<string>("image_path")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<decimal>("overall_rating")
+                        .HasColumnType("decimal(3,1)");
+
+                    b.Property<int>("review_count")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("staff_rating")
+                        .HasColumnType("decimal(3,1)");
+
+                    b.Property<decimal>("value_rating")
+                        .HasColumnType("decimal(3,1)");
+
+                    b.HasKey("facility_id");
+
+                    b.ToTable("Facility");
+                });
+
+            modelBuilder.Entity("HomeOwner.Models.Feedback", b =>
+                {
+                    b.Property<int>("feedback_id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("feedback_id"));
+
+                    b.Property<decimal>("cleanliness_rating")
+                        .HasColumnType("decimal(3,1)");
+
+                    b.Property<string>("comment")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("created_date")
+                        .HasColumnType("datetime2");
+
+                    b.Property<decimal>("equipment_rating")
+                        .HasColumnType("decimal(3,1)");
+
+                    b.Property<int>("facility_id")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("overall_rating")
+                        .HasColumnType("decimal(3,1)");
+
+                    b.Property<string>("photos")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<decimal>("staff_rating")
+                        .HasColumnType("decimal(3,1)");
+
+                    b.Property<string>("title")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<DateTime?>("updated_date")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("user_id")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("value_rating")
+                        .HasColumnType("decimal(3,1)");
+
+                    b.HasKey("feedback_id");
+
+                    b.HasIndex("facility_id");
+
+                    b.HasIndex("user_id");
+
+                    b.ToTable("Feedback");
                 });
 
             modelBuilder.Entity("HomeOwner.Models.Post", b =>
@@ -272,6 +373,25 @@ namespace HomeOwner.Migrations
                     b.Navigation("Author");
 
                     b.Navigation("Post");
+                });
+
+            modelBuilder.Entity("HomeOwner.Models.Feedback", b =>
+                {
+                    b.HasOne("HomeOwner.Models.Facility", "Facility")
+                        .WithMany()
+                        .HasForeignKey("facility_id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("HomeOwner.Models.User", "User")
+                        .WithMany()
+                        .HasForeignKey("user_id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Facility");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("HomeOwner.Models.Post", b =>
