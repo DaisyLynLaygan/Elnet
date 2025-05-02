@@ -2,36 +2,96 @@ document.addEventListener('DOMContentLoaded', function() {
     // Global variables for pagination
     let currentFeedbackPage = 1;
     let currentComplaintsPage = 1;
-    const pageSize = 10;
+    const pageSize = 5;
+
+    // Load feedback data on page load
+    loadFeedback();
+
+    // List of swear words to censor (can be expanded)
+    const swearWords = [
+        // English
+        'fuck', 'shit', 'bitch', 'asshole', 'cunt', 'dick', 'cock', 'pussy', 'whore', 'slut',
+        'bastard', 'motherfucker', 'piss', 'damn', 'ass', 'idiot', 'retard', 'moron',
+        
+        // Filipino
+        'putang', 'puta', 'putangina', 'gago', 'tangina', 'tarantado', 'ulol', 'bobo', 'tanga',
+        'inutil', 'kupal', 'hinayupak', 'hayop', 'hayup', 'lintik', 'leche', 'pakyu', 'pakyo',
+        'punyeta', 'pakshet', 'engot', 'ungas', 'olol', 'buwisit', 'bwisit', 'ogag', 'pokpok',
+        
+        // Cebuano
+        'pisti', 'pisteng', 'yawa', 'yawaa', 'bati', 'batia', 'bilat', 'bilata', 'buang',
+        'buanga', 'hindot', 'hindota', 'animal', 'animala', 'amaw', 'amawa', 'puya', 'puyat',
+        'libog', 'liboga', 'bayot', 'bayota', 'tae', 'taeta', 'bulok', 'buloka',
+        
+        // Common variations and combinations
+        'putanginamo', 'tanginama', 'tanginamoka', 'pisting', 'pistengyawa', 'putragis',
+        'fuckyou', 'fck', 'fvck', 'f*ck', 'sh*t', 'b*tch', 'stfu', 'wtf', 'fck u',
+        'putangina mo', 'tang ina', 'tang ina mo', 'puta mo', 'gago ka',
+        
+        // Additional regional variations
+        'paksit', 'pakingshet', 'kingina', 'kinginamo', 'shunga', 'boboka', 'bobomo',
+        'tangamo', 'pesteng', 'pisteng yawa', 'piste', 'amawon', 'amahan', 'bilateron',
+        'hindoton', 'punyales', 'punyaleta'
+    ];
+
+    // Function to censor swear words
+    function censorText(text) {
+        if (!text) return text;
+        
+        let censoredText = text;
+        swearWords.forEach(word => {
+            const regex = new RegExp(word, 'gi');
+            censoredText = censoredText.replace(regex, '*'.repeat(word.length));
+        });
+        return censoredText;
+    }
 
     // Tab functionality
     const tabs = document.querySelectorAll('.tab-button');
     const tabContents = document.querySelectorAll('.feedback-content');
     
     function switchTab(tabId) {
-        // Remove active class from all tabs and contents
-        tabs.forEach(tab => tab.classList.remove('active'));
-        tabContents.forEach(content => content.classList.remove('active'));
-        
-        // Add active class to clicked tab and corresponding content
-        const selectedTab = document.querySelector(`.tab-button[data-tab="${tabId}"]`);
-        const selectedContent = document.getElementById(tabId);
-        
-        if (selectedTab && selectedContent) {
-            selectedTab.classList.add('active');
-            selectedContent.classList.add('active');
+        // First hide all content sections with a fade out effect
+        tabContents.forEach(content => {
+            content.style.opacity = '0';
+            setTimeout(() => {
+                content.style.display = 'none';
+            }, 300); // Match this with CSS transition time
+        });
 
-            // Load data for the selected tab
-            if (tabId === 'facility-feedback') {
-                loadFeedback();
-            } else if (tabId === 'service-complaints') {
-                loadComplaints();
-            }
+        // Remove active class from all tabs
+        tabs.forEach(tab => tab.classList.remove('active'));
+        
+        // Add active class to clicked tab
+        const selectedTab = document.querySelector(`.tab-button[data-tab="${tabId}"]`);
+        if (selectedTab) {
+            selectedTab.classList.add('active');
+        }
+
+        // Show selected content with fade in effect
+        const selectedContent = document.getElementById(tabId);
+        if (selectedContent) {
+            setTimeout(() => {
+                selectedContent.style.display = 'block';
+                // Force a reflow
+                selectedContent.offsetHeight;
+                selectedContent.style.opacity = '1';
+                selectedContent.classList.add('active');
+
+                // Load appropriate data
+                if (tabId === 'facility-feedback') {
+                    loadFeedback();
+                } else if (tabId === 'service-complaints') {
+                    loadComplaints();
+                }
+            }, 300); // Match this with CSS transition time
         }
     }
     
+    // Add click event listeners to tabs
     tabs.forEach(tab => {
-        tab.addEventListener('click', function() {
+        tab.addEventListener('click', function(e) {
+            e.preventDefault();
             const tabId = this.getAttribute('data-tab');
             switchTab(tabId);
         });
@@ -81,24 +141,52 @@ document.addEventListener('DOMContentLoaded', function() {
         const tbody = document.querySelector('#facility-feedback tbody');
         tbody.innerHTML = '';
 
+        if (!feedbacks || feedbacks.length === 0) {
+            const emptyRow = document.createElement('tr');
+            emptyRow.innerHTML = `
+                <td colspan="7" class="text-center">
+                    <div class="empty-state">
+                        <i class="fas fa-comments"></i>
+                        <h3>No Feedback Yet</h3>
+                        <p>There are no feedback entries to display.</p>
+                    </div>
+                </td>
+            `;
+            tbody.appendChild(emptyRow);
+            return;
+        }
+
         feedbacks.forEach(feedback => {
+            // Format date
+            const date = new Date(feedback.created_date);
+            const formattedDate = date.toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+
             const row = document.createElement('tr');
             row.innerHTML = `
                 <td>
                     <div class="feedback-user">
                         <div class="feedback-user-info">
-                            <h4>${feedback.user.name}</h4>
-                            <p>${feedback.user.unit}</p>
+                            <h4>${feedback.user?.name || 'N/A'}</h4>
+                            <p>${feedback.user?.unit || 'N/A'}</p>
                         </div>
                     </div>
                 </td>
-                <td>${feedback.facility}</td>
+                <td>${feedback.facility?.name || 'N/A'}</td>
                 <td>
-                    <div class="rating-stars">${generateStarRating(feedback.overall_rating)}</div>
+                    <div class="rating-stars">${generateStarRating(feedback.overall_rating || 0)}</div>
                 </td>
-                <td>${feedback.title}</td>
-                <td>${feedback.created_date}</td>
-                <td><span class="badge success">${feedback.status}</span></td>
+                <td>
+                    <div class="table-feedback-content">
+                        <div class="table-review-title">${censorText(feedback.title) || 'No Title'}</div>
+                        <div class="table-review-comment">${censorText(feedback.comment) || 'No Comment'}</div>
+                    </div>
+                </td>
+                <td>${formattedDate}</td>
+                <td><span class="badge ${feedback.status?.toLowerCase() || 'default'}">${feedback.status || 'N/A'}</span></td>
                 <td>
                     <button class="btn-icon view-details" title="View Details" data-type="feedback" data-id="${feedback.feedback_id}">
                         <i class="fas fa-eye"></i>
@@ -123,16 +211,16 @@ document.addEventListener('DOMContentLoaded', function() {
                 <td>
                     <div class="feedback-user">
                         <div class="feedback-user-info">
-                            <h4>${complaint.user.name}</h4>
-                            <p>${complaint.user.unit}</p>
+                            <h4>${complaint.user?.name || 'N/A'}</h4>
+                            <p>${complaint.user?.unit || 'N/A'}</p>
                         </div>
                     </div>
                 </td>
-                <td>${complaint.service_type}</td>
-                <td>${complaint.title}</td>
-                <td><span class="badge ${getSeverityClass(complaint.severity)}">${complaint.severity}</span></td>
-                <td>${complaint.date_created}</td>
-                <td><span class="badge ${getStatusClass(complaint.status)}">${complaint.status}</span></td>
+                <td>${complaint.service_type || 'N/A'}</td>
+                <td>${censorText(complaint.title) || 'N/A'}</td>
+                <td><span class="badge ${getSeverityClass(complaint.severity || 'low')}">${complaint.severity || 'N/A'}</span></td>
+                <td>${complaint.date_created || 'N/A'}</td>
+                <td><span class="badge ${getStatusClass(complaint.status || 'open')}">${complaint.status || 'N/A'}</span></td>
                 <td>
                     <button class="btn-icon view-details" title="View Details" data-type="complaint" data-id="${complaint.request_id}">
                         <i class="fas fa-eye"></i>
@@ -210,6 +298,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (pagination.currentPage > 1) {
             const prevButton = document.createElement('button');
             prevButton.innerHTML = '<i class="fas fa-chevron-left"></i> Previous';
+            prevButton.classList.add('pagination-btn');
             prevButton.addEventListener('click', () => {
                 currentFeedbackPage--;
                 loadFeedback();
@@ -221,6 +310,7 @@ document.addEventListener('DOMContentLoaded', function() {
         for (let i = 1; i <= pagination.totalPages; i++) {
             const pageButton = document.createElement('button');
             pageButton.textContent = i;
+            pageButton.classList.add('pagination-btn');
             if (i === pagination.currentPage) {
                 pageButton.classList.add('active');
             }
@@ -235,6 +325,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (pagination.currentPage < pagination.totalPages) {
             const nextButton = document.createElement('button');
             nextButton.innerHTML = 'Next <i class="fas fa-chevron-right"></i>';
+            nextButton.classList.add('pagination-btn');
             nextButton.addEventListener('click', () => {
                 currentFeedbackPage++;
                 loadFeedback();
@@ -252,6 +343,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (pagination.currentPage > 1) {
             const prevButton = document.createElement('button');
             prevButton.innerHTML = '<i class="fas fa-chevron-left"></i> Previous';
+            prevButton.classList.add('pagination-btn');
             prevButton.addEventListener('click', () => {
                 currentComplaintsPage--;
                 loadComplaints();
@@ -263,6 +355,7 @@ document.addEventListener('DOMContentLoaded', function() {
         for (let i = 1; i <= pagination.totalPages; i++) {
             const pageButton = document.createElement('button');
             pageButton.textContent = i;
+            pageButton.classList.add('pagination-btn');
             if (i === pagination.currentPage) {
                 pageButton.classList.add('active');
             }
@@ -277,6 +370,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (pagination.currentPage < pagination.totalPages) {
             const nextButton = document.createElement('button');
             nextButton.innerHTML = 'Next <i class="fas fa-chevron-right"></i>';
+            nextButton.classList.add('pagination-btn');
             nextButton.addEventListener('click', () => {
                 currentComplaintsPage++;
                 loadComplaints();
@@ -314,51 +408,55 @@ document.addEventListener('DOMContentLoaded', function() {
                 const feedback = result.feedback;
                 const modal = document.getElementById('feedbackDetailModal');
                 
-                // Set modal content
-                document.getElementById('feedbackUserName').textContent = feedback.user.name;
-                document.getElementById('feedbackUserUnit').textContent = feedback.user.unit || 'N/A';
-                document.getElementById('feedbackFacility').textContent = feedback.facility;
-                document.getElementById('feedbackRating').innerHTML = generateStarRating(feedback.overall_rating);
-                document.getElementById('feedbackDate').textContent = feedback.created_date;
-                document.getElementById('feedbackStatus').textContent = feedback.status;
-                document.getElementById('feedbackFullText').textContent = feedback.comment;
+                if (!modal) {
+                    console.error('Modal element not found');
+                    return;
+                }
                 
-                // Set user avatar (if available)
+                // Format date
+                const date = new Date(feedback.created_date);
+                const formattedDate = date.toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                });
+                
+                // Helper function to safely set text content
+                function setTextContent(elementId, text) {
+                    const element = document.getElementById(elementId);
+                    if (element) {
+                        element.textContent = text || 'N/A';
+                    }
+                }
+                
+                // Set modal content safely
+                setTextContent('feedbackUserName', feedback.user?.name);
+                setTextContent('feedbackUserUnit', feedback.user?.unit);
+                setTextContent('feedbackFacility', feedback.facility?.name);
+                setTextContent('feedbackDate', formattedDate);
+                setTextContent('feedbackStatus', feedback.status);
+                setTextContent('feedbackFullText', feedback.comment || 'No comment provided');
+                
+                // Set rating safely
+                const ratingElement = document.getElementById('feedbackRating');
+                if (ratingElement) {
+                    ratingElement.innerHTML = generateStarRating(feedback.overall_rating || 0);
+                }
+                
+                // Set user avatar safely
                 const userAvatar = document.getElementById('feedbackUserAvatar');
-                if (feedback.user.avatar) {
-                    userAvatar.src = feedback.user.avatar;
-                } else {
-                    // Generate initials avatar if no avatar is available
-                    const initials = feedback.user.name.split(' ').map(n => n[0]).join('');
-                    userAvatar.src = `https://ui-avatars.com/api/?name=${initials}&background=random`;
+                if (userAvatar) {
+                    if (feedback.user?.avatar) {
+                        userAvatar.src = feedback.user.avatar;
+                    } else {
+                        const initials = (feedback.user?.name || 'NA').split(' ').map(n => n[0]).join('');
+                        userAvatar.src = `https://ui-avatars.com/api/?name=${initials}&background=random`;
+                    }
                 }
                 
                 // Show modal
                 modal.style.display = 'block';
                 document.body.style.overflow = 'hidden'; // Prevent scrolling when modal is open
-                
-                // Add event listener for closing the modal
-                const closeModal = function() {
-                    modal.style.display = 'none';
-                    document.body.style.overflow = ''; // Restore scrolling
-                };
-                
-                // Close when clicking the close button
-                document.querySelector('.close-modal').onclick = closeModal;
-                
-                // Close when clicking outside the modal
-                window.onclick = function(event) {
-                    if (event.target === modal) {
-                        closeModal();
-                    }
-                };
-                
-                // Close when pressing Escape key
-                document.onkeydown = function(event) {
-                    if (event.key === 'Escape') {
-                        closeModal();
-                    }
-                };
             } else {
                 console.error('Error loading feedback details:', result.message);
                 alert('Failed to load feedback details. Please try again.');
@@ -382,6 +480,7 @@ document.addEventListener('DOMContentLoaded', function() {
     document.querySelectorAll('.close-modal, .close').forEach(button => {
         button.addEventListener('click', function() {
             document.getElementById('feedbackDetailModal').style.display = 'none';
+            document.body.style.overflow = ''; // Re-enable scrolling
         });
     });
 
@@ -389,6 +488,7 @@ document.addEventListener('DOMContentLoaded', function() {
     window.addEventListener('click', function(e) {
         if (e.target === document.getElementById('feedbackDetailModal')) {
             document.getElementById('feedbackDetailModal').style.display = 'none';
+            document.body.style.overflow = ''; // Re-enable scrolling
         }
     });
 });

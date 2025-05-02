@@ -2,6 +2,7 @@ using HomeOwner.Models;
 using Microsoft.AspNetCore.Mvc;
 using HomeOwner.Data;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Antiforgery;
 
 namespace HomeOwner.Controllers
 {
@@ -209,11 +210,42 @@ namespace HomeOwner.Controllers
         }
 
         [HttpPost]
+        public async Task<JsonResult> CheckDuplicateReport([FromBody] DuplicateCheckModel model)
+        {
+            try
+            {
+                // Check for similar reports in the last 24 hours
+                var twentyFourHoursAgo = DateTime.Now.AddHours(-24);
+                var existingReport = await _context.Report
+                    .Where(r => r.report_facility == model.facility 
+                            && r.report_type == model.type
+                            && r.created_date >= twentyFourHoursAgo)
+                    .FirstOrDefaultAsync();
+
+                return Json(new { 
+                    success = true, 
+                    isDuplicate = existingReport != null 
+                });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { 
+                    success = false, 
+                    message = ex.Message 
+                });
+            }
+        }
+
+        [HttpPost]
+        [IgnoreAntiforgeryToken]
         public async Task<IActionResult> AddReport(Report model)
         {
             if (!ModelState.IsValid)
             {
-                return RedirectToAction("StaffDashboard", "Staff");
+                return Json(new { 
+                    success = false, 
+                    message = "Please fill in all required fields correctly." 
+                });
             }
 
             try
@@ -228,14 +260,20 @@ namespace HomeOwner.Controllers
                 _context.Report.Add(model);
                 await _context.SaveChangesAsync();
             
-                return RedirectToAction("StaffDashboard", new { success = true });
+                return Json(new { 
+                    success = true,
+                    message = "Report submitted successfully" 
+                });
             }
             catch (Exception ex)
             {
-                ModelState.AddModelError("", $"Error submitting report: {ex.Message}");
-                return RedirectToAction("StaffDashboard", "Staff");
+                return Json(new { 
+                    success = false, 
+                    message = $"Error submitting report: {ex.Message}" 
+                });
             }
         }
+
         public IActionResult StaffDashboard()
         {
             ViewContents();
@@ -286,6 +324,12 @@ namespace HomeOwner.Controllers
         public class PostDeleteModel
         {
             public int postId { get; set; }
+        }
+
+        public class DuplicateCheckModel
+        {
+            public string facility { get; set; }
+            public string type { get; set; }
         }
     }
 }

@@ -369,9 +369,13 @@ namespace HomeOwner.Controllers
                         {
                             name = f.User.firstname + " " + f.User.lastname
                         },
-                        facility = f.Facility.name,
+                        facility = new 
+                        {
+                            name = f.Facility.name
+                        },
                         overall_rating = f.overall_rating,
                         title = f.title,
+                        comment = f.comment,
                         created_date = f.created_date.ToString("MMMM dd, yyyy"),
                         status = "Published"
                     })
@@ -381,7 +385,7 @@ namespace HomeOwner.Controllers
                 var stats = new
                 {
                     total = totalCount,
-                    average_rating = query.Average(f => f.overall_rating),
+                    average_rating = query.Any() ? query.Average(f => f.overall_rating) : 0m,
                     new_this_week = query.Count(f => f.created_date >= DateTime.Now.AddDays(-7)),
                     facilities = _context.Facility.Count()
                 };
@@ -430,7 +434,10 @@ namespace HomeOwner.Controllers
                         {
                             name = feedback.User.firstname + " " + feedback.User.lastname
                         },
-                        facility = feedback.Facility.name,
+                        facility = new
+                        {
+                            name = feedback.Facility.name
+                        },
                         overall_rating = feedback.overall_rating,
                         title = feedback.title,
                         comment = feedback.comment,

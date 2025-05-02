@@ -17,38 +17,70 @@
 /* Feedback Tabs */
 .feedback-tabs {
     display: flex;
-    border-bottom: 1px solid var(--medium-gray);
+    border-bottom: 2px solid var(--medium-gray);
     margin-bottom: 2rem;
+    gap: 1rem;
+    padding: 0 1rem;
 }
 
 .tab-button {
-    padding: 0.8rem 1.5rem;
+    padding: 1rem 2rem;
     background: none;
     border: none;
-    border-bottom: 3px solid transparent;
-    font-size: 1rem;
+    font-size: 1.1rem;
     font-weight: 600;
     color: var(--dark-gray);
     cursor: pointer;
-    transition: all 0.3s;
+    transition: all 0.3s ease;
+    position: relative;
+    opacity: 0.7;
+}
+
+.tab-button::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background-color: var(--primary);
+    transform: scaleX(0);
+    transition: transform 0.3s ease;
+}
+
+.tab-button:hover {
+    opacity: 1;
 }
 
 .tab-button.active {
     color: var(--primary);
-    border-bottom-color: var(--primary);
+    opacity: 1;
 }
 
-.tab-button:hover:not(.active) {
-    color: var(--primary-light);
-    border-bottom-color: var(--primary-light);
+.tab-button.active::after {
+    transform: scaleX(1);
 }
 
+/* Content Sections */
 .feedback-content {
     display: none;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    position: absolute;
+    width: 100%;
+    left: 0;
 }
 
 .feedback-content.active {
     display: block;
+    opacity: 1;
+    position: relative;
+}
+
+/* Container for all content */
+.container {
+    position: relative;
+    min-height: 500px; /* Adjust based on your content */
 }
 
 /* Facility Carousel Section */
@@ -313,6 +345,7 @@ html {
 .feedback-header {
     text-align: center;
     margin-bottom: 2.5rem;
+    margin-top: 2rem;
 }
 
 .feedback-header h1 {
@@ -329,6 +362,104 @@ html {
 .feedback-header .selected-property {
     font-weight: 600;
     color: var(--primary);
+}
+
+/* Reviews Section */
+.reviews-section {
+    margin-top: 2rem;
+    padding: 2rem;
+    background: var(--white);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow);
+}
+
+.reviews-header {
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--medium-gray);
+}
+
+.reviews-header h2 {
+    font-size: 1.8rem;
+    color: var(--primary);
+    margin-bottom: 0.5rem;
+}
+
+/* Feedback Items Container */
+.feedback-items-container {
+    margin-top: 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+/* Feedback Item */
+.feedback-item {
+    background: white;
+    border-radius: 12px;
+    padding: 2rem;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    border: 1px solid rgba(0,0,0,0.05);
+}
+
+.feedback-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0,0,0,0.12);
+}
+
+/* User Info Section */
+.user-info {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    gap: 1rem;
+}
+
+.user-avatar {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 3px solid var(--primary-light);
+}
+
+.user-details h4 {
+    font-size: 1.2rem;
+    color: var(--dark-gray);
+    margin-bottom: 0.3rem;
+}
+
+/* Review Content */
+.review-title {
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: var(--dark-gray);
+    margin-bottom: 1rem;
+}
+
+.review-comment {
+    font-size: 1.1rem;
+    line-height: 1.6;
+    color: var(--dark-gray);
+    margin-bottom: 1.5rem;
+    white-space: pre-line;
+}
+
+/* Share Experience Section */
+.share-experience {
+    margin-top: 2rem;
+    padding: 2rem;
+    background: var(--white);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow);
+}
+
+.share-experience h2 {
+    font-size: 1.8rem;
+    color: var(--primary);
+    margin-bottom: 1.5rem;
+    text-align: center;
 }
 
 /* Rating Summary */
@@ -1676,4 +1807,99 @@ textarea {
 
 .feedback-photos img:hover {
     transform: scale(1.05);
+}
+
+/* Table feedback styles */
+.table-feedback-content {
+    padding: 0.5rem;
+    max-width: 300px;
+}
+
+.table-review-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--dark-gray);
+    margin-bottom: 0.5rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.table-review-comment {
+    font-size: 0.9rem;
+    color: var(--medium-gray);
+    margin: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    line-height: 1.4;
+}
+
+/* Badge styles */
+.badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    text-transform: capitalize;
+    display: inline-block;
+}
+
+.badge.success {
+    background-color: #e6f4ea;
+    color: #1e7e34;
+}
+
+.badge.default {
+    background-color: #e9ecef;
+    color: #495057;
+}
+
+.badge.pending {
+    background-color: #fff3cd;
+    color: #856404;
+}
+
+/* Table styles */
+#facility-feedback table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1rem;
+}
+
+#facility-feedback th, 
+#facility-feedback td {
+    padding: 1rem;
+    text-align: left;
+    border-bottom: 1px solid var(--light-gray);
+    vertical-align: top;
+}
+
+#facility-feedback th {
+    font-weight: 600;
+    color: var(--dark-gray);
+    background-color: var(--light-gray);
+}
+
+/* Button styles */
+.btn-icon {
+    background: none;
+    border: none;
+    padding: 0.5rem;
+    cursor: pointer;
+    color: var(--medium-gray);
+    transition: color 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-icon:hover {
+    color: var(--primary);
+}
+
+.btn-icon + .btn-icon {
+    margin-left: 0.5rem;
 }
