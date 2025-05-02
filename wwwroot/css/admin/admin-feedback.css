@@ -594,10 +594,28 @@
     animation: fadeIn 0.3s ease forwards;
 }
 
+/* Loading State */
+.loading-state {
+    padding: 3rem 2rem;
+    text-align: center;
+    color: var(--text-gray);
+}
+
+.loading-state i {
+    font-size: 2rem;
+    margin-bottom: 1rem;
+    color: var(--primary);
+}
+
+.loading-state p {
+    margin: 0;
+    font-size: 1.1rem;
+}
+
 /* Empty State */
 .empty-state {
-    text-align: center;
     padding: 3rem 2rem;
+    text-align: center;
     color: var(--text-gray);
 }
 
@@ -614,5 +632,28 @@
 }
 
 .empty-state p {
-    margin-bottom: 1.5rem;
+    margin: 0;
+    font-size: 1.1rem;
+}
+
+/* Table Content */
+.table-feedback-content {
+    max-width: 300px;
+}
+
+.table-review-title {
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: var(--text-dark);
+}
+
+.table-review-comment {
+    color: var(--text-gray);
+    font-size: 0.9rem;
+    line-height: 1.4;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }

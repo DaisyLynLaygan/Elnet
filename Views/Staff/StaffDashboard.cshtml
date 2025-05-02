@@ -241,12 +241,10 @@
                 <button type="button" class="modal-close" id="closeReportIssueModal">&times;</button>
             </div>
             <div class="modal-body">
-                <form asp-action="AddReport" asp-controller="Staff" method="post" id="reportIssueForm">
-                   
-                    
+                <form id="reportIssueForm">
                     <div class="form-group">
-                        <label asp-for="report_type">Issue Type</label>
-                        <select class="form-control" asp-for="report_type" required>
+                        <label for="report_type">Issue Type</label>
+                        <select class="form-control" id="report_type" name="report_type" required>
                             <option value="" selected disabled>Select issue type</option>
                             <option value="plumbing">Plumbing</option>
                             <option value="electrical">Electrical</option>
@@ -255,12 +253,11 @@
                             <option value="security">Security</option>
                             <option value="other">Other</option>
                         </select>
-                        <span asp-validation-for="report_type" class="text-danger"></span>
                     </div>
                     
                     <div class="form-group">
-                        <label asp-for="report_facility">Facility</label>
-                        <select class="form-control" asp-for="report_facility" required>
+                        <label for="report_facility">Facility</label>
+                        <select class="form-control" id="report_facility" name="report_facility" required>
                             <option value="" selected disabled>Select facility</option>
                             <option value="function_hall">Function Hall</option>
                             <option value="sports_court">Sports Court</option>
@@ -269,274 +266,344 @@
                             <option value="clubhouse">Clubhouse</option>
                             <option value="playground">Playground</option>
                         </select>
-                        <span asp-validation-for="report_facility" class="text-danger"></span>
                     </div>
                     
                     <div class="form-group">
-                        <label asp-for="report_severity">Severity</label>
-                        <select class="form-control" asp-for="report_severity" required>
+                        <label for="report_severity">Severity</label>
+                        <select class="form-control" id="report_severity" name="report_severity" required>
                             <option value="low">Low (Non-urgent)</option>
                             <option value="medium" selected>Medium (Normal priority)</option>
                             <option value="high">High (Urgent)</option>
                             <option value="critical">Critical (Emergency)</option>
                         </select>
-                        <span asp-validation-for="report_severity" class="text-danger"></span>
                     </div>
                     
                     <div class="form-group">
-                        <label asp-for="report_description">Description</label>
-                        <textarea class="form-control" asp-for="report_description" rows="4" required></textarea>
-                        <span asp-validation-for="report_description" class="text-danger"></span>
+                        <label for="report_description">Description</label>
+                        <textarea class="form-control" id="report_description" name="report_description" rows="4" required minlength="10"></textarea>
                     </div>
                     
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" id="cancelReportIssue">Cancel</button>
-                        <button type="submit" class="btn btn-warning" id="submitIssueReport">Report Issue</button>
+                        <button type="button" class="btn btn-warning" id="submitIssueReport">
+                            <i class="fas fa-exclamation-triangle"></i> Report Issue
+                        </button>
                     </div>
                 </form>
             </div>
         </div>
     </div>
 </div>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Homeowners Service Requests Chart - Temp Data
-            const serviceRequestsCtx = document.getElementById('serviceRequestsChart').getContext('2d');
-            const serviceRequestsChart = new Chart(serviceRequestsCtx, {
-                type: 'bar',
-                data: {
-                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
-                    datasets: [
-                        {
-                            label: 'Facilities Services',
-                            data: [12, 18, 15, 9, 14, 20],
-                            backgroundColor: '#6D4C41',
-                            borderColor: '#4E342E',
-                            borderWidth: 1,
-                            borderRadius: 4,
-                            barThickness: 'flex',
-                            maxBarThickness: 30
+
+<!-- Add SweetAlert2 CDN -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+    let isSubmitting = false;
+
+    document.addEventListener('DOMContentLoaded', function() {
+        // Homeowners Service Requests Chart - Temp Data
+        const serviceRequestsCtx = document.getElementById('serviceRequestsChart').getContext('2d');
+        const serviceRequestsChart = new Chart(serviceRequestsCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                datasets: [
+                    {
+                        label: 'Facilities Services',
+                        data: [12, 18, 15, 9, 14, 20],
+                        backgroundColor: '#6D4C41',
+                        borderColor: '#4E342E',
+                        borderWidth: 1,
+                        borderRadius: 4,
+                        barThickness: 'flex',
+                        maxBarThickness: 30
+                    },
+                    {
+                        label: 'Maintenance Services',
+                        data: [8, 12, 10, 5, 9, 15],
+                        backgroundColor: '#8D6E63',
+                        borderColor: '#6D4C41',
+                        borderWidth: 1,
+                        borderRadius: 4,
+                        barThickness: 'flex',
+                        maxBarThickness: 30
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.05)'
                         },
-                        {
-                            label: 'Maintenance Services',
-                            data: [8, 12, 10, 5, 9, 15],
-                            backgroundColor: '#8D6E63',
-                            borderColor: '#6D4C41',
-                            borderWidth: 1,
-                            borderRadius: 4,
-                            barThickness: 'flex',
-                            maxBarThickness: 30
-                        }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            grid: {
-                                color: 'rgba(0, 0, 0, 0.05)'
-                            },
-                            title: {
-                                display: true,
-                                text: 'Number of Requests'
-                            }
-                        },
-                        x: {
-                            grid: {
-                                display: false
-                            },
-                            stacked: true
+                        title: {
+                            display: true,
+                            text: 'Number of Requests'
                         }
                     },
-                    plugins: {
-                        legend: {
-                            position: 'top',
-                            labels: {
-                                usePointStyle: true,
-                                pointStyle: 'circle'
-                            }
+                    x: {
+                        grid: {
+                            display: false
                         },
-                        tooltip: {
-                            backgroundColor: '#6D4C41',
-                            titleFont: {
-                                weight: 'bold'
-                            },
-                            bodyFont: {
-                                weight: 'normal'
-                            },
-                            padding: 12,
-                            cornerRadius: 8,
-                            mode: 'index',
-                            intersect: false
-                        }
+                        stacked: true
                     }
-                }
-            });
-
-            // Staff Completion Rate Chart - Temp Data
-            const completionRateCtx = document.getElementById('completionRateChart').getContext('2d');
-            const completionRateChart = new Chart(completionRateCtx, {
-                type: 'doughnut',
-                data: {
-                    labels: ['Completed', 'Pending', 'In Progress'],
-                    datasets: [{
-                        data: [18, 7, 5],
-                        backgroundColor: [
-                            '#2ecc71', // Green for completed
-                            '#f39c12', // Orange for pending
-                            '#3498db'  // Blue for in progress
-                        ],
-                        borderWidth: 0,
-                        hoverOffset: 8
-                    }]
                 },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    cutout: '70%',
-                    plugins: {
-                        legend: {
-                            position: 'bottom',
-                            labels: {
-                                padding: 20,
-                                usePointStyle: true,
-                                pointStyle: 'circle',
-                                font: {
-                                    weight: '500'
-                                }
-                            }
+                plugins: {
+                    legend: {
+                        position: 'top',
+                        labels: {
+                            usePointStyle: true,
+                            pointStyle: 'circle'
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: '#6D4C41',
+                        titleFont: {
+                            weight: 'bold'
                         },
-                        tooltip: {
-                            backgroundColor: '#6D4C41',
-                            titleFont: {
-                                weight: 'bold'
-                            },
-                            bodyFont: {
-                                weight: 'normal'
-                            },
-                            padding: 12,
-                            cornerRadius: 8,
-                            callbacks: {
-                                label: function(context) {
-                                    const label = context.label || '';
-                                    const value = context.raw || 0;
-                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                                    const percentage = Math.round((value / total) * 100);
-                                    return `${label}: ${value} (${percentage}%)`;
-                                }
+                        bodyFont: {
+                            weight: 'normal'
+                        },
+                        padding: 12,
+                        cornerRadius: 8,
+                        mode: 'index',
+                        intersect: false
+                    }
+                }
+            }
+        });
+
+        // Staff Completion Rate Chart - Temp Data
+        const completionRateCtx = document.getElementById('completionRateChart').getContext('2d');
+        const completionRateChart = new Chart(completionRateCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Completed', 'Pending', 'In Progress'],
+                datasets: [{
+                    data: [18, 7, 5],
+                    backgroundColor: [
+                        '#2ecc71', // Green for completed
+                        '#f39c12', // Orange for pending
+                        '#3498db'  // Blue for in progress
+                    ],
+                    borderWidth: 0,
+                    hoverOffset: 8
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '70%',
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            padding: 20,
+                            usePointStyle: true,
+                            pointStyle: 'circle',
+                            font: {
+                                weight: '500'
+                            }
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: '#6D4C41',
+                        titleFont: {
+                            weight: 'bold'
+                        },
+                        bodyFont: {
+                            weight: 'normal'
+                        },
+                        padding: 12,
+                        cornerRadius: 8,
+                        callbacks: {
+                            label: function(context) {
+                                const label = context.label || '';
+                                const value = context.raw || 0;
+                                const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                const percentage = Math.round((value / total) * 100);
+                                return `${label}: ${value} (${percentage}%)`;
                             }
                         }
                     }
                 }
-            });
-
-            // Modal functionality
-            const trashScheduleModal = document.getElementById('trashScheduleModal');
-            const reportIssueModal = document.getElementById('reportIssueModal');
-
-            // Open/Close Trash Schedule Modal
-            document.getElementById('createTrashSchedule').addEventListener('click', function() {
-                trashScheduleModal.style.display = 'flex';
-                document.body.style.overflow = 'hidden';
-            });
-
-            document.getElementById('closeTrashScheduleModal').addEventListener('click', function() {
-                trashScheduleModal.style.display = 'none';
-                document.body.style.overflow = 'auto';
-            });
-
-            document.getElementById('cancelTrashSchedule').addEventListener('click', function() {
-                trashScheduleModal.style.display = 'none';
-                document.body.style.overflow = 'auto';
-            });
-
-            // Open/Close Report Issue Modal
-            document.getElementById('reportIssue').addEventListener('click', function() {
-                reportIssueModal.style.display = 'flex';
-                document.body.style.overflow = 'hidden';
-            });
-
-            document.getElementById('closeReportIssueModal').addEventListener('click', function() {
-                reportIssueModal.style.display = 'none';
-                document.body.style.overflow = 'auto';
-            });
-
-            document.getElementById('cancelReportIssue').addEventListener('click', function() {
-                reportIssueModal.style.display = 'none';
-                document.body.style.overflow = 'auto';
-            });
-
-            // Close modals when clicking outside
-            window.addEventListener('click', function(event) {
-                if (event.target === trashScheduleModal) {
-                    trashScheduleModal.style.display = 'none';
-                    document.body.style.overflow = 'auto';
-                }
-                if (event.target === reportIssueModal) {
-                    reportIssueModal.style.display = 'none';
-                    document.body.style.overflow = 'auto';
-                }
-            });
-
-            // Form Submissions
-            document.getElementById('submitTrashSchedule').addEventListener('click', function() {
-                const form = document.getElementById('trashScheduleForm');
-                if (form.checkValidity()) {
-                    // Here you would typically send the data to the server
-                    const formData = {
-                        type: document.getElementById('scheduleType').value,
-                        date: document.getElementById('scheduleDate').value,
-                        time: document.getElementById('scheduleTime').value
-                    };
-                    
-                    console.log('Submitting trash schedule:', formData);
-                    
-                    // Simulate successful submission
-                    alert('Trash collection schedule created successfully!');
-                    trashScheduleModal.style.display = 'none';
-                    document.body.style.overflow = 'auto';
-                    
-                    // Reset form
-                    form.reset();
-                } else {
-                    form.reportValidity();
-                }
-            });
-
-            document.getElementById('submitIssueReport').addEventListener('click', function() {
-                const form = document.getElementById('reportIssueForm');
-                if (form.checkValidity()) {
-                    // Here you would typically send the data to the server
-                    const formData = {
-                        type: document.getElementById('issueType').value,
-                        facility: document.getElementById('facilityLocation').value,
-                        severity: document.getElementById('issueSeverity').value,
-                        description: document.getElementById('issueDescription').value
-                    };
-                    
-                    console.log('Submitting issue report:', formData);
-                    
-                    // Simulate successful submission
-                    alert('Issue reported successfully! Our team will address it soon.');
-                    reportIssueModal.style.display = 'none';
-                    document.body.style.overflow = 'auto';
-                    
-                    // Reset form
-                    form.reset();
-                } else {
-                    form.reportValidity();
-                }
-            });
-
-            // Responsive adjustments
-            function handleResize() {
-                serviceRequestsChart.resize();
-                completionRateChart.resize();
             }
-
-            window.addEventListener('resize', handleResize);
         });
-    </script>
+
+        // Modal functionality
+        const trashScheduleModal = document.getElementById('trashScheduleModal');
+        const reportIssueModal = document.getElementById('reportIssueModal');
+
+        // Open/Close Trash Schedule Modal
+        document.getElementById('createTrashSchedule').addEventListener('click', function() {
+            trashScheduleModal.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        });
+
+        document.getElementById('closeTrashScheduleModal').addEventListener('click', function() {
+            trashScheduleModal.style.display = 'none';
+            document.body.style.overflow = 'auto';
+        });
+
+        document.getElementById('cancelTrashSchedule').addEventListener('click', function() {
+            trashScheduleModal.style.display = 'none';
+            document.body.style.overflow = 'auto';
+        });
+
+        // Open/Close Report Issue Modal
+        document.getElementById('reportIssue').addEventListener('click', function() {
+            document.getElementById('reportIssueModal').style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        });
+
+        document.getElementById('closeReportIssueModal').addEventListener('click', function() {
+            document.getElementById('reportIssueModal').style.display = 'none';
+            document.body.style.overflow = 'auto';
+        });
+
+        document.getElementById('cancelReportIssue').addEventListener('click', function() {
+            document.getElementById('reportIssueModal').style.display = 'none';
+            document.body.style.overflow = 'auto';
+        });
+
+        // Close modal when clicking outside
+        window.addEventListener('click', function(event) {
+            if (event.target === trashScheduleModal) {
+                trashScheduleModal.style.display = 'none';
+                document.body.style.overflow = 'auto';
+            }
+            if (event.target === reportIssueModal) {
+                reportIssueModal.style.display = 'none';
+                document.body.style.overflow = 'auto';
+            }
+        });
+
+        // Form Submissions
+        document.getElementById('submitTrashSchedule').addEventListener('click', function() {
+            const form = document.getElementById('trashScheduleForm');
+            if (form.checkValidity()) {
+                // Here you would typically send the data to the server
+                const formData = {
+                    type: document.getElementById('scheduleType').value,
+                    date: document.getElementById('scheduleDate').value,
+                    time: document.getElementById('scheduleTime').value
+                };
+                
+                console.log('Submitting trash schedule:', formData);
+                
+                // Simulate successful submission
+                alert('Trash collection schedule created successfully!');
+                trashScheduleModal.style.display = 'none';
+                document.body.style.overflow = 'auto';
+                
+                // Reset form
+                form.reset();
+            } else {
+                form.reportValidity();
+            }
+        });
+
+        // Submit button click handler
+        document.getElementById('submitIssueReport').addEventListener('click', function() {
+            // Show confirmation
+            Swal.fire({
+                title: 'Confirm Submission',
+                text: 'Are you sure you want to submit this issue report?',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#6D4C41',
+                cancelButtonColor: '#757575',
+                confirmButtonText: 'Yes, Submit',
+                cancelButtonText: 'No, Cancel'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    submitIssueForm();
+                }
+            });
+        });
+        
+        function submitIssueForm() {
+            // Get the form data
+            const formData = new FormData();
+            formData.append('report_type', document.getElementById('report_type').value);
+            formData.append('report_facility', document.getElementById('report_facility').value);
+            formData.append('report_severity', document.getElementById('report_severity').value);
+            formData.append('report_description', document.getElementById('report_description').value);
+            
+            // Submit the form
+            const submitButton = document.getElementById('submitIssueReport');
+            submitButton.disabled = true;
+            submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Submitting...';
+            
+            // Use XMLHttpRequest for simpler AJAX
+            const xhr = new XMLHttpRequest();
+            xhr.open('POST', '/Staff/AddReport');
+            
+            xhr.onload = function() {
+                if (xhr.status === 200) {
+                    try {
+                        const response = JSON.parse(xhr.responseText);
+                        if (response.success) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Success!',
+                                text: response.message || 'Your issue has been reported successfully.',
+                                confirmButtonColor: '#6D4C41'
+                            }).then(() => {
+                                // Reset form and close modal
+                                document.getElementById('reportIssueForm').reset();
+                                document.getElementById('reportIssueModal').style.display = 'none';
+                                document.body.style.overflow = 'auto';
+                            });
+                        } else {
+                            throw new Error(response.message || 'Failed to submit report');
+                        }
+                    } catch (error) {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: error.message || 'Failed to submit report',
+                            confirmButtonColor: '#6D4C41'
+                        });
+                    }
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'Failed to submit the report. Please try again.',
+                        confirmButtonColor: '#6D4C41'
+                    });
+                }
+                
+                submitButton.disabled = false;
+                submitButton.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Report Issue';
+            };
+            
+            xhr.onerror = function() {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Failed to connect to server. Please try again.',
+                    confirmButtonColor: '#6D4C41'
+                });
+                
+                submitButton.disabled = false;
+                submitButton.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Report Issue';
+            };
+            
+            xhr.send(formData);
+        }
+
+        // Responsive adjustments
+        function handleResize() {
+            serviceRequestsChart.resize();
+            completionRateChart.resize();
+        }
+
+        window.addEventListener('resize', handleResize);
+    });
+</script>

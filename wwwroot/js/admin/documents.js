@@ -2,9 +2,6 @@ document.addEventListener('DOMContentLoaded', function() {
     // DOM Elements
     const adminDocumentsGrid = document.getElementById('adminDocumentsGrid');
     const adminUploadBtn = document.getElementById('adminUploadBtn');
-    const adminCreateFolderBtn = document.getElementById('adminCreateFolderBtn');
-    const bulkActionsBtn = document.getElementById('bulkActionsBtn');
-    const adminTrashBtn = document.getElementById('adminTrashBtn');
     const adminBreadcrumb = document.getElementById('adminBreadcrumb');
     const adminDocumentPreview = document.getElementById('adminDocumentPreview');
     const adminClosePreviewBtn = document.getElementById('adminClosePreviewBtn');
@@ -21,7 +18,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const securityCancelBtn = document.getElementById('securityCancelBtn');
     const securitySaveBtn = document.getElementById('securitySaveBtn');
     const securityLevel = document.getElementById('securityLevel');
-    const customPermissionsSection = document.getElementById('customPermissionsSection');
 
     // State
     let currentFolder = 'root';
@@ -43,7 +39,6 @@ document.addEventListener('DOMContentLoaded', function() {
     function setupAdminEventListeners() {
         // Buttons
         adminUploadBtn.addEventListener('click', () => adminUploadModal.style.display = 'flex');
-        adminCreateFolderBtn.addEventListener('click', openCreateFolderModal);
         adminClosePreviewBtn.addEventListener('click', closeAdminPreview);
         adminDownloadBtn.addEventListener('click', downloadAdminDocument);
         adminSecurityBtn.addEventListener('click', openSecurityModal);
@@ -55,12 +50,6 @@ document.addEventListener('DOMContentLoaded', function() {
         adminUploadSubmitBtn.addEventListener('click', handleAdminUpload);
         securityCancelBtn.addEventListener('click', () => securityModal.style.display = 'none');
         securitySaveBtn.addEventListener('click', saveSecuritySettings);
-        
-        // Security level change
-        securityLevel.addEventListener('change', function() {
-            customPermissionsSection.style.display = 
-                this.value === 'custom' ? 'block' : 'none';
-        });
     }
 
     function loadAdminDocuments() {
@@ -163,8 +152,8 @@ document.addEventListener('DOMContentLoaded', function() {
             // Get visibility class
             const visibilityClass = `visibility-${doc.visibility}`;
             const visibilityText = 
-                doc.visibility === 'public' ? 'Public' :
-                doc.visibility === 'board' ? 'Board Only' : 'Admin Only';
+                doc.visibility === 'homeowner' ? 'Homeowner' :
+                doc.visibility === 'staff' ? 'Staff' : 'Admin';
             
             docElement.innerHTML = `
                 <div class="document-icon-admin">
@@ -274,9 +263,10 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('previewDocSize').textContent = doc.size;
         document.getElementById('previewDocDownloads').textContent = doc.downloads;
         
+        // Update visibility text based on new options
         const visibilityText = 
-            doc.visibility === 'public' ? 'Public (All homeowners)' :
-            doc.visibility === 'board' ? 'Board Members Only' : 'Administrators Only';
+            doc.visibility === 'homeowner' ? 'Homeowner Access' :
+            doc.visibility === 'staff' ? 'Staff Access' : 'Admin Access';
         document.getElementById('previewDocVisibility').textContent = visibilityText;
         
         // Show version history
@@ -339,6 +329,15 @@ document.addEventListener('DOMContentLoaded', function() {
             });
             
             doc.downloads++;
+            
+            // Show success notification
+            Swal.fire({
+                title: 'Download Started',
+                text: `${doc.name} is being downloaded`,
+                icon: 'success',
+                timer: 2000,
+                showConfirmButton: false
+            });
         }
     }
 
@@ -347,7 +346,6 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Set current security level
         securityLevel.value = doc.visibility;
-        customPermissionsSection.style.display = 'none';
         
         securityModal.style.display = 'flex';
     }
@@ -364,8 +362,8 @@ document.addEventListener('DOMContentLoaded', function() {
         // Update UI
         const visibilityClass = `visibility-${selectedDocument.visibility}`;
         const visibilityText = 
-            selectedDocument.visibility === 'public' ? 'Public' :
-            selectedDocument.visibility === 'board' ? 'Board Only' : 'Admin Only';
+            selectedDocument.visibility === 'homeowner' ? 'Homeowner' :
+            selectedDocument.visibility === 'staff' ? 'Staff' : 'Admin';
         
         document.querySelector(`.admin-document-item[data-id="${selectedDocument.id}"] .document-visibility`)
             .className = `document-visibility ${visibilityClass}`;
@@ -373,40 +371,87 @@ document.addEventListener('DOMContentLoaded', function() {
             .textContent = visibilityText;
         
         document.getElementById('previewDocVisibility').textContent = 
-            selectedDocument.visibility === 'public' ? 'Public (All homeowners)' :
-            selectedDocument.visibility === 'board' ? 'Board Members Only' : 'Administrators Only';
+            selectedDocument.visibility === 'homeowner' ? 'Homeowner Access' :
+            selectedDocument.visibility === 'staff' ? 'Staff Access' : 'Admin Access';
         
         securityModal.style.display = 'none';
+        
+        // Show success notification
+        Swal.fire({
+            title: 'Settings Saved',
+            text: `Security settings for ${selectedDocument.name} have been updated`,
+            icon: 'success',
+            timer: 2000,
+            showConfirmButton: false
+        });
     }
 
     function replaceAdminDocument() {
         if (!selectedDocument) return;
         
         // In a real app, this would open a file selector
-        console.log(`Replacing document: ${selectedDocument.name}`);
-        alert('File replacement dialog would open here');
+        Swal.fire({
+            title: 'Replace Document',
+            text: `Please select a new file to replace ${selectedDocument.name}`,
+            icon: 'info',
+            showCancelButton: true,
+            confirmButtonText: 'Select File',
+            cancelButtonText: 'Cancel'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // This would trigger a file input in a real application
+                console.log(`Replacing document: ${selectedDocument.name}`);
+            }
+        });
     }
 
     function deleteAdminDocument(docId = selectedDocument?.id) {
         if (!docId) return;
         
-        if (confirm('Are you sure you want to move this document to trash?')) {
-            // In a real app, this would be an API call
-            documents = documents.filter(doc => doc.id !== docId);
-            
-            // Close preview if open
-            if (selectedDocument && selectedDocument.id === docId) {
-                closeAdminPreview();
+        const docToDelete = documents.find(d => d.id === docId);
+        if (!docToDelete) return;
+        
+        Swal.fire({
+            title: 'Delete Document',
+            text: `Are you sure you want to delete ${docToDelete.name}?`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Delete',
+            cancelButtonText: 'Cancel',
+            confirmButtonColor: '#dc3545'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // In a real app, this would be an API call
+                documents = documents.filter(doc => doc.id !== docId);
+                
+                // Close preview if open
+                if (selectedDocument && selectedDocument.id === docId) {
+                    closeAdminPreview();
+                }
+                
+                renderAdminDocuments();
+                
+                Swal.fire({
+                    title: 'Deleted!',
+                    text: 'The document has been deleted.',
+                    icon: 'success',
+                    timer: 2000,
+                    showConfirmButton: false
+                });
             }
-            
-            renderAdminDocuments();
-        }
+        });
     }
 
     function editAdminFolder(folder) {
         // In a real app, this would open an edit modal
-        console.log(`Editing folder: ${folder.name}`);
-        alert('Folder edit dialog would open here');
+        Swal.fire({
+            title: 'Edit Folder',
+            text: `Editing folder: ${folder.name}`,
+            icon: 'info',
+            showCancelButton: true,
+            confirmButtonText: 'Save Changes',
+            cancelButtonText: 'Cancel'
+        });
     }
 
     function showVersionHistory(doc) {
@@ -424,48 +469,74 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function handleAdminUpload() {
         const files = document.getElementById('adminDocumentFiles').files;
-        const folder = document.getElementById('adminDocumentFolder').value;
         const visibility = document.getElementById('adminDocumentVisibility').value;
         const watermark = document.getElementById('adminWatermarkOption').checked;
         const disableDownload = document.getElementById('adminDisableDownload').checked;
         
         if (files.length === 0) {
-            alert('Please select at least one file to upload');
+            Swal.fire({
+                title: 'Error',
+                text: 'Please select at least one file to upload',
+                icon: 'error'
+            });
             return;
         }
+        
+        // Show loading indication
+        Swal.fire({
+            title: 'Uploading...',
+            html: `Uploading ${files.length} file(s)`,
+            allowOutsideClick: false,
+            didOpen: () => {
+                Swal.showLoading();
+            }
+        });
         
         // In a real app, this would upload files to the server
         console.log('Admin uploading files:', {
             count: files.length,
-            folder,
             visibility,
             watermark,
             disableDownload
         });
         
-        // Simulate adding new documents
-        Array.from(files).forEach(file => {
-            const fileExt = file.name.split('.').pop().toLowerCase();
-            const newDoc = {
-                id: 'doc' + Math.random().toString(36).substr(2, 9),
-                name: file.name,
-                type: getDocumentTypeFromExt(fileExt),
-                folder,
-                size: formatFileSize(file.size),
-                uploaded: new Date().toISOString().split('T')[0],
-                visibility,
-                url: `/documents/${folder}/${file.name}`,
-                downloads: 0,
-                versions: [],
-                accessLog: []
-            };
+        // Simulate a server request with setTimeout
+        setTimeout(() => {
+            // Simulate adding new documents
+            Array.from(files).forEach(file => {
+                const fileExt = file.name.split('.').pop().toLowerCase();
+                const newDoc = {
+                    id: 'doc' + Math.random().toString(36).substr(2, 9),
+                    name: file.name,
+                    type: getDocumentTypeFromExt(fileExt),
+                    folder: 'root', // Default to root folder
+                    size: formatFileSize(file.size),
+                    uploaded: new Date().toISOString().split('T')[0],
+                    visibility,
+                    url: `/documents/root/${file.name}`,
+                    downloads: 0,
+                    versions: [],
+                    accessLog: []
+                };
+                
+                documents.push(newDoc);
+            });
             
-            documents.push(newDoc);
-        });
-        
-        // Close modal and refresh
-        adminUploadModal.style.display = 'none';
-        renderAdminDocuments();
+            // Close modal and refresh
+            adminUploadModal.style.display = 'none';
+            renderAdminDocuments();
+            
+            // Show success message
+            Swal.fire({
+                title: 'Upload Complete',
+                text: `Successfully uploaded ${files.length} file(s)`,
+                icon: 'success',
+                confirmButtonText: 'OK'
+            });
+            
+            // Reset the form
+            document.getElementById('adminUploadForm').reset();
+        }, 1500); // Simulated delay
     }
 
     // Helper functions

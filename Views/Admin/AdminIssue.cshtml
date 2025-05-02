@@ -45,46 +45,118 @@
                     <th>Actions</th>
                 </tr>
             </thead>
-            <tbody>
-              @foreach (var issue in Model) {
-                <tr data-description="@issue.report_description">
-                    <td>@issue.report_id</td>
-                    <td><span class="badge badge-@issue.report_type">@StringHelpers.FirstLetterToUpper(issue.report_type)</span></td>
-                    <td>@StringHelpers.ToHumanReadable(issue.report_facility)</td>
-                    <td>@issue.Author?.firstname @issue.Author?.lastname</td>
-                    <td>@(issue.created_date?.ToString("MMM dd, yyyy HH:mm") ?? "Not specified")</td>
-                    <td><span class="severity-@issue.report_severity">@issue.report_severity</span></td>
-                    <td><span class="status-pending">Pending</span></td>
-                    <td>
-                        <button class="btn-icon view-issue" title="View Details" data-issue-id="@issue.report_id">
-                            <i class="fas fa-eye"></i>
-                        </button>
-                        <button class="btn-icon add-note" title="Add Note" data-issue-id="@issue.report_id">
-                            <i class="fas fa-edit"></i>
-                        </button>
-                    </td>
-                </tr>
-            }
-              
+            <tbody id="issuesTableBody">
+                @foreach (var issue in Model.Take(5)) {
+                    <tr data-description="@issue.report_description" data-issue-id="@issue.report_id">
+                        <td>@issue.report_id</td>
+                        <td><span class="badge badge-@issue.report_type">@StringHelpers.FirstLetterToUpper(issue.report_type)</span></td>
+                        <td>@StringHelpers.ToHumanReadable(issue.report_facility)</td>
+                        <td>@issue.Author?.firstname @issue.Author?.lastname</td>
+                        <td>@(issue.created_date?.ToString("MMM dd, yyyy HH:mm") ?? "Not specified")</td>
+                        <td><span class="severity-@issue.report_severity">@issue.report_severity</span></td>
+                        <td><span class="status-pending">Pending</span></td>
+                        <td>
+                            <button class="btn-icon view-issue" title="View Details" data-issue-id="@issue.report_id">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <button class="btn-icon add-note" title="Add Note" data-issue-id="@issue.report_id">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                        </td>
+                    </tr>
+                }
             </tbody>
         </table>
     </div>
 
     <div class="pagination-container">
-        <div class="pagination-info">Showing 1-5 of 15 issues</div>
-        <div class="pagination-controls">
-            <button class="btn btn-outline" disabled>
+        <div class="pagination-info" id="paginationInfo">
+            Showing 1-@(Math.Min(5, Model.Count)) of @Model.Count issues
+        </div>
+        <div class="pagination-controls" id="paginationControls">
+            <button class="btn btn-outline" id="prevPageBtn" disabled>
                 <i class="fas fa-chevron-left"></i> Previous
             </button>
-            <button class="btn btn-primary active">1</button>
-            <button class="btn btn-outline">2</button>
-            <button class="btn btn-outline">3</button>
-            <button class="btn btn-outline">
+            <div id="pageButtons">
+                <button class="btn btn-primary active" data-page="1">1</button>
+                @for (int i = 2; i <= Math.Ceiling((double)Model.Count / 5); i++)
+                {
+                    <button class="btn btn-outline" data-page="@i">@i</button>
+                }
+            </div>
+            <button class="btn btn-outline" id="nextPageBtn" @(Model.Count <= 5 ? "disabled" : "")>
                 Next <i class="fas fa-chevron-right"></i>
             </button>
         </div>
     </div>
 </div>
+
+<!-- Add this fixed pagination at the bottom of the table -->
+<div class="fixed-pagination">
+    <div class="page-navigation">
+        <button id="prevPage" class="page-btn" disabled>
+            <i class="fas fa-chevron-left"></i> Previous
+        </button>
+        <div class="page-numbers" id="pageNumbersBottom">
+            <button class="page-number active" data-page="1">1</button>
+            @for (int i = 2; i <= Math.Ceiling((double)Model.Count / 5); i++)
+            {
+                <button class="page-number" data-page="@i">@i</button>
+            }
+        </div>
+        <button id="nextPage" class="page-btn" @(Model.Count <= 5 ? "disabled" : "")>
+            Next <i class="fas fa-chevron-right"></i>
+        </button>
+    </div>
+</div>
+
+<style>
+    /* Fixed pagination styles */
+    .fixed-pagination {
+        position: fixed;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        background-color: white;
+        padding: 10px 20px;
+        border-radius: 25px;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        z-index: 1000;
+        display: flex;
+        justify-content: center;
+    }
+
+    .page-navigation {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .page-numbers {
+        display: flex;
+        gap: 5px;
+    }
+
+    .page-number, .page-btn {
+        background: #f4f4f4;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        padding: 5px 10px;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+
+    .page-number.active {
+        background: #6D4C41;
+        color: white;
+        border: 1px solid #6D4C41;
+    }
+
+    .page-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+</style>
 
 <!-- Issue Details Modal -->
 <div class="modal-overlay" id="issueDetailsModal">
@@ -166,53 +238,364 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Current issue being viewed/edited
-        let currentIssue = null;
+        // Simple pagination variables
+        let currentPage = 1;
+        const pageSize = 5;
+        let allIssues = [];
         
-        // View issue details
-        document.querySelectorAll('.view-issue').forEach(btn => {
-            btn.addEventListener('click', function() {
-                const row = this.closest('tr');
-                currentIssue = {
-                    id: row.cells[0].textContent,
-                    type: row.cells[1].textContent,
-                    facility: row.cells[2].textContent,
-                    reportedBy: row.cells[3].textContent,
-                    dateReported: row.cells[4].textContent,
-                    severity: row.cells[5].textContent,
-                    status: row.cells[6].textContent,
-                    description: row.getAttribute('data-description') || "No description provided"
-
-                };
-                
-                // Update modal content
-                document.getElementById('detailIssueId').textContent = currentIssue.id;
-                document.getElementById('detailIssueType').textContent = currentIssue.type;
-                document.getElementById('detailFacility').textContent = currentIssue.facility;
-                document.getElementById('detailReportedBy').textContent = currentIssue.reportedBy;
-                document.getElementById('detailDateReported').textContent = currentIssue.dateReported;
-                document.getElementById('detailSeverity').textContent = currentIssue.severity;
-                document.getElementById('detailStatus').textContent = currentIssue.status;
-                document.getElementById('detailDescription').textContent = currentIssue.description;
-
-                document.getElementById('issueDetailsModal').classList.add('active');
+        // Load all issues data
+        @foreach (var issue in Model)
+        {
+            <text>
+            allIssues.push({
+                id: @issue.report_id,
+                type: '@issue.report_type',
+                typeDisplay: '@StringHelpers.FirstLetterToUpper(issue.report_type)',
+                facility: '@issue.report_facility',
+                facilityDisplay: '@StringHelpers.ToHumanReadable(issue.report_facility)',
+                reportedByFirstName: '@(issue.Author?.firstname ?? "")',
+                reportedByLastName: '@(issue.Author?.lastname ?? "")',
+                dateReported: '@(issue.created_date?.ToString("MMM dd, yyyy HH:mm") ?? "Not specified")',
+                severity: '@issue.report_severity',
+                status: 'pending',
+                description: @Html.Raw(Json.Serialize(issue.report_description))
+            });
+            </text>
+        }
+        
+        // Initial display
+        displayCurrentPage();
+        
+        // Setup event listeners for pagination controls
+        document.getElementById('prevPageBtn').addEventListener('click', function() {
+            if (currentPage > 1) {
+                currentPage--;
+                displayCurrentPage();
+            }
+        });
+        
+        document.getElementById('nextPageBtn').addEventListener('click', function() {
+            if (currentPage < getTotalPages()) {
+                currentPage++;
+                displayCurrentPage();
+            }
+        });
+        
+        // Add event listeners for page buttons
+        document.querySelectorAll('#pageButtons button').forEach(button => {
+            button.addEventListener('click', function() {
+                currentPage = parseInt(this.getAttribute('data-page'));
+                displayCurrentPage();
             });
         });
-
-        // Add note to issue
-        document.querySelectorAll('.add-note').forEach(btn => {
-            btn.addEventListener('click', function() {
-                const row = this.closest('tr');
-                currentIssue = {
-                    id: row.cells[0].textContent,
-                    type: row.cells[1].textContent,
-                    facility: row.cells[2].textContent
-                };
-                
-                document.getElementById('addNoteModal').classList.add('active');
-            });
+        
+        // Add event listeners for filter and search
+        document.getElementById('issuesFilter').addEventListener('change', function() {
+            currentPage = 1; // Reset to first page on filter change
+            displayCurrentPage();
         });
-
+        
+        document.getElementById('issuesSearch').addEventListener('input', function() {
+            currentPage = 1; // Reset to first page on search change
+            displayCurrentPage();
+        });
+        
+        // Display current page of data
+        function displayCurrentPage() {
+            const filteredIssues = filterIssues();
+            const totalPages = Math.ceil(filteredIssues.length / pageSize);
+            const startIndex = (currentPage - 1) * pageSize;
+            const endIndex = Math.min(startIndex + pageSize, filteredIssues.length);
+            const displayedIssues = filteredIssues.slice(startIndex, endIndex);
+            
+            // Update table with issues for current page
+            const tableBody = document.getElementById('issuesTableBody');
+            tableBody.innerHTML = '';
+            
+            if (displayedIssues.length === 0) {
+                const row = document.createElement('tr');
+                row.innerHTML = '<td colspan="8" class="text-center">No issues found matching your criteria</td>';
+                tableBody.appendChild(row);
+            } else {
+                displayedIssues.forEach(issue => {
+                    const row = document.createElement('tr');
+                    row.setAttribute('data-description', issue.description);
+                    row.setAttribute('data-issue-id', issue.id);
+                    
+                    row.innerHTML = `
+                        <td>${issue.id}</td>
+                        <td><span class="badge badge-${issue.type}">${issue.typeDisplay}</span></td>
+                        <td>${issue.facilityDisplay}</td>
+                        <td>${issue.reportedByFirstName} ${issue.reportedByLastName}</td>
+                        <td>${issue.dateReported}</td>
+                        <td><span class="severity-${issue.severity}">${issue.severity}</span></td>
+                        <td><span class="status-pending">Pending</span></td>
+                        <td>
+                            <button class="btn-icon view-issue" title="View Details" data-issue-id="${issue.id}">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <button class="btn-icon add-note" title="Add Note" data-issue-id="${issue.id}">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                        </td>
+                    `;
+                    
+                    tableBody.appendChild(row);
+                });
+            }
+            
+            // Update pagination info
+            document.getElementById('paginationInfo').textContent = 
+                filteredIssues.length === 0 ? 'No issues found' : 
+                `Showing ${startIndex + 1}-${endIndex} of ${filteredIssues.length} issues`;
+            
+            // Update pagination buttons
+            updatePaginationButtons(totalPages);
+            
+            // Attach event listeners for view/note buttons
+            attachEventListeners();
+        }
+        
+        // Filter issues based on search and filter values
+        function filterIssues() {
+            const searchText = document.getElementById('issuesSearch').value.toLowerCase();
+            const filterType = document.getElementById('issuesFilter').value;
+            
+            return allIssues.filter(issue => {
+                // Apply search filter
+                const matchesSearch = searchText === '' || 
+                    issue.typeDisplay.toLowerCase().includes(searchText) ||
+                    issue.facilityDisplay.toLowerCase().includes(searchText) ||
+                    `${issue.reportedByFirstName} ${issue.reportedByLastName}`.toLowerCase().includes(searchText) ||
+                    (issue.description && issue.description.toLowerCase().includes(searchText)) ||
+                    issue.id.toString().includes(searchText);
+                
+                // Apply type filter
+                const matchesType = filterType === 'all' || issue.type === filterType;
+                
+                return matchesSearch && matchesType;
+            });
+        }
+        
+        // Get total pages based on filtered issues
+        function getTotalPages() {
+            const filteredIssues = filterIssues();
+            return Math.ceil(filteredIssues.length / pageSize);
+        }
+        
+        // Update pagination buttons
+        function updatePaginationButtons(totalPages) {
+            // Update page number buttons
+            const pageButtons = document.getElementById('pageButtons');
+            pageButtons.innerHTML = '';
+            
+            // Create numbered page buttons
+            for (let i = 1; i <= totalPages; i++) {
+                const button = document.createElement('button');
+                button.textContent = i;
+                button.classList.add('btn');
+                if (i === currentPage) {
+                    button.classList.add('btn-primary', 'active');
+                } else {
+                    button.classList.add('btn-outline');
+                }
+                button.setAttribute('data-page', i);
+                button.addEventListener('click', function() {
+                    currentPage = parseInt(this.getAttribute('data-page'));
+                    displayCurrentPage();
+                });
+                pageButtons.appendChild(button);
+            }
+            
+            // Update previous/next buttons
+            document.getElementById('prevPageBtn').disabled = (currentPage <= 1);
+            document.getElementById('nextPageBtn').disabled = (currentPage >= totalPages);
+            
+            // Add bottom fixed pagination
+            updateFixedPagination(totalPages);
+        }
+        
+        // Update fixed pagination at bottom of screen
+        function updateFixedPagination(totalPages) {
+            const container = document.querySelector('.fixed-pagination');
+            if (!container) {
+                createFixedPagination(totalPages);
+                return;
+            }
+            
+            const pageNumbers = container.querySelector('.page-numbers');
+            pageNumbers.innerHTML = '';
+            
+            // Create page number buttons
+            for (let i = 1; i <= totalPages; i++) {
+                const button = document.createElement('button');
+                button.textContent = i;
+                button.classList.add('page-number');
+                if (i === currentPage) {
+                    button.classList.add('active');
+                }
+                button.setAttribute('data-page', i);
+                button.addEventListener('click', function() {
+                    currentPage = parseInt(this.getAttribute('data-page'));
+                    displayCurrentPage();
+                });
+                pageNumbers.appendChild(button);
+            }
+            
+            // Update previous/next buttons
+            container.querySelector('#prevPage').disabled = (currentPage <= 1);
+            container.querySelector('#nextPage').disabled = (currentPage >= totalPages);
+        }
+        
+        // Create fixed pagination element
+        function createFixedPagination(totalPages) {
+            // Create container
+            const container = document.createElement('div');
+            container.className = 'fixed-pagination';
+            
+            const nav = document.createElement('div');
+            nav.className = 'page-navigation';
+            
+            // Previous button
+            const prevBtn = document.createElement('button');
+            prevBtn.id = 'prevPage';
+            prevBtn.className = 'page-btn';
+            prevBtn.disabled = (currentPage <= 1);
+            prevBtn.innerHTML = '<i class="fas fa-chevron-left"></i> Previous';
+            prevBtn.addEventListener('click', function() {
+                if (currentPage > 1) {
+                    currentPage--;
+                    displayCurrentPage();
+                }
+            });
+            nav.appendChild(prevBtn);
+            
+            // Page numbers
+            const pageNumbers = document.createElement('div');
+            pageNumbers.className = 'page-numbers';
+            
+            for (let i = 1; i <= totalPages; i++) {
+                const button = document.createElement('button');
+                button.textContent = i;
+                button.className = 'page-number' + (i === currentPage ? ' active' : '');
+                button.setAttribute('data-page', i);
+                button.addEventListener('click', function() {
+                    currentPage = parseInt(this.getAttribute('data-page'));
+                    displayCurrentPage();
+                });
+                pageNumbers.appendChild(button);
+            }
+            nav.appendChild(pageNumbers);
+            
+            // Next button
+            const nextBtn = document.createElement('button');
+            nextBtn.id = 'nextPage';
+            nextBtn.className = 'page-btn';
+            nextBtn.disabled = (currentPage >= totalPages);
+            nextBtn.innerHTML = 'Next <i class="fas fa-chevron-right"></i>';
+            nextBtn.addEventListener('click', function() {
+                if (currentPage < totalPages) {
+                    currentPage++;
+                    displayCurrentPage();
+                }
+            });
+            nav.appendChild(nextBtn);
+            
+            container.appendChild(nav);
+            document.body.appendChild(container);
+            
+            // Add styles
+            const style = document.createElement('style');
+            style.textContent = `
+                .fixed-pagination {
+                    position: fixed;
+                    bottom: 20px;
+                    left: 50%;
+                    transform: translateX(-50%);
+                    background-color: white;
+                    padding: 10px 20px;
+                    border-radius: 25px;
+                    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+                    z-index: 1000;
+                    display: flex;
+                    justify-content: center;
+                }
+                .page-navigation {
+                    display: flex;
+                    align-items: center;
+                    gap: 10px;
+                }
+                .page-numbers {
+                    display: flex;
+                    gap: 5px;
+                }
+                .page-number, .page-btn {
+                    background: #f4f4f4;
+                    border: 1px solid #ddd;
+                    border-radius: 4px;
+                    padding: 5px 10px;
+                    cursor: pointer;
+                    transition: all 0.3s;
+                }
+                .page-number.active {
+                    background: #6D4C41;
+                    color: white;
+                    border: 1px solid #6D4C41;
+                }
+                .page-btn:disabled {
+                    opacity: 0.5;
+                    cursor: not-allowed;
+                }
+            `;
+            document.head.appendChild(style);
+        }
+        
+        // Handle event listeners for modal buttons
+        function attachEventListeners() {
+            // View issue details
+            document.querySelectorAll('.view-issue').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const row = this.closest('tr');
+                    const issueId = parseInt(row.getAttribute('data-issue-id'));
+                    const issue = allIssues.find(i => i.id === issueId);
+                    
+                    if (issue) {
+                        // Update modal content
+                        document.getElementById('detailIssueId').textContent = issue.id;
+                        document.getElementById('detailIssueType').textContent = issue.typeDisplay;
+                        document.getElementById('detailFacility').textContent = issue.facilityDisplay;
+                        document.getElementById('detailReportedBy').textContent = `${issue.reportedByFirstName} ${issue.reportedByLastName}`;
+                        document.getElementById('detailDateReported').textContent = issue.dateReported;
+                        document.getElementById('detailSeverity').textContent = issue.severity;
+                        document.getElementById('detailStatus').textContent = 'Pending';
+                        document.getElementById('detailDescription').textContent = issue.description;
+                        
+                        document.getElementById('issueDetailsModal').classList.add('active');
+                    }
+                });
+            });
+            
+            // Add note to issue
+            document.querySelectorAll('.add-note').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const row = this.closest('tr');
+                    const issueId = parseInt(row.getAttribute('data-issue-id'));
+                    const issue = allIssues.find(i => i.id === issueId);
+                    
+                    if (issue) {
+                        // Store current issue for note form
+                        window.currentIssue = {
+                            id: issue.id,
+                            type: issue.typeDisplay,
+                            facility: issue.facilityDisplay
+                        };
+                        
+                        document.getElementById('addNoteModal').classList.add('active');
+                    }
+                });
+            });
+        }
+        
         // Save staff note
         document.getElementById('saveStaffNote').addEventListener('click', function() {
             const noteText = document.getElementById('staffNoteText').value;
@@ -222,7 +605,7 @@
             }
             
             // In a real app, you would save this to your database
-            alert(`Note added to issue ${currentIssue.id}:\n\n${noteText}`);
+            alert(`Note added to issue ${window.currentIssue.id}:\n\n${noteText}`);
             document.getElementById('addNoteModal').classList.remove('active');
             document.getElementById('staffNoteText').value = '';
         });
