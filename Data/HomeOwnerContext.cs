@@ -62,5 +62,6 @@ namespace HomeOwner.Data
         public DbSet<ServiceRequest> ServiceRequest { get; set; }
         public DbSet<Feedback> Feedback { get; set; }
         public DbSet<Facility> Facility { get; set; }
+        public DbSet<Document> Document { get; set; } = default!;
     }
 }
