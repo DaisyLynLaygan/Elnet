@@ -1,4 +1,3 @@
-
 @{
     var user = ViewBag.CurrentUser;
 }
@@ -17,24 +16,68 @@
         position: relative;
         display: inline-block;
         text-decoration: none;
+        margin-right: 20px;
+        z-index: 1000; /* Keep this very high to prevent conflicts */
+        position: relative;
+    }
+
+    .notification-icon:before {
+        content: '';
+        position: absolute;
+        top: -10px;
+        right: -10px;
+        bottom: -10px;
+        left: -10px;
+        z-index: -1;
+        pointer-events: none;
     }
 
     .notification-icon i {
-        color: brown;
-        font-size: 24px;
+        color: #6B4423;
+        font-size: 28px; /* Increased from 26px */
+        transition: transform 0.2s ease, color 0.2s ease;
+    }
+    
+    .notification-icon:hover i {
+        color: #8B5A2B;
+        transform: scale(1.1);
     }
 
     .notification-badge {
         position: absolute;
-        top: 0;
-        right: 0;
-        transform: translate(50%, -50%);
-        background-color: red;
+        top: -8px;
+        right: -12px;
+        background-color: #FF4136;
         color: white;
-        font-size: 12px;
-        padding: 2px 6px;
-        border-radius: 50%;
+        font-size: 13px; /* Increased font size */
+        min-width: 20px; /* Increased width */
+        height: 20px; /* Increased height */
+        line-height: 20px;
+        text-align: center;
+        padding: 0 4px;
+        border-radius: 10px;
         font-weight: bold;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.3); /* Increased shadow */
+        animation: pulse 1.5s infinite;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    @@keyframes pulse {
+        0% {
+            transform: scale(0.95);
+            transform: scale(1);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        50% {
+            transform: scale(1.05);
+            box-shadow: 0 2px 8px rgba(255,65,54,0.4);
+        }
+        100% {
+            transform: scale(1);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
     }
 
     /* Survey Modal Styles */
@@ -300,6 +343,13 @@
         justify-content: center;
     }
 }
+
+.user-hamburger-container {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    position: relative;
+}
 </style>
 <body>
     
@@ -334,9 +384,9 @@
     <!-- User Profile and Hamburger Container -->
     <div class="user-hamburger-container">
         <!-- Notification Bell Icon -->
-     <a asp-controller="Homeowner" asp-action="Notification" class="notification-icon">
-        <i class="fas fa-bell"></i> <!-- Font Awesome bell icon -->
-        <span class="notification-badge">3</span> <!-- Notification count -->
+     <a asp-controller="Homeowner" asp-action="Notification" class="notification-icon" aria-label="View notifications">
+        <i class="fas fa-bell"></i>
+        <span class="notification-badge" id="notificationBadge" style="display:none;">0</span>
     </a>
         
 
@@ -824,6 +874,47 @@ document.addEventListener('DOMContentLoaded', function() {
         }, 3000);
     });
 });
+
+// Load unread notification count when the page loads
+document.addEventListener('DOMContentLoaded', function() {
+    loadUnreadNotificationCount();
+    
+    // Check for new notifications every minute
+    setInterval(loadUnreadNotificationCount, 60000);
+});
+
+async function loadUnreadNotificationCount() {
+    try {
+        const response = await fetch('/Homeowner/GetUnreadNotificationsCount');
+        const data = await response.json();
+        
+        if (data.success) {
+            const badge = document.getElementById('notificationBadge');
+            if (badge) {
+                const unreadCount = data.unreadCount || 0;
+                
+                // Update badge
+                badge.textContent = unreadCount;
+                
+                // Show/hide based on count
+                if (unreadCount > 0) {
+                    badge.style.display = 'flex';
+                    // Force notification icon to be visible in case it gets hidden by other elements
+                    const notificationIcon = document.querySelector('.notification-icon');
+                    if (notificationIcon) {
+                        notificationIcon.style.zIndex = "1000";
+                        notificationIcon.style.opacity = "1";
+                        notificationIcon.style.visibility = "visible";
+                    }
+                } else {
+                    badge.style.display = 'none';
+                }
+            }
+        }
+    } catch (error) {
+        console.error('Error fetching notification count:', error);
+    }
+}
 
 </script>
 <script src="~/js/stringHelpers.js"></script>

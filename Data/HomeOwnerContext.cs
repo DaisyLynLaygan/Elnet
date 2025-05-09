@@ -48,6 +48,13 @@ namespace HomeOwner.Data
                 .HasForeignKey(s => s.user_id)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            // Notification-User relationship
+            modelBuilder.Entity<Notification>()
+                .HasOne(n => n.User)
+                .WithMany(u => u.Notifications)
+                .HasForeignKey(n => n.user_id)
+                .OnDelete(DeleteBehavior.Cascade);
+
             // Configure decimal precision for price
             modelBuilder.Entity<ServiceRequest>()
                 .Property(s => s.price)
@@ -62,5 +69,6 @@ namespace HomeOwner.Data
         public DbSet<ServiceRequest> ServiceRequest { get; set; }
         public DbSet<Feedback> Feedback { get; set; }
         public DbSet<Facility> Facility { get; set; }
+        public DbSet<Notification> Notification { get; set; }
     }
 }

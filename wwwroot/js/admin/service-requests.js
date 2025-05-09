@@ -409,116 +409,9 @@ function initializeFilters() {
 function addEventListeners() {
     // View details button click
     document.querySelectorAll('.view-details').forEach(button => {
-        button.addEventListener('click', async function() {
+        button.addEventListener('click', function() {
             const requestId = this.getAttribute('data-id');
-            try {
-                const response = await fetch(`/Admin/GetServiceRequest/${requestId}`);
-                const data = await response.json();
-                
-                if (data.success) {
-                    const request = data.request;
-                    const modalBody = document.querySelector('.modal-body .request-detail');
-                    
-                    if (modalBody) {
-                        modalBody.innerHTML = `
-                            <div class="request-header">
-                                <div class="request-id">#SR-${request.request_id}</div>
-                                <div class="request-status">
-                                    <span class="badge ${getStatusClass(request.status)}">${request.status}</span>
-                                </div>
-                            </div>
-                            
-                            <div class="request-content">
-                                <div class="request-section">
-                                    <h4>Homeowner Information</h4>
-                                    <div class="request-user">
-                                        <div class="user-avatar">${request.user.firstname.charAt(0)}${request.user.lastname.charAt(0)}</div>
-                                        <div class="user-details">
-                                            <h4>${request.user.firstname} ${request.user.lastname}</h4>
-                                            <p>${request.user.email}</p>
-                                            <div class="user-contact">
-                                                <i class="fas fa-phone"></i> ${request.user.contact_no || 'N/A'}<br>
-                                                <i class="fas fa-envelope"></i> ${request.user.email}
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <div class="request-section">
-                                    <h4>Service Details</h4>
-                                    <div class="service-info">
-                                        <div class="service-icon">${request.service_icon}</div>
-                                        <div class="service-details">
-                                            <h4>${request.service_type}</h4>
-                                            <div class="service-meta">
-                                                <span><strong>Price:</strong> $${request.price.toFixed(2)}</span>
-                                                <span><strong>Frequency:</strong> ${request.frequency}</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <div class="request-section">
-                                    <h4>Request Information</h4>
-                                    <div class="request-meta">
-                                        <div class="meta-item">
-                                            <label>Request Date:</label>
-                                            <span>${new Date(request.date_created).toLocaleDateString()}</span>
-                                        </div>
-                                        <div class="meta-item">
-                                            <label>Scheduled Date:</label>
-                                            <span>${new Date(request.scheduled_date).toLocaleDateString()}</span>
-                                        </div>
-                                        <div class="meta-item">
-                                            <label>Scheduled Time:</label>
-                                            <span>${request.scheduled_time}</span>
-                                        </div>
-                                        <div class="meta-item">
-                                            <label>Payment Status:</label>
-                                            <span class="badge ${request.payment_status === 'Paid' ? 'success' : 'danger'}">${request.payment_status}</span>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <div class="request-section">
-                                    <h4>Special Instructions</h4>
-                                    <div class="special-instructions">
-                                        ${request.notes || 'No special instructions provided.'}
-                                    </div>
-                                </div>
-                            </div>
-                        `;
-                        
-                        // Show/hide action buttons based on status
-                        if (approveRequestBtn) approveRequestBtn.style.display = 'none';
-                        if (rejectRequestBtn) rejectRequestBtn.style.display = 'none';
-                        if (markPaidBtn) markPaidBtn.style.display = 'none';
-                        if (markCompleteBtn) markCompleteBtn.style.display = 'none';
-                        
-                        if (request.status === 'Pending Approval') {
-                            if (approveRequestBtn) approveRequestBtn.style.display = 'inline-block';
-                            if (rejectRequestBtn) rejectRequestBtn.style.display = 'inline-block';
-                        } else if (request.status === 'Approved' && request.payment_status === 'Unpaid') {
-                            if (markPaidBtn) markPaidBtn.style.display = 'inline-block';
-                        } else if (request.status === 'Approved' && request.payment_status === 'Paid') {
-                            if (markCompleteBtn) markCompleteBtn.style.display = 'inline-block';
-                        }
-                        
-                        // Open modal
-                        const modal = document.getElementById('serviceRequestModal');
-                        if (modal) {
-                            modal.style.display = 'flex';
-                            document.body.style.overflow = 'hidden';
-                            document.body.classList.add('modal-open');
-                        }
-                    }
-                } else {
-                    showError(data.message || 'Failed to load service request details');
-                }
-            } catch (error) {
-                console.error('Error loading service request:', error);
-                showError('Failed to load service request details');
-            }
+            openServiceRequestModal(requestId);
         });
     });
 
@@ -551,6 +444,41 @@ function addEventListeners() {
         button.addEventListener('click', async () => {
             const requestId = button.dataset.id;
             await markRequestAsComplete(requestId);
+        });
+    });
+}
+
+// Modal handling functions
+function openModal(modal) {
+    if (modal) {
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+        document.body.classList.add('modal-open');
+    }
+}
+
+function closeModal(modal) {
+    if (modal) {
+        modal.style.display = 'none';
+        document.body.style.overflow = 'auto';
+        document.body.classList.remove('modal-open');
+    }
+}
+
+// Add event listeners to all close modal buttons
+function setupModalClosers() {
+    // Close when clicking the X or close button
+    document.querySelectorAll('.close-modal').forEach(button => {
+        button.addEventListener('click', function() {
+            const modal = this.closest('.modal');
+            if (modal) closeModal(modal);
+        });
+    });
+    
+    // Close when clicking outside the modal content
+    document.querySelectorAll('.modal').forEach(modal => {
+        modal.addEventListener('click', function(e) {
+            if (e.target === this) closeModal(this);
         });
     });
 }
@@ -703,6 +631,9 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Initialize filters
     initializeFilters();
+    
+    // Set up modal close functionality
+    setupModalClosers();
     
     // Add event listeners for modal buttons
     document.getElementById('approveRequestBtn')?.addEventListener('click', () => approveRequest(currentRequestId));
@@ -859,5 +790,116 @@ function addEventListenersToRow(row) {
             const requestId = this.getAttribute('data-id');
             markRequestAsComplete(requestId);
         });
+    }
+}
+
+// Fetch and display service request details in modal
+async function openServiceRequestModal(requestId) {
+    if (!requestId) return;
+    
+    currentRequestId = requestId;
+    
+    try {
+        const response = await fetch(`/Admin/GetServiceRequest/${requestId}`);
+        const data = await response.json();
+        
+        if (data.success) {
+            const request = data.request;
+            const modalBody = document.querySelector('.modal-body .request-detail');
+            
+            if (modalBody) {
+                modalBody.innerHTML = `
+                    <div class="request-header">
+                        <div class="request-id">#SR-${request.request_id}</div>
+                        <div class="request-status">
+                            <span class="badge ${getStatusClass(request.status)}">${request.status}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="request-content">
+                        <div class="request-section">
+                            <h4>Homeowner Information</h4>
+                            <div class="request-user">
+                                <div class="user-avatar">${request.user.firstname.charAt(0)}${request.user.lastname.charAt(0)}</div>
+                                <div class="user-details">
+                                    <h4>${request.user.firstname} ${request.user.lastname}</h4>
+                                    <p>${request.user.email}</p>
+                                    <div class="user-contact">
+                                        <i class="fas fa-phone"></i> ${request.user.contact_no || 'N/A'}<br>
+                                        <i class="fas fa-envelope"></i> ${request.user.email}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="request-section">
+                            <h4>Service Details</h4>
+                            <div class="service-info">
+                                <div class="service-icon">${request.service_icon}</div>
+                                <div class="service-details">
+                                    <h4>${request.service_type}</h4>
+                                    <div class="service-meta">
+                                        <span><strong>Price:</strong> $${request.price.toFixed(2)}</span>
+                                        <span><strong>Frequency:</strong> ${request.frequency}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="request-section">
+                            <h4>Request Information</h4>
+                            <div class="request-meta">
+                                <div class="meta-item">
+                                    <label>Request Date:</label>
+                                    <span>${new Date(request.date_created).toLocaleDateString()}</span>
+                                </div>
+                                <div class="meta-item">
+                                    <label>Scheduled Date:</label>
+                                    <span>${new Date(request.scheduled_date).toLocaleDateString()}</span>
+                                </div>
+                                <div class="meta-item">
+                                    <label>Scheduled Time:</label>
+                                    <span>${request.scheduled_time}</span>
+                                </div>
+                                <div class="meta-item">
+                                    <label>Payment Status:</label>
+                                    <span class="badge ${request.payment_status === 'Paid' ? 'success' : 'danger'}">${request.payment_status}</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="request-section">
+                            <h4>Special Instructions</h4>
+                            <div class="special-instructions">
+                                ${request.notes || 'No special instructions provided.'}
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                // Show/hide action buttons based on status
+                if (approveRequestBtn) approveRequestBtn.style.display = 'none';
+                if (rejectRequestBtn) rejectRequestBtn.style.display = 'none';
+                if (markPaidBtn) markPaidBtn.style.display = 'none';
+                if (markCompleteBtn) markCompleteBtn.style.display = 'none';
+                
+                if (request.status === 'Pending Approval') {
+                    if (approveRequestBtn) approveRequestBtn.style.display = 'inline-block';
+                    if (rejectRequestBtn) rejectRequestBtn.style.display = 'inline-block';
+                } else if (request.status === 'Approved' && request.payment_status === 'Unpaid') {
+                    if (markPaidBtn) markPaidBtn.style.display = 'inline-block';
+                } else if (request.status === 'Approved' && request.payment_status === 'Paid') {
+                    if (markCompleteBtn) markCompleteBtn.style.display = 'inline-block';
+                }
+                
+                // Open modal
+                openModal(modals.serviceRequest);
+            }
+        } else {
+            showError(data.message || 'Failed to load service request details');
+        }
+    } catch (error) {
+        console.error('Error loading service request:', error);
+        showError('Failed to load service request details');
     }
 }

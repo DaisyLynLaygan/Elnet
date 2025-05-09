@@ -1,10 +1,57 @@
 @{
     Layout = "~/Views/Shared/Dashboard_Layout.cshtml";
     ViewData["Title"] = "Notifications";
+    var user = ViewBag.CurrentUser as HomeOwner.Models.User;
 }
 
 <link rel="stylesheet" href="~/css/homeowners/notification.css" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+
+<style>
+    .notification-message {
+        white-space: pre-line;
+        line-height: 1.5;
+        color: #555;
+    }
+    
+    .notification-item.important .notification-message {
+        font-weight: 500;
+    }
+    
+    .notification-item.unread .notification-message {
+        color: #333;
+    }
+    
+    .error-state {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 40px;
+        text-align: center;
+        color: #721c24;
+        background-color: #f8d7da;
+        border-radius: 8px;
+        margin: 20px 0;
+    }
+    
+    .error-state i {
+        font-size: 3rem;
+        margin-bottom: 15px;
+        color: #dc3545;
+    }
+    
+    .error-state h3 {
+        margin-bottom: 10px;
+        font-size: 1.5rem;
+    }
+    
+    .error-state p {
+        margin-bottom: 5px;
+        font-size: 1rem;
+    }
+</style>
 
 <div class="notification-container">
     <div class="notification-header">
@@ -16,62 +63,426 @@
     </div>
 
     <div class="notification-tabs">
-        <button class="tab-btn active">All</button>
-        <button class="tab-btn">Unread</button>
-        <button class="tab-btn">Important</button>
+        <button class="tab-btn active" data-tab="all">All</button>
+        <button class="tab-btn" data-tab="unread">Unread</button>
+        <button class="tab-btn" data-tab="important">Important</button>
     </div>
 
-    <div class="notification-list">
-        <!-- Unread Notification -->
-        <div class="notification-item unread">
-            <div class="notification-icon">
-                <i class="fas fa-exclamation-circle"></i>
-            </div>
-            <div class="notification-content">
-                <h3 class="notification-title">Payment Received</h3>
-                <p class="notification-message">Your payment of $250 for maintenance fees has been successfully processed.</p>
-                <p class="notification-time">10 minutes ago</p>
-            </div>
-            <button class="notification-action"><i class="fas fa-ellipsis-v"></i></button>
+    <div class="notification-list" id="notification-list">
+        <!-- Loading state -->
+        <div class="loading-state">
+            <i class="fas fa-circle-notch fa-spin"></i>
+            <p>Loading notifications...</p>
         </div>
-
-        <!-- Important Notification -->
-        <div class="notification-item important">
-            <div class="notification-icon">
-                <i class="fas fa-calendar-check"></i>
-            </div>
-            <div class="notification-content">
-                <h3 class="notification-title">Upcoming Meeting</h3>
-                <p class="notification-message">Reminder: Community meeting tomorrow at 7:00 PM in the clubhouse.</p>
-                <p class="notification-time">2 hours ago</p>
-            </div>
-            <button class="notification-action"><i class="fas fa-ellipsis-v"></i></button>
-        </div>
-
-        <!-- Read Notification -->
-        <div class="notification-item">
-            <div class="notification-icon">
-                <i class="fas fa-check-circle"></i>
-            </div>
-            <div class="notification-content">
-                <h3 class="notification-title">Maintenance Scheduled</h3>
-                <p class="notification-message">Landscaping maintenance is scheduled for this Friday from 9 AM to 12 PM.</p>
-                <p class="notification-time">1 day ago</p>
-            </div>
-            <button class="notification-action"><i class="fas fa-ellipsis-v"></i></button>
-        </div>
-
-        <!-- Warning Notification -->
-        <div class="notification-item warning">
-            <div class="notification-icon">
-                <i class="fas fa-exclamation-triangle"></i>
-            </div>
-            <div class="notification-content">
-                <h3 class="notification-title">Water Shut-off Notice</h3>
-                <p class="notification-message">Water will be temporarily shut off on Tuesday from 8 AM to 2 PM for pipe repairs.</p>
-                <p class="notification-time">3 days ago</p>
-            </div>
-            <button class="notification-action"><i class="fas fa-ellipsis-v"></i></button>
+        
+        <!-- Empty state -->
+        <div class="empty-state" style="display: none;">
+            <i class="fas fa-bell-slash"></i>
+            <p>You don't have any notifications yet</p>
         </div>
     </div>
 </div>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // DOM Elements
+        const notificationList = document.getElementById('notification-list');
+        const loadingState = document.querySelector('.loading-state');
+        const emptyState = document.querySelector('.empty-state');
+        const tabButtons = document.querySelectorAll('.tab-btn');
+        const markAllButton = document.querySelector('.btn-mark-all');
+        
+        // Current filter
+        let currentFilter = 'all';
+        let notifications = [];
+        
+        // Load notifications
+        loadNotifications();
+        
+        // Tab switching
+        tabButtons.forEach(tab => {
+            tab.addEventListener('click', function() {
+                // Update active tab
+                tabButtons.forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+                
+                // Update filter
+                currentFilter = this.dataset.tab;
+                
+                // Re-render notifications with the new filter
+                renderNotifications();
+            });
+        });
+        
+        // Mark all as read
+        markAllButton.addEventListener('click', function() {
+            if (notifications.filter(n => !n.is_read).length === 0) {
+                Swal.fire({
+                    title: 'Info',
+                    text: 'You have no unread notifications',
+                    icon: 'info',
+                    timer: 2000,
+                    showConfirmButton: false
+                });
+                return;
+            }
+            
+            markAllNotificationsAsRead();
+        });
+        
+        // Fetch notifications from API
+        async function loadNotifications() {
+            showLoading();
+            
+            try {
+                const response = await fetch('/Homeowner/GetNotifications');
+                
+                // Check if response is ok
+                if (!response.ok) {
+                    throw new Error(`HTTP error ${response.status}: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    notifications = data.notifications;
+                    renderNotifications();
+                } else {
+                    // Show a more helpful message when the database table doesn't exist
+                    if (data.message && (data.message.includes("Invalid object name") || data.message.includes("Notification"))) {
+                        showDatabaseSetupError();
+                    } else {
+                        showError(data.message || 'Failed to load notifications');
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading notifications:', error);
+                // Log details for troubleshooting
+                const errorMessage = error.message || 'Unknown error';
+                console.error('Error details:', errorMessage);
+                
+                // Show a helpful message for database errors
+                if (errorMessage.includes("Invalid object name") || errorMessage.includes("Notification")) {
+                    showDatabaseSetupError();
+                } else {
+                    emptyState.style.display = 'none';
+                    loadingState.style.display = 'none';
+                    showErrorState("Error Loading Notifications", "Unable to connect to the notification service. Please try again later or contact support.");
+                }
+            }
+        }
+        
+        // Render notifications based on current filter
+        function renderNotifications() {
+            // Clear loading and empty states
+            loadingState.style.display = 'none';
+            emptyState.style.display = 'none';
+            
+            // Filter notifications
+            let filteredNotifications = notifications;
+            
+            if (currentFilter === 'unread') {
+                filteredNotifications = notifications.filter(n => !n.is_read);
+            } else if (currentFilter === 'important') {
+                filteredNotifications = notifications.filter(n => n.type === 'service_request');
+            }
+            
+            // Remove existing notifications
+            const existingNotifications = document.querySelectorAll('.notification-item');
+            existingNotifications.forEach(item => item.remove());
+            
+            // Show empty state if no notifications
+            if (filteredNotifications.length === 0) {
+                emptyState.style.display = 'flex';
+                return;
+            }
+            
+            // Add notifications to the list
+            filteredNotifications.forEach(notification => {
+                const notificationItem = createNotificationItem(notification);
+                notificationList.appendChild(notificationItem);
+            });
+            
+            // Update the notification badge in the layout
+            updateNotificationBadge();
+        }
+        
+        // Create notification item element
+        function createNotificationItem(notification) {
+            const item = document.createElement('div');
+            item.className = `notification-item ${!notification.is_read ? 'unread' : ''}`;
+            item.dataset.id = notification.id;
+            
+            // Determine icon based on type
+            let iconClass = 'fas fa-bell';
+            if (notification.type === 'service_request') {
+                iconClass = 'fas fa-calendar-check';
+                item.classList.add('important');
+            } else if (notification.type === 'payment') {
+                iconClass = 'fas fa-credit-card';
+            } else if (notification.type === 'announcement') {
+                iconClass = 'fas fa-bullhorn';
+            }
+            
+            // Format date/time
+            const timeAgo = getTimeAgo(new Date(notification.created_date));
+            
+            item.innerHTML = `
+                <div class="notification-icon">
+                    <i class="${iconClass}"></i>
+                </div>
+                <div class="notification-content">
+                    <h3 class="notification-title">${notification.title}</h3>
+                    <p class="notification-message">${notification.message.replace(/\n/g, '<br>')}</p>
+                    <p class="notification-time">${timeAgo}</p>
+                </div>
+                <button class="notification-action" data-id="${notification.id}"><i class="fas fa-ellipsis-v"></i></button>
+            `;
+            
+            // Add event listener to mark as read when clicked
+            item.addEventListener('click', function(e) {
+                // Don't trigger if the action button was clicked
+                if (e.target.closest('.notification-action')) {
+                    return;
+                }
+                
+                if (!notification.is_read) {
+                    markNotificationAsRead(notification.id);
+                }
+            });
+            
+            // Add event listener to action button
+            const actionButton = item.querySelector('.notification-action');
+            actionButton.addEventListener('click', function(e) {
+                e.stopPropagation();
+                showNotificationActions(notification);
+            });
+            
+            return item;
+        }
+        
+        // Show notification actions menu
+        function showNotificationActions(notification) {
+            Swal.fire({
+                title: 'Notification Options',
+                html: `
+                    <div class="notification-actions-menu">
+                        ${!notification.is_read ? 
+                          '<button class="action-btn mark-read-btn"><i class="fas fa-check"></i> Mark as read</button>' : 
+                          '<button class="action-btn mark-unread-btn"><i class="fas fa-envelope"></i> Mark as unread</button>'}
+                        <button class="action-btn delete-btn"><i class="fas fa-trash"></i> Delete notification</button>
+                    </div>
+                `,
+                showConfirmButton: false,
+                showCloseButton: true,
+                didOpen: (popup) => {
+                    const markReadBtn = popup.querySelector('.mark-read-btn');
+                    const markUnreadBtn = popup.querySelector('.mark-unread-btn');
+                    const deleteBtn = popup.querySelector('.delete-btn');
+                    
+                    if (markReadBtn) {
+                        markReadBtn.addEventListener('click', () => {
+                            markNotificationAsRead(notification.id);
+                            Swal.close();
+                        });
+                    }
+                    
+                    if (markUnreadBtn) {
+                        markUnreadBtn.addEventListener('click', () => {
+                            // Not implemented yet
+                            Swal.fire({
+                                title: 'Not Implemented',
+                                text: 'This feature is not yet implemented',
+                                icon: 'info',
+                                timer: 2000,
+                                showConfirmButton: false
+                            });
+                            Swal.close();
+                        });
+                    }
+                    
+                    if (deleteBtn) {
+                        deleteBtn.addEventListener('click', () => {
+                            // Not implemented yet
+                            Swal.fire({
+                                title: 'Not Implemented',
+                                text: 'This feature is not yet implemented',
+                                icon: 'info',
+                                timer: 2000,
+                                showConfirmButton: false
+                            });
+                            Swal.close();
+                        });
+                    }
+                }
+            });
+        }
+        
+        // API calls
+        async function markNotificationAsRead(notificationId) {
+            try {
+                const response = await fetch('/Homeowner/MarkNotificationAsRead?notificationId=' + notificationId, {
+                    method: 'POST'
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Update notification in local data
+                    const notificationIndex = notifications.findIndex(n => n.id === notificationId);
+                    if (notificationIndex !== -1) {
+                        notifications[notificationIndex].is_read = true;
+                        
+                        // Update the UI
+                        const notificationItem = document.querySelector(`.notification-item[data-id="${notificationId}"]`);
+                        if (notificationItem) {
+                            notificationItem.classList.remove('unread');
+                        }
+                        
+                        // Re-render if we're in the unread tab and this was the last unread notification
+                        if (currentFilter === 'unread' && !notifications.some(n => !n.is_read)) {
+                            renderNotifications();
+                        }
+                        
+                        // Update notification badge in layout
+                        updateNotificationBadge();
+                    }
+                } else {
+                    showError(data.message || 'Failed to mark notification as read');
+                }
+            } catch (error) {
+                console.error('Error marking notification as read:', error);
+                showError('Failed to mark notification as read. Please try again.');
+            }
+        }
+        
+        async function markAllNotificationsAsRead() {
+            try {
+                const response = await fetch('/Homeowner/MarkAllNotificationsAsRead', {
+                    method: 'POST'
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Update all notifications in local data
+                    notifications.forEach(notification => {
+                        notification.is_read = true;
+                    });
+                    
+                    // Update the UI
+                    renderNotifications();
+                    
+                    // Update notification badge in layout - set to zero
+                    updateNotificationBadge(0);
+                    
+                    Swal.fire({
+                        title: 'Success',
+                        text: 'All notifications marked as read',
+                        icon: 'success',
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+                } else {
+                    showError(data.message || 'Failed to mark all notifications as read');
+                }
+            } catch (error) {
+                console.error('Error marking all notifications as read:', error);
+                showError('Failed to mark all notifications as read. Please try again.');
+            }
+        }
+        
+        // Helper functions
+        function showLoading() {
+            loadingState.style.display = 'flex';
+            emptyState.style.display = 'none';
+        }
+        
+        function showError(message) {
+            Swal.fire({
+                title: 'Error',
+                text: message,
+                icon: 'error'
+            });
+        }
+        
+        function getTimeAgo(date) {
+            const now = new Date();
+            const diffInSeconds = Math.floor((now - date) / 1000);
+            
+            if (diffInSeconds < 60) {
+                return 'Just now';
+            }
+            
+            const diffInMinutes = Math.floor(diffInSeconds / 60);
+            if (diffInMinutes < 60) {
+                return `${diffInMinutes} minute${diffInMinutes !== 1 ? 's' : ''} ago`;
+            }
+            
+            const diffInHours = Math.floor(diffInMinutes / 60);
+            if (diffInHours < 24) {
+                return `${diffInHours} hour${diffInHours !== 1 ? 's' : ''} ago`;
+            }
+            
+            const diffInDays = Math.floor(diffInHours / 24);
+            if (diffInDays < 30) {
+                return `${diffInDays} day${diffInDays !== 1 ? 's' : ''} ago`;
+            }
+            
+            const diffInMonths = Math.floor(diffInDays / 30);
+            if (diffInMonths < 12) {
+                return `${diffInMonths} month${diffInMonths !== 1 ? 's' : ''} ago`;
+            }
+            
+            const diffInYears = Math.floor(diffInMonths / 12);
+            return `${diffInYears} year${diffInYears !== 1 ? 's' : ''} ago`;
+        }
+        
+        // Show database setup error
+        function showDatabaseSetupError() {
+            emptyState.style.display = 'none';
+            loadingState.style.display = 'none';
+            showErrorState(
+                "Database Setup Required", 
+                "The notification system requires database setup. The Notification table appears to be missing. Please contact the system administrator."
+            );
+        }
+        
+        // Show custom error state
+        function showErrorState(title, message) {
+            // Remove any existing error state
+            const existingErrorState = document.querySelector('.error-state');
+            if (existingErrorState) {
+                existingErrorState.remove();
+            }
+            
+            // Create error state element
+            const errorState = document.createElement('div');
+            errorState.className = 'error-state';
+            errorState.innerHTML = `
+                <i class="fas fa-exclamation-triangle"></i>
+                <h3>${title}</h3>
+                <p>${message}</p>
+            `;
+            
+            // Add to the notification list
+            notificationList.appendChild(errorState);
+        }
+
+        // Add this function to update the notification badge
+        function updateNotificationBadge(count) {
+            // If count is provided, use it; otherwise calculate from notifications array
+            const unreadCount = count !== undefined ? count : 
+                notifications.filter(n => !n.is_read).length;
+            
+            // Find the badge in parent layout
+            const badge = parent.document.getElementById('notificationBadge');
+            if (badge) {
+                // Update text and visibility
+                badge.textContent = unreadCount;
+                badge.style.display = unreadCount > 0 ? 'flex' : 'none';
+            }
+        }
+    });
+</script>
