@@ -37,8 +37,8 @@
 }
 
 .filter-tab.active {
-    background-color: var(--primary);
-    color: white;
+    background-color: #6B4423;
+    color: #fff;
 }
 
 .filter-tab:hover:not(.active) {
@@ -55,11 +55,14 @@
 }
 
 .task-category h2 {
-    color: var(--primary);
-    margin-bottom: 15px;
     display: flex;
     align-items: center;
-    gap: 10px;
+    margin-bottom: 15px;
+    color: #6B4423;
+}
+
+.task-category h2 i {
+    margin-right: 10px;
 }
 
 .task-table {
@@ -85,26 +88,59 @@
     border-bottom: none;
 }
 
+.task-table tr {
+    transition: background-color 0.2s;
+}
+
 .task-table tr:hover {
-    background-color: rgba(0, 0, 0, 0.02);
+    background-color: rgba(107, 68, 35, 0.05);
+    cursor: pointer;
 }
 
 .status-badge {
     display: inline-block;
-    padding: 4px 8px;
-    border-radius: 12px;
-    font-size: 12px;
+    padding: 3px 8px;
+    border-radius: 50px;
+    font-size: 0.7rem;
     font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
-.status-badge.status-in-progress {
-    background-color: #FFA000;
-    color: white;
+.status-in-progress {
+    background-color: #fff3cd;
+    color: #856404;
 }
 
-.status-badge.status-completed {
-    background-color: #4CAF50;
-    color: white;
+.status-completed {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.status-rejected {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+.status-approved {
+    background-color: #cce5ff;
+    color: #004085;
+}
+
+.status-indicator {
+    display: inline-block;
+    width: 6px;
+    height: 24px;
+    border-radius: 3px;
+    margin-right: 10px;
+}
+
+.status-indicator.in-progress {
+    background-color: #ffc107;
+}
+
+.status-indicator.completed {
+    background-color: #28a745;
 }
 
 .action-buttons {
@@ -291,12 +327,12 @@
 .completion-form {
     margin-top: 20px;
     padding-top: 20px;
-    border-top: 1px solid var(--medium-gray);
+    border-top: 1px solid #e0e0e0;
 }
 
 .completion-form h4 {
-    margin-bottom: 15px;
-    color: var(--text-dark);
+    margin-bottom: 10px;
+    color: #6B4423;
 }
 
 .form-group {

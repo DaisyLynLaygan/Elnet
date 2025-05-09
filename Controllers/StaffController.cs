@@ -456,6 +456,90 @@ namespace HomeOwner.Controllers
         }
 
         [HttpGet]
+        [Route("Staff/GetCurrentTasks")]
+        public async Task<JsonResult> GetCurrentTasks()
+        {
+            try
+            {
+                // Check authentication first
+                if (CurrentUser == null || CurrentUser.role != "staff")
+                {
+                    Console.WriteLine("Authentication failed in GetCurrentTasks");
+                    return Json(new { success = false, message = "Not authenticated or unauthorized access." });
+                }
+                
+                Console.WriteLine("Staff authenticated, fetching current tasks...");
+                
+                // Get facility reservations assigned to this staff
+                var facilityReservations = await _context.FacilityReservation
+                    .Include(fr => fr.User)
+                    .Include(fr => fr.Facility)
+                    .Where(fr => fr.status == "In Progress" || fr.status == "Completed")
+                    .OrderByDescending(fr => fr.status == "In Progress" ? 1 : 0) // Show in progress first
+                    .ThenByDescending(fr => fr.reservation_date)
+                    .Select(fr => new
+                    {
+                        id = fr.reservation_id.ToString(),
+                        facility = fr.Facility.name,
+                        resident = $"{fr.User.firstname} {fr.User.lastname}",
+                        dateTime = $"{fr.reservation_date.ToString("dd MMM yyyy")}, {fr.reservation_time}",
+                        date = fr.reservation_date.ToString("dd MMM yyyy"),
+                        time = fr.reservation_time,
+                        duration = fr.duration_hours,
+                        guests = $"{fr.guest_count} guests",
+                        purpose = fr.purpose,
+                        amount = $"${fr.price.ToString("0.00")}",
+                        status = fr.status,
+                        payment_status = fr.payment_status,
+                        notes = fr.staff_notes ?? "",
+                        user_id = fr.user_id,
+                        user_email = fr.User.email,
+                        user_contact = fr.User.contact_no
+                    })
+                    .ToListAsync();
+                
+                // Get service requests assigned to this staff
+                var serviceRequests = await _context.ServiceRequest
+                    .Include(sr => sr.User)
+                    .Where(sr => sr.status == "In Progress" || sr.status == "Completed") 
+                    .OrderByDescending(sr => sr.status == "In Progress" ? 1 : 0) // Show in progress first
+                    .ThenByDescending(sr => sr.scheduled_date)
+                    .Select(sr => new
+                    {
+                        id = sr.request_id.ToString(),
+                        service = sr.service_type,
+                        service_icon = sr.service_icon,
+                        homeowner = $"{sr.User.firstname} {sr.User.lastname}",
+                        date = sr.scheduled_date.ToString("dd MMM yyyy"),
+                        time = sr.scheduled_time,
+                        price = $"${sr.price.ToString("0.00")}",
+                        status = sr.status,
+                        payment_status = sr.payment_status,
+                        notes = sr.notes,
+                        staffNotes = sr.staffNotes,
+                        user_id = sr.user_id,
+                        user_email = sr.User.email,
+                        user_contact = sr.User.contact_no
+                    })
+                    .ToListAsync();
+                
+                Console.WriteLine($"Found {facilityReservations.Count} facility tasks and {serviceRequests.Count} service tasks");
+
+                return Json(new { 
+                    success = true, 
+                    facilityTasks = facilityReservations, 
+                    serviceTasks = serviceRequests 
+                });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error fetching current tasks: {ex.Message}");
+                Console.WriteLine($"Stack trace: {ex.StackTrace}");
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+
+        [HttpGet]
         public async Task<JsonResult> GetApprovedFacilityReservations()
         {
             try
@@ -592,6 +676,185 @@ namespace HomeOwner.Controllers
             }
         }
 
+        [HttpPost]
+        [Route("Staff/CompleteFacilityReservation")]
+        public async Task<JsonResult> CompleteFacilityReservation([FromBody] CompletionModel model)
+        {
+            try
+            {
+                // Validate the model
+                if (model.reservationId <= 0)
+                {
+                    return Json(new { success = false, message = "Invalid reservation ID" });
+                }
+
+                // Find the facility reservation
+                var reservation = await _context.FacilityReservation
+                    .Include(r => r.Facility)
+                    .Include(r => r.User)
+                    .FirstOrDefaultAsync(r => r.reservation_id == model.reservationId);
+                
+                if (reservation == null)
+                {
+                    return Json(new { success = false, message = "Facility reservation not found" });
+                }
+
+                // Check that the reservation is in the correct state
+                if (reservation.status != "In Progress")
+                {
+                    return Json(new { success = false, message = "This reservation cannot be completed (invalid status)" });
+                }
+
+                // Update the reservation status to "Completed"
+                reservation.status = "Completed";
+                
+                // Update completion notes if provided
+                if (!string.IsNullOrEmpty(model.completionNotes))
+                {
+                    string dateStr = DateTime.Now.ToString("yyyy-MM-dd");
+                    reservation.staff_notes += $"\n\nCompletion Notes ({dateStr}): {model.completionNotes}";
+                }
+
+                // Create a notification for the homeowner
+                if (!string.IsNullOrEmpty(model.notificationMessage))
+                {
+                    try
+                    {
+                        // Include staff name in the notification title
+                        var staffName = $"{CurrentUser.firstname} {CurrentUser.lastname}";
+                        var notification = new Notification
+                        {
+                            user_id = reservation.user_id,
+                            title = $"Facility Booking Completed: {reservation.Facility.name}",
+                            message = model.notificationMessage,
+                            created_date = DateTime.Now,
+                            is_read = false,
+                            type = "facility_booking",
+                            reference_id = reservation.reservation_id.ToString()
+                        };
+
+                        _context.Notification.Add(notification);
+                        Console.WriteLine($"Created completion notification for user {reservation.user_id} regarding facility reservation {reservation.reservation_id}");
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Error creating notification: {ex.Message}");
+                        // Continue even if notification creation fails
+                    }
+                }
+
+                // Save changes to the database
+                await _context.SaveChangesAsync();
+
+                // Return success response
+                return Json(new { 
+                    success = true, 
+                    message = $"Facility booking marked as completed for {reservation.Facility.name}",
+                    reservationId = reservation.reservation_id,
+                    staffName = $"{CurrentUser.firstname} {CurrentUser.lastname}",
+                    newStatus = reservation.status
+                });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error completing facility reservation: {ex.Message}");
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+
+        [HttpPost]
+        [Route("Staff/CompleteServiceRequest")]
+        public async Task<JsonResult> CompleteServiceRequest([FromBody] CompletionModel model)
+        {
+            try
+            {
+                // Validate the model
+                if (model.requestId <= 0)
+                {
+                    return Json(new { success = false, message = "Invalid request ID" });
+                }
+
+                // Find the service request
+                var serviceRequest = await _context.ServiceRequest
+                    .Include(sr => sr.User)
+                    .FirstOrDefaultAsync(sr => sr.request_id == model.requestId);
+                
+                if (serviceRequest == null)
+                {
+                    return Json(new { success = false, message = "Service request not found" });
+                }
+
+                // Check that the service request is in the correct state
+                if (serviceRequest.status != "In Progress")
+                {
+                    return Json(new { success = false, message = "This service request cannot be completed (invalid status)" });
+                }
+
+                // Update the service request status to "Completed"
+                serviceRequest.status = "Completed";
+                
+                // Update completion notes if provided
+                if (!string.IsNullOrEmpty(model.completionNotes))
+                {
+                    string dateStr = DateTime.Now.ToString("yyyy-MM-dd");
+                    serviceRequest.staffNotes += $"\n\nCompletion Notes ({dateStr}): {model.completionNotes}";
+                }
+
+                // Create a notification for the user
+                if (!string.IsNullOrEmpty(model.notificationMessage))
+                {
+                    try
+                    {
+                        // Include staff name in the notification title
+                        var staffName = $"{CurrentUser.firstname} {CurrentUser.lastname}";
+                        var notification = new Notification
+                        {
+                            user_id = serviceRequest.user_id,
+                            title = $"Service Request Completed: {serviceRequest.service_type}",
+                            message = model.notificationMessage,
+                            created_date = DateTime.Now,
+                            is_read = false,
+                            type = "service_request",
+                            reference_id = serviceRequest.request_id.ToString()
+                        };
+
+                        _context.Notification.Add(notification);
+                        Console.WriteLine($"Created completion notification for user {serviceRequest.user_id} regarding service request {serviceRequest.request_id}");
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Error creating notification: {ex.Message}");
+                        // Continue even if notification creation fails
+                    }
+                }
+
+                // Save changes to the database
+                await _context.SaveChangesAsync();
+
+                // Broadcast the update via WebSocket if available
+                try {
+                    var serviceRequestWebSocketManager = HttpContext.RequestServices.GetRequiredService<ServiceRequestWebSocketManager>();
+                    await serviceRequestWebSocketManager.BroadcastServiceRequestUpdate(serviceRequest);
+                } catch (Exception ex) {
+                    Console.WriteLine($"Error broadcasting service request update: {ex.Message}");
+                    // Continue even if WebSocket broadcast fails
+                }
+
+                return Json(new { 
+                    success = true, 
+                    message = $"Service request marked as completed: {serviceRequest.service_type}",
+                    requestId = serviceRequest.request_id,
+                    staffName = $"{CurrentUser.firstname} {CurrentUser.lastname}",
+                    newStatus = serviceRequest.status
+                });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error completing service request: {ex.Message}");
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+
         public class CommentModel
         {
             public int PostId { get; set; }
@@ -627,6 +890,14 @@ namespace HomeOwner.Controllers
         {
             public int reservationId { get; set; }
             public string staffNotes { get; set; }
+            public string notificationMessage { get; set; }
+        }
+
+        public class CompletionModel
+        {
+            public int reservationId { get; set; }
+            public int requestId { get; set; }
+            public string completionNotes { get; set; }
             public string notificationMessage { get; set; }
         }
     }

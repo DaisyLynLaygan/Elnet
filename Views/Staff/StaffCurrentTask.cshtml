@@ -19,6 +19,17 @@
             <div class="filter-tab active" data-filter="in-progress">In Progress</div>
             <div class="filter-tab" data-filter="completed">Completed</div>
         </div>
+        
+        <div class="status-legend">
+            <div class="legend-item">
+                <div class="status-indicator in-progress"></div>
+                <span>In Progress</span>
+            </div>
+            <div class="legend-item">
+                <div class="status-indicator completed"></div>
+                <span>Completed</span>
+            </div>
+        </div>
     </div>
 
     <div class="task-list">
@@ -94,3 +105,43 @@
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="~/js/staff/current-task.js"></script>
+
+<style>
+    .status-legend {
+        display: flex;
+        gap: 20px;
+        margin-top: 15px;
+    }
+    
+    .legend-item {
+        display: flex;
+        align-items: center;
+        font-size: 0.85rem;
+        color: #555;
+    }
+    
+    .legend-item .status-indicator {
+        margin-right: 8px;
+        height: 18px;
+    }
+    
+    .task-filters {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+    }
+    
+    .close-modal-btn {
+        margin-right: 10px;
+    }
+    
+    #markTaskDoneBtn {
+        background-color: #28a745;
+        color: white;
+        border: none;
+    }
+    
+    #markTaskDoneBtn:hover {
+        background-color: #218838;
+    }
+</style>

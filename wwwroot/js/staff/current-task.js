@@ -112,7 +112,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (tasksToRender.facility.length === 0) {
             facilityTasksTable.innerHTML = `
                 <tr>
-                    <td colspan="6" class="no-tasks">No ${filter} facility tasks found</td>
+                    <td colspan="6" class="no-tasks">No ${filter.replace('-', ' ')} facility tasks found</td>
                 </tr>
             `;
         } else {
@@ -121,12 +121,18 @@ document.addEventListener('DOMContentLoaded', function() {
                 row.dataset.id = task.id;
                 row.dataset.type = 'facility';
                 
-                // Determine status display
+                // Determine status display and color
                 const statusDisplay = formatStatus(task.status);
                 const statusClass = task.status.toLowerCase().replace(' ', '-');
+                const statusColor = task.status.toLowerCase() === 'in progress' ? '#ffc107' : '#28a745';
                 
                 row.innerHTML = `
-                    <td>${task.id}</td>
+                    <td>
+                        <div style="display: flex; align-items: center;">
+                            <div class="status-indicator ${statusClass}"></div>
+                            #${task.id}
+                        </div>
+                    </td>
                     <td>${task.facility}</td>
                     <td>${task.resident}</td>
                     <td>${task.dateTime}</td>
@@ -146,7 +152,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (tasksToRender.service.length === 0) {
             serviceTasksTable.innerHTML = `
                 <tr>
-                    <td colspan="6" class="no-tasks">No ${filter} service tasks found</td>
+                    <td colspan="6" class="no-tasks">No ${filter.replace('-', ' ')} service tasks found</td>
                 </tr>
             `;
         } else {
@@ -155,15 +161,25 @@ document.addEventListener('DOMContentLoaded', function() {
                 row.dataset.id = task.id;
                 row.dataset.type = 'service';
                 
-                // Determine status display
+                // Determine status display and color
                 const statusDisplay = formatStatus(task.status);
                 const statusClass = task.status.toLowerCase().replace(' ', '-');
+                const statusColor = task.status.toLowerCase() === 'in progress' ? '#ffc107' : '#28a745';
                 
                 row.innerHTML = `
-                    <td>${task.id}</td>
-                    <td>${task.service}</td>
+                    <td>
+                        <div style="display: flex; align-items: center;">
+                            <div class="status-indicator ${statusClass}"></div>
+                            #${task.id}
+                        </div>
+                    </td>
+                    <td>
+                        <div class="service-info">
+                            <span>${task.service}</span>
+                        </div>
+                    </td>
                     <td>${task.homeowner}</td>
-                    <td>${task.date}</td>
+                    <td>${task.date} at ${task.time}</td>
                     <td><span class="status-badge status-${statusClass}">${statusDisplay}</span></td>
                     <td>
                         <button class="btn-icon view-details" title="View Details">
@@ -335,17 +351,35 @@ document.addEventListener('DOMContentLoaded', function() {
             markTaskDoneBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
             markTaskDoneBtn.disabled = true;
             
+            // Prepare the API endpoint and request body based on task type
+            let endpoint = '';
+            let requestBody = {};
+            
+            if (isFacilityTask) {
+                // For facility reservations
+                endpoint = '/Staff/CompleteFacilityReservation';
+                requestBody = {
+                    reservationId: parseInt(currentTask.id),
+                    completionNotes: completionNotes,
+                    notificationMessage: `Dear Resident,\n\nYour facility reservation for ${currentTask.facility} on ${currentTask.date} at ${currentTask.time} has been completed successfully.\n\n${completionNotes ? `Staff notes: ${completionNotes}\n\n` : ''}Thank you for using our services.`
+                };
+            } else {
+                // For service requests
+                endpoint = '/Staff/CompleteServiceRequest';
+                requestBody = {
+                    requestId: parseInt(currentTask.id),
+                    completionNotes: completionNotes,
+                    notificationMessage: `Dear Homeowner,\n\nYour ${currentTask.service} service scheduled for ${currentTask.date} at ${currentTask.time} has been completed successfully.\n\n${completionNotes ? `Staff notes: ${completionNotes}\n\n` : ''}Thank you for using our services.`
+                };
+            }
+            
             // Make API call to mark task as completed
-            const response = await fetch('/Staff/MarkTaskCompleted', {
+            const response = await fetch(endpoint, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({
-                    taskId: currentTask.id,
-                    taskType: isFacilityTask ? 'facility' : 'service',
-                    completionNotes: completionNotes
-                })
+                body: JSON.stringify(requestBody)
             });
             
             const data = await response.json();
@@ -360,14 +394,14 @@ document.addEventListener('DOMContentLoaded', function() {
                     if (taskIndex !== -1) {
                         const completedTask = {...facilityTasks[taskIndex], status: 'Completed'};
                         facilityTasks.splice(taskIndex, 1);
-                        completedFacilityTasks.push(completedTask);
+                        completedFacilityTasks.unshift(completedTask); // Add to top of completed list
                     }
                 } else {
                     const taskIndex = serviceTasks.findIndex(t => t.id === currentTask.id);
                     if (taskIndex !== -1) {
                         const completedTask = {...serviceTasks[taskIndex], status: 'Completed'};
                         serviceTasks.splice(taskIndex, 1);
-                        completedServiceTasks.push(completedTask);
+                        completedServiceTasks.unshift(completedTask); // Add to top of completed list
                     }
                 }
                 
