@@ -4,16 +4,19 @@ using HomeOwner.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
 
-namespace HomeOwner.Migrations
+namespace HomeOwner.Data.Migrations
 {
     [DbContext(typeof(HomeOwnerContext))]
-    partial class HomeOwnerContextModelSnapshot : ModelSnapshot
+    [Migration("20250509141250_AddFacilityReservation")]
+    partial class AddFacilityReservation
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -144,9 +147,6 @@ namespace HomeOwner.Migrations
                     b.Property<DateTime>("created_date")
                         .HasColumnType("datetime2");
 
-                    b.Property<DateTime>("date_created")
-                        .HasColumnType("datetime2");
-
                     b.Property<int>("duration_hours")
                         .HasColumnType("int");
 
@@ -163,9 +163,6 @@ namespace HomeOwner.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<decimal>("price")
-                        .HasColumnType("decimal(10,2)");
-
                     b.Property<string>("purpose")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -177,9 +174,6 @@ namespace HomeOwner.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int?>("staff_id")
-                        .HasColumnType("int");
-
                     b.Property<string>("staff_notes")
                         .HasColumnType("nvarchar(max)");
 
@@ -188,7 +182,7 @@ namespace HomeOwner.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<decimal>("total_amount")
-                        .HasColumnType("decimal(10,2)");
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<DateTime?>("updated_date")
                         .HasColumnType("datetime2");
@@ -412,9 +406,6 @@ namespace HomeOwner.Migrations
                     b.Property<string>("staffNotes")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<int?>("staff_id")
-                        .HasColumnType("int");
 
                     b.Property<string>("status")
                         .IsRequired()

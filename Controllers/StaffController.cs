@@ -378,6 +378,14 @@ namespace HomeOwner.Controllers
                 // Update the service request status
                 serviceRequest.status = model.status;
                 
+                // If status is being updated to In Progress, save the staff ID
+                if (model.status == "In Progress")
+                {
+                    // Don't try to set staff_id since the field doesn't exist
+                    // Just log the staff info separately instead
+                    Console.WriteLine($"Staff {CurrentUser.user_id} ({CurrentUser.firstname} {CurrentUser.lastname}) is handling request {serviceRequest.request_id}");
+                }
+                
                 // Save the staff notes if provided
                 if (!string.IsNullOrEmpty(model.staffNotes))
                 {
@@ -390,10 +398,12 @@ namespace HomeOwner.Controllers
                 {
                     try
                     {
+                        // Include staff name in the notification title
+                        var staffName = $"{CurrentUser.firstname} {CurrentUser.lastname}";
                         var notification = new Notification
                         {
                             user_id = serviceRequest.user_id,
-                            title = $"Service Request Update: {serviceRequest.service_type}",
+                            title = $"Service Request Update: {serviceRequest.service_type} with {staffName}",
                             message = model.notificationMessage,
                             created_date = DateTime.Now,
                             is_read = false,
@@ -422,7 +432,8 @@ namespace HomeOwner.Controllers
                     success = true, 
                     message = "Service request status updated successfully",
                     requestId = serviceRequest.request_id,
-                    staffName = $"{CurrentUser.firstname} {CurrentUser.lastname}"
+                    staffName = $"{CurrentUser.firstname} {CurrentUser.lastname}",
+                    newStatus = serviceRequest.status
                 });
             }
             catch (Exception ex)
@@ -442,6 +453,143 @@ namespace HomeOwner.Controllers
         {
             ViewContents();
             return View();
+        }
+
+        [HttpGet]
+        public async Task<JsonResult> GetApprovedFacilityReservations()
+        {
+            try
+            {
+                // Check authentication first
+                if (CurrentUser == null || CurrentUser.role != "staff")
+                {
+                    Console.WriteLine("Authentication failed in GetApprovedFacilityReservations");
+                    return Json(new { success = false, message = "Not authenticated or unauthorized access." });
+                }
+                
+                Console.WriteLine("Staff authenticated, fetching approved facility reservations...");
+                
+                var reservations = await _context.FacilityReservation
+                    .Include(fr => fr.User)
+                    .Include(fr => fr.Facility)
+                    .Where(fr => fr.status == "Approved" && fr.payment_status == "Paid")
+                    .OrderByDescending(fr => fr.reservation_date)
+                    .Select(fr => new
+                    {
+                        id = fr.reservation_id.ToString(),
+                        facility = fr.Facility.name,
+                        resident = $"{fr.User.firstname} {fr.User.lastname}",
+                        dateTime = $"{fr.reservation_date.ToString("dd MMM yyyy")}, {fr.reservation_time}",
+                        date = fr.reservation_date.ToString("dd MMM yyyy"),
+                        time = fr.reservation_time,
+                        duration = fr.duration_hours,
+                        guests = $"{fr.guest_count} guests",
+                        purpose = fr.purpose,
+                        amount = $"${fr.price.ToString("0.00")}",
+                        status = fr.status,
+                        payment_status = fr.payment_status,
+                        notes = fr.staff_notes ?? "",
+                        staffId = CurrentUser.user_id,
+                        user_id = fr.user_id,
+                        user_email = fr.User.email,
+                        user_contact = fr.User.contact_no
+                    })
+                    .ToListAsync();
+                
+                Console.WriteLine($"Approved facility reservations found: {reservations.Count}");
+
+                return Json(new { success = true, reservations = reservations });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error fetching approved facility reservations: {ex.Message}");
+                Console.WriteLine($"Stack trace: {ex.StackTrace}");
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+
+        [HttpPost]
+        public async Task<JsonResult> BookFacilityReservation([FromBody] FacilityBookingModel model)
+        {
+            try
+            {
+                // Validate the model
+                if (model.reservationId <= 0)
+                {
+                    return Json(new { success = false, message = "Invalid reservation ID" });
+                }
+
+                // Find the facility reservation
+                var reservation = await _context.FacilityReservation
+                    .Include(r => r.Facility)
+                    .Include(r => r.User)
+                    .FirstOrDefaultAsync(r => r.reservation_id == model.reservationId);
+                
+                if (reservation == null)
+                {
+                    return Json(new { success = false, message = "Facility reservation not found" });
+                }
+
+                // Check that the reservation is in the correct state
+                if (reservation.status != "Approved" || reservation.payment_status != "Paid")
+                {
+                    return Json(new { success = false, message = "This reservation cannot be booked (invalid status)" });
+                }
+
+                // Update the reservation status to "In Progress"
+                reservation.status = "In Progress";
+                
+                // Update staff notes if provided
+                if (!string.IsNullOrEmpty(model.staffNotes))
+                {
+                    reservation.staff_notes = model.staffNotes;
+                }
+
+                // Create a notification for the homeowner
+                if (!string.IsNullOrEmpty(model.notificationMessage))
+                {
+                    try
+                    {
+                        // Include staff name in the notification title
+                        var staffName = $"{CurrentUser.firstname} {CurrentUser.lastname}";
+                        var notification = new Notification
+                        {
+                            user_id = reservation.user_id,
+                            title = $"Facility Booking Confirmation: {reservation.Facility.name} with {staffName}",
+                            message = model.notificationMessage,
+                            created_date = DateTime.Now,
+                            is_read = false,
+                            type = "facility_booking",
+                            reference_id = reservation.reservation_id.ToString()
+                        };
+
+                        _context.Notification.Add(notification);
+                        Console.WriteLine($"Created notification for user {reservation.user_id} regarding facility reservation {reservation.reservation_id}");
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Error creating notification: {ex.Message}");
+                        // Continue even if notification creation fails
+                    }
+                }
+
+                // Save changes to the database
+                await _context.SaveChangesAsync();
+
+                // Return success response
+                return Json(new { 
+                    success = true, 
+                    message = $"Facility booking confirmed successfully for {reservation.Facility.name}",
+                    reservationId = reservation.reservation_id,
+                    staffName = $"{CurrentUser.firstname} {CurrentUser.lastname}",
+                    newStatus = reservation.status
+                });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error booking facility: {ex.Message}");
+                return Json(new { success = false, message = ex.Message });
+            }
         }
 
         public class CommentModel
@@ -471,6 +619,13 @@ namespace HomeOwner.Controllers
         {
             public int requestId { get; set; }
             public string status { get; set; }
+            public string staffNotes { get; set; }
+            public string notificationMessage { get; set; }
+        }
+
+        public class FacilityBookingModel
+        {
+            public int reservationId { get; set; }
             public string staffNotes { get; set; }
             public string notificationMessage { get; set; }
         }

@@ -7,6 +7,7 @@
 }
 
 <link rel="stylesheet" href="~/css/staff/services.css" />
+<meta name="staff-name" content="@ViewBag.CurrentUser.firstname @ViewBag.CurrentUser.lastname" />
 <style>
     .loading-state {
         display: flex;
@@ -65,6 +66,99 @@
         font-size: 2rem;
         color: #6c757d;
     }
+    
+    /* Status badges styling */
+    .status-badge {
+        display: inline-block;
+        padding: 3px 10px;
+        border-radius: 50px;
+        font-size: 0.75rem;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        white-space: nowrap;
+    }
+    
+    .status-approved {
+        background-color: #d4edda;
+        color: #155724;
+    }
+    
+    .status-in-progress {
+        background-color: #fff3cd; 
+        color: #856404;
+    }
+    
+    .status-paid {
+        background-color: #cce5ff;
+        color: #004085;
+    }
+    
+    /* Modal styling improvements */
+    .modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        z-index: 1000;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .modal.active {
+        display: flex;
+    }
+    
+    /* Improved table styling */
+    .reservations-table {
+        width: 100%;
+        border-collapse: collapse;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        border-radius: 8px;
+        overflow: hidden;
+    }
+    
+    .reservations-table th {
+        background-color: var(--primary-color);
+        padding: 12px 15px;
+        text-align: left;
+        font-weight: 600;
+        color: #495057;
+        border-bottom: 2px solid #dee2e6;
+    }
+    
+    .reservations-table td {
+        padding: 12px 15px;
+        border-bottom: 1px solid #e9ecef;
+        color: #212529;
+    }
+    
+    .reservations-table tr:hover {
+        background-color: #f8f9fa;
+        cursor: pointer;
+    }
+    
+    .action-buttons {
+        display: flex;
+        gap: 5px;
+    }
+    
+    .btn-icon {
+        background-color: transparent;
+        border: none;
+        color: #6B4423;
+        cursor: pointer;
+        padding: 5px;
+        border-radius: 50%;
+        transition: background-color 0.2s;
+    }
+    
+    .btn-icon:hover {
+        background-color: rgba(107, 68, 35, 0.1);
+    }
 </style>
 
 <div class="staff-services-container">
@@ -115,11 +209,11 @@
         <div class="pagination-container">
             <div class="pagination-info" id="facilityPaginationInfo"></div>
             <div class="pagination-controls">
-                <button class="btn btn-outline" id="facilityPrevPageBtn" disabled>
+                <button class="btn btn-outline pagination-prev" id="facilityPrevPageBtn" disabled>
                     <i class="fas fa-chevron-left"></i> Previous
                 </button>
-                <div class="page-numbers" id="facilityPageNumbers"></div>
-                <button class="btn btn-outline" id="facilityNextPageBtn">
+                <div class="pagination-numbers" id="facilityPageNumbers"></div>
+                <button class="btn btn-outline pagination-next" id="facilityNextPageBtn">
                     Next <i class="fas fa-chevron-right"></i>
                 </button>
             </div>
@@ -182,7 +276,7 @@
 </div>
 
 <!-- Details Modal for Facility Reservations -->
-<div class="modal-overlay" id="facilityDetailsModal">
+<div class="modal" id="facilityDetailsModal">
     <div class="modal-content">
         <div class="modal-header">
             <h3>Facility Reservation Details</h3>
@@ -219,33 +313,29 @@
                     <span class="details-label">Purpose:</span>
                     <span class="details-value" id="facilityDetailsPurpose">Badminton Tournament</span>
                 </div>
+                <div class="details-item">
+                    <span class="details-label">Amount:</span>
+                    <span class="details-value" id="facilityDetailsAmount">$50.00</span>
+                </div>
             </div>
             
             <div class="staff-actions">
-                <h5>Staff Booking Acceptance</h5>
+                <h5>Staff Booking Confirmation</h5>
                 <div class="form-group">
-                    <label for="facilityStaffNotes">Notes for Resident:</label>
-                    <textarea id="facilityStaffNotes" placeholder="Add any notes for the resident about this reservation..."></textarea>
+                    <label for="facilityStaffNotes">Notes for Staff (Internal):</label>
+                    <textarea id="facilityStaffNotes" placeholder="Add any internal notes about this reservation..."></textarea>
                 </div>
                 <div class="form-group">
-                    <label for="facilityNotificationType">Notification Type:</label>
-                    <select id="facilityNotificationType">
-                        <option value="confirmation">Escort Confirmation</option>
-                        <option value="reminder">Reminder</option>
-                        <option value="instructions">Special Instructions</option>
-                        <option value="custom">Custom Message</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label for="facilityNotificationMessage">Message to Resident:</label>
-                    <textarea id="facilityNotificationMessage" placeholder="Enter message to notify the resident..."></textarea>
+                    <label for="facilityNotificationMessage">Message to Homeowner:</label>
+                    <textarea id="facilityNotificationMessage" rows="6" placeholder="Enter message to notify the homeowner..."></textarea>
+                    <small class="help-text">This message will be sent to the homeowner as a notification.</small>
                 </div>
             </div>
         </div>
         <div class="modal-footer">
-            <button class="btn btn-outline close-modal-btn">Cancel</button>
-            <button class="btn btn-primary" id="acceptFacilityBookingBtn">
-                <i class="fas fa-check-circle"></i> Accept Booking
+            <button class="btn btn-outline close-modal">Cancel</button>
+            <button class="btn btn-primary" id="confirmFacilityBookingBtn">
+                <i class="fas fa-check-circle"></i> Confirm Booking
             </button>
         </div>
     </div>
@@ -365,6 +455,7 @@
         
         // API URLs
         const serviceRequestApiUrl = '/Staff/GetServiceRequests';
+        const facilityReservationApiUrl = '/Staff/GetApprovedFacilityReservations';
         
         // WebSocket connection
         let ws = null;
@@ -374,6 +465,98 @@
         let currentFacilityReservation = null;
         let currentMaintenanceRequest = null;
         let maintenanceRequests = [];
+        let facilityReservations = [];
+        
+        // Initialize both facility reservations and service requests
+        initWebSocket(); // This will load maintenance requests when connected
+        fetchApprovedFacilityReservations(); // Explicitly fetch facility reservations
+        
+        // Fetch approved facility reservations function
+        async function fetchApprovedFacilityReservations() {
+            try {
+                console.log("Fetching approved facility reservations from:", facilityReservationApiUrl);
+                
+                // Show loading state
+                if (facilityTableBody) {
+                    facilityTableBody.innerHTML = `
+                        <tr>
+                            <td colspan="6" class="text-center">
+                                <div class="loading-state">
+                                    <i class="fas fa-spinner fa-spin"></i>
+                                    <p>Loading facility reservations...</p>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                }
+                
+                const response = await fetch(facilityReservationApiUrl);
+                const data = await response.json();
+                
+                console.log("Facility reservation API response:", data);
+                
+                if (data.success) {
+                    facilityReservations = data.reservations || [];
+                    console.log("Loaded facility reservations:", facilityReservations.length);
+                    
+                    if (facilityReservations.length === 0) {
+                        facilityTableBody.innerHTML = `
+                            <tr>
+                                <td colspan="6" class="no-data">
+                                    <div class="no-data-message">
+                                        <i class="fas fa-calendar-times"></i>
+                                        <p>No approved facility reservations found</p>
+                                    </div>
+                                </td>
+                            </tr>
+                        `;
+                    } else {
+                        renderFacilityReservations();
+                    }
+                } else {
+                    console.error('Failed to load facility reservations:', data.message);
+                    
+                    // Handle authentication errors
+                    if (data.message && data.message.includes("Not authenticated")) {
+                        Swal.fire({
+                            title: 'Authentication Error',
+                            text: 'You are not logged in or your session has expired. Please log in again.',
+                            icon: 'error',
+                            confirmButtonText: 'Go to Login',
+                            confirmButtonColor: '#6B4423',
+                        }).then(() => {
+                            window.location.href = '/';
+                        });
+                    } else {
+                        // For other errors
+                        facilityTableBody.innerHTML = `
+                            <tr>
+                                <td colspan="6" class="error-message">
+                                    <div>
+                                        <i class="fas fa-exclamation-triangle"></i>
+                                        <p>Failed to load facility reservations. ${data.message || 'Please try again later.'}</p>
+                                    </div>
+                                </td>
+                            </tr>
+                        `;
+                    }
+                }
+            } catch (error) {
+                console.error('Error fetching facility reservations:', error);
+                
+                // Show error in the table
+                facilityTableBody.innerHTML = `
+                    <tr>
+                        <td colspan="6" class="error-message">
+                            <div>
+                                <i class="fas fa-exclamation-triangle"></i>
+                                <p>Error connecting to the server. Please check your connection and try again.</p>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }
+        }
         
         // Initialize WebSocket connection
         function initWebSocket() {
@@ -535,45 +718,11 @@
             });
         });
         
-        // Initialize both tables
-        // Skip facility reservations for now to focus on service requests
-        // renderFacilityReservations();
-        initWebSocket(); // This will load maintenance requests when connected
-        
-        // Proper modal handling functions
-        function openModal(modal) {
-            if (modal) {
-                modal.classList.add('active');
-                document.body.style.overflow = 'hidden';
-            }
-        }
-        
-        function closeModal(modal) {
-            if (modal) {
-                modal.classList.remove('active');
-                document.body.style.overflow = 'auto';
-            }
-        }
-        
-        // Close all modals when clicking close buttons
-        closeModalButtons.forEach(btn => {
-            btn.addEventListener('click', function() {
-                const modal = this.closest('.modal-overlay');
-                closeModal(modal);
-            });
-        });
-        
-        // Close modal when clicking outside
-        document.querySelectorAll('.modal-overlay').forEach(modal => {
-            modal.addEventListener('click', function(e) {
-                if (e.target === this) {
-                    closeModal(this);
-                }
-            });
-        });
-        
         // Facility Reservations Functions
         function renderFacilityReservations(page = 1, searchTerm = '', filterValue = 'all') {
+            console.log("Rendering facility reservations, page:", page, "search:", searchTerm, "filter:", filterValue);
+            console.log("Total facility reservations:", facilityReservations.length);
+            
             // Filter reservations based on search and filter
             let filteredReservations = facilityReservations.filter(res => {
                 const matchesSearch = searchTerm === '' || 
@@ -586,62 +735,75 @@
                 return matchesSearch && matchesFilter;
             });
             
+            console.log("Filtered facility reservations:", filteredReservations.length);
+            
             // Pagination logic
             const itemsPerPage = 5;
             const totalPages = Math.ceil(filteredReservations.length / itemsPerPage);
             const startIndex = (page - 1) * itemsPerPage;
             const paginatedReservations = filteredReservations.slice(startIndex, startIndex + itemsPerPage);
             
+            console.log("Paginated facility reservations:", paginatedReservations.length);
+            
             // Clear table
             facilityTableBody.innerHTML = '';
             
-            // Populate table
-            paginatedReservations.forEach(reservation => {
-                const row = document.createElement('tr');
-                row.dataset.id = reservation.id;
-                
-                // Determine status display
-                let statusDisplay = capitalizeFirstLetter(reservation.status);
-                if (reservation.assignedStaff) {
-                    statusDisplay = "Assigned to Staff";
-                }
-                
-                row.innerHTML = `
-                    <td>${reservation.id}</td>
-                    <td>${reservation.facility}</td>
-                    <td>${reservation.resident}</td>
-                    <td>${reservation.dateTime}</td>
-                    <td><span class="status-badge ${reservation.assignedStaff ? 'status-in-progress' : 'status-approved'}">${statusDisplay}</span></td>
-                    <td>
-                        <div class="action-buttons">
-                            <button class="btn-icon view-details" title="View Details" data-action="view">
-                                <i class="fas fa-eye"></i>
-                            </button>
-                            ${!reservation.assignedStaff ? 
-                                `<button class="btn-icon" title="Accept Booking" data-action="accept">
-                                    <i class="fas fa-user-check"></i>
-                                </button>` : ''
-                            }
-                        </div>
-                    </td>
+            // Check if we have any reservations
+            if (paginatedReservations.length === 0) {
+                facilityTableBody.innerHTML = `
+                    <tr>
+                        <td colspan="6" class="text-center">
+                            <div class="no-data-message">
+                                <i class="fas fa-calendar-times"></i>
+                                <p>No approved facility reservations found</p>
+                            </div>
+                        </td>
+                    </tr>
                 `;
-                
-                facilityTableBody.appendChild(row);
-                
-                // Add event listeners to action buttons
-                row.querySelectorAll('[data-action]').forEach(btn => {
-                    btn.addEventListener('click', function(e) {
-                        e.stopPropagation();
-                        const action = this.dataset.action;
-                        const reservationId = this.closest('tr').dataset.id;
-                        
-                        if (action === 'view') {
-                            showFacilityDetails(reservationId);
-                        } else if (action === 'accept') {
-                            showFacilityDetails(reservationId);
-                        }
+                return;
+            }
+            
+            // Populate table with approved reservations
+            paginatedReservations.forEach(reservation => {
+                try {
+                    const row = document.createElement('tr');
+                    row.dataset.id = reservation.id;
+                    
+                    row.innerHTML = `
+                        <td>#${reservation.id}</td>
+                        <td>${reservation.facility}</td>
+                        <td>${reservation.resident}</td>
+                        <td>${reservation.dateTime}</td>
+                        <td><span class="status-badge status-approved">Approved</span></td>
+                        <td>
+                            <div class="action-buttons">
+                                <button class="btn-icon view-details" title="View Details" data-action="view">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <button class="btn-icon" title="Book Facility" data-action="book">
+                                    <i class="fas fa-calendar-check"></i>
+                                </button>
+                            </div>
+                        </td>
+                    `;
+                    
+                    facilityTableBody.appendChild(row);
+                    
+                    // Add event listeners to action buttons
+                    row.querySelectorAll('[data-action]').forEach(btn => {
+                        btn.addEventListener('click', function(e) {
+                            e.stopPropagation();
+                            const action = this.dataset.action;
+                            const reservationId = this.closest('tr').dataset.id;
+                            
+                            if (action === 'view' || action === 'book') {
+                                showFacilityDetails(reservationId);
+                            }
+                        });
                     });
-                });
+                } catch (error) {
+                    console.error("Error rendering reservation:", reservation, error);
+                }
             });
             
             // Update pagination controls
@@ -666,27 +828,52 @@
         }
         
         function showFacilityDetails(reservationId) {
-            const reservation = facilityReservations.find(r => r.id === reservationId);
-            if (!reservation) return;
+            console.log("Showing details for facility reservation ID:", reservationId);
+            console.log("Available facility reservations:", facilityReservations);
             
+            const reservation = facilityReservations.find(r => r.id === reservationId);
+            if (!reservation) {
+                console.error("Facility reservation not found:", reservationId);
+                Swal.fire({
+                    title: 'Error',
+                    text: 'Facility reservation not found',
+                    icon: 'error'
+                });
+                return;
+            }
+            
+            console.log("Found facility reservation:", reservation);
             currentFacilityReservation = reservation;
             
-            // Update modal content
-            document.getElementById('facilityDetailsId').textContent = `Reservation ${reservation.id}`;
-            document.getElementById('facilityDetailsStatus').innerHTML = 
-                `<span class="status-badge ${reservation.assignedStaff ? 'status-in-progress' : 'status-approved'}">${reservation.assignedStaff ? 'Assigned to Staff' : 'Approved'}</span>`;
-            document.getElementById('facilityDetailsFacility').textContent = reservation.facility;
-            document.getElementById('facilityDetailsResident').textContent = reservation.resident;
-            document.getElementById('facilityDetailsDate').textContent = reservation.date;
-            document.getElementById('facilityDetailsTime').textContent = reservation.time;
-            document.getElementById('facilityDetailsGuests').textContent = reservation.guests;
-            document.getElementById('facilityDetailsPurpose').textContent = reservation.purpose;
-            document.getElementById('facilityStaffNotes').value = reservation.staffNotes || '';
-            document.getElementById('facilityNotificationMessage').value = 
-                `Dear Resident,\n\nThis is to confirm that a staff member will accompany you to the ${reservation.facility} on ${reservation.date} at ${reservation.time}.\n\nThank you,\nStaff Team`;
-            
-            // Open modal with our new function
-            openModal(facilityDetailsModal);
+            try {
+                // Update modal content with reservation details
+                document.getElementById('facilityDetailsId').textContent = `Reservation #${reservation.id}`;
+                document.getElementById('facilityDetailsStatus').innerHTML = `
+                    <span class="status-badge status-approved">Approved</span>
+                    <span class="status-badge status-paid">${reservation.payment_status}</span>`;
+                document.getElementById('facilityDetailsFacility').textContent = reservation.facility;
+                document.getElementById('facilityDetailsResident').textContent = reservation.resident;
+                document.getElementById('facilityDetailsDate').textContent = reservation.date;
+                document.getElementById('facilityDetailsTime').textContent = `${reservation.time} (${reservation.duration} hours)`;
+                document.getElementById('facilityDetailsGuests').textContent = reservation.guests;
+                document.getElementById('facilityDetailsPurpose').textContent = reservation.purpose;
+                document.getElementById('facilityDetailsAmount').textContent = reservation.amount;
+                document.getElementById('facilityStaffNotes').value = reservation.notes || '';
+                
+                // Set default notification message
+                document.getElementById('facilityNotificationMessage').value = 
+                    `Dear Resident,\n\nThis is to confirm that a staff member will accompany you for your reservation at the ${reservation.facility} on ${reservation.date} at ${reservation.time}.\n\nNumber of guests: ${reservation.guests}\nPurpose: ${reservation.purpose}\n\nThank you,\nStaff Team`;
+                
+                // Open modal
+                openModal(facilityDetailsModal);
+            } catch (error) {
+                console.error("Error displaying facility details:", error);
+                Swal.fire({
+                    title: 'Error',
+                    text: 'Error displaying facility reservation details',
+                    icon: 'error'
+                });
+            }
         }
         
         // Service Maintenance Functions
@@ -694,10 +881,13 @@
             console.log("Rendering maintenance requests, page:", page, "search:", searchTerm, "filter:", filterValue);
             console.log("Total requests:", maintenanceRequests.length);
             
-            // Filter requests based on search and filter
+            // Filter requests based on search, filter, and status
             let filteredRequests = maintenanceRequests.filter(req => {
                 // Make sure we have all the required fields for filtering
                 if (!req || !req.user) return false;
+                
+                // Only show Approved requests (not In Progress or Completed)
+                const validStatus = req.status === "Approved";
                 
                 const matchesSearch = searchTerm === '' || 
                     req.request_id.toString().includes(searchTerm) || 
@@ -706,7 +896,7 @@
                 
                 const matchesFilter = filterValue === 'all' || req.service_type === filterValue;
                 
-                return matchesSearch && matchesFilter;
+                return validStatus && matchesSearch && matchesFilter;
             });
             
             console.log("Filtered requests:", filteredRequests.length);
@@ -974,28 +1164,20 @@ Staff Member`;
         }
         
         function capitalizeFirstLetter(string) {
+            if (!string) return '';
             return string.charAt(0).toUpperCase() + string.slice(1);
         }
         
-        // Event Listeners for Search and Filter
-        facilitySearch.addEventListener('input', function() {
+        // Set up event listeners for facility tab
+        facilitySearch?.addEventListener('input', function() {
             renderFacilityReservations(1, this.value, facilityFilter.value);
         });
         
-        facilityFilter.addEventListener('change', function() {
+        facilityFilter?.addEventListener('change', function() {
             renderFacilityReservations(1, facilitySearch.value, this.value);
         });
         
-        maintenanceSearch.addEventListener('input', function() {
-            renderMaintenanceRequests(1, this.value, maintenanceFilter.value);
-        });
-        
-        maintenanceFilter.addEventListener('change', function() {
-            renderMaintenanceRequests(1, maintenanceSearch.value, this.value);
-        });
-        
-        // Pagination Button Handlers
-        facilityPrevBtn.addEventListener('click', function() {
+        facilityPrevBtn?.addEventListener('click', function() {
             if (!this.disabled) {
                 const currentPage = parseInt(facilityPageNumbers.querySelector('.active')?.textContent || '1');
                 renderFacilityReservations(
@@ -1006,7 +1188,7 @@ Staff Member`;
             }
         });
         
-        facilityNextBtn.addEventListener('click', function() {
+        facilityNextBtn?.addEventListener('click', function() {
             if (!this.disabled) {
                 const currentPage = parseInt(facilityPageNumbers.querySelector('.active')?.textContent || '1');
                 renderFacilityReservations(
@@ -1017,169 +1199,174 @@ Staff Member`;
             }
         });
         
-        maintenancePrevBtn.addEventListener('click', function() {
-            if (!this.disabled) {
-                const currentPage = parseInt(maintenancePageNumbers.querySelector('.active')?.textContent || '1');
-                renderMaintenanceRequests(
-                    currentPage - 1, 
-                    maintenanceSearch.value, 
-                    maintenanceFilter.value
-                );
-            }
+        // Event listener for the confirm booking button
+        document.getElementById('confirmFacilityBookingBtn')?.addEventListener('click', function() {
+            confirmFacilityBooking();
         });
         
-        maintenanceNextBtn.addEventListener('click', function() {
-            if (!this.disabled) {
-                const currentPage = parseInt(maintenancePageNumbers.querySelector('.active')?.textContent || '1');
-                renderMaintenanceRequests(
-                    currentPage + 1, 
-                    maintenanceSearch.value, 
-                    maintenanceFilter.value
-                );
-            }
-        });
-        
-        // Accept Booking Buttons
-        document.getElementById('acceptFacilityBookingBtn').addEventListener('click', function() {
-            if (currentFacilityReservation) {
-                const staffNotes = document.getElementById('facilityStaffNotes').value;
-                const notificationType = document.getElementById('facilityNotificationType').value;
-                const notificationMessage = document.getElementById('facilityNotificationMessage').value;
-                
-                if (!notificationMessage.trim()) {
-                    alert('Please enter a notification message for the resident.');
-                    return;
-                }
-                
+        // Function to handle facility booking confirmation
+        async function confirmFacilityBooking() {
+            if (!currentFacilityReservation) {
                 Swal.fire({
-                    title: 'Confirm Booking Acceptance',
-                    text: 'Are you sure you want to accept this facility booking and notify the resident?',
-                    icon: 'question',
-                    showCancelButton: true,
-                    confirmButtonText: 'Yes, Accept Booking',
-                    cancelButtonText: 'Cancel',
-                    confirmButtonColor: '#6B4423',
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        // Update the reservation
-                        currentFacilityReservation.staffNotes = staffNotes;
-                        currentFacilityReservation.assignedStaff = "Current Staff"; // In real app, use actual staff ID/name
-                        currentFacilityReservation.status = "in-progress";
-                        
-                        // In a real app, here you would send the notification to the resident
-                        console.log('Notification to resident:', notificationMessage);
-                        
-                        // Show success message
-                        Swal.fire({
-                            title: 'Booking Accepted!',
-                            text: 'The facility booking has been accepted and the resident has been notified.',
-                            icon: 'success',
-                            confirmButtonColor: '#6B4423',
-                        }).then(() => {
-                            // Refresh the table and close modal
-                            renderFacilityReservations();
-                            closeModal(facilityDetailsModal);
-                        });
-                    }
+                    title: 'Error',
+                    text: 'No reservation selected',
+                    icon: 'error'
                 });
+                return;
             }
-        });
-        
-        document.getElementById('acceptMaintenanceBookingBtn').addEventListener('click', function() {
-            if (currentMaintenanceRequest) {
-                const staffNotes = document.getElementById('maintenanceStaffNotes').value;
-                const notificationType = document.getElementById('maintenanceNotificationType').value;
-                const notificationMessage = document.getElementById('maintenanceNotificationMessage').value;
-                
-                if (!notificationMessage.trim()) {
-                    Swal.fire({
-                        title: 'Error',
-                        text: 'Please enter a notification message for the homeowner.',
-                        icon: 'error'
-                    });
-                    return;
-                }
-                
+            
+            // Get form values
+            const staffNotes = document.getElementById('facilityStaffNotes').value;
+            const notificationMessage = document.getElementById('facilityNotificationMessage').value;
+            
+            // Validate required fields
+            if (!notificationMessage.trim()) {
                 Swal.fire({
-                    title: 'Confirm Booking Acceptance',
-                    text: 'Are you sure you want to accept this service booking and notify the homeowner?',
-                    icon: 'question',
-                    showCancelButton: true,
-                    confirmButtonText: 'Yes, Accept Booking',
-                    cancelButtonText: 'Cancel',
-                    confirmButtonColor: '#6B4423',
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        // In a real app, make an API call to update the service request
-                        updateServiceRequestStatus(currentMaintenanceRequest.request_id, staffNotes, notificationMessage)
-                            .then(response => {
-                                if (response.success) {
-                        // Show success message
-                        Swal.fire({
-                            title: 'Booking Accepted!',
-                                        html: `The service booking has been accepted and the homeowner has been notified.<br><br>
-                                              <strong>Assigned Staff:</strong> ${response.staffName || 'Current Staff'}`,
-                            icon: 'success',
-                            confirmButtonColor: '#6B4423',
-                        }).then(() => {
-                            // Refresh the table and close modal
-                                        loadMaintenanceRequests();
-                                        closeModal(maintenanceDetailsModal);
-                                    });
-                                } else {
-                                    throw new Error(response.message || 'Failed to update service request');
-                                }
-                            })
-                            .catch(error => {
-                                console.error('Error accepting booking:', error);
-                                Swal.fire({
-                                    title: 'Error',
-                                    text: error.message || 'Failed to accept booking. Please try again.',
-                                    icon: 'error'
-                                });
-                            });
-                    }
+                    title: 'Error',
+                    text: 'Please enter a notification message for the resident',
+                    icon: 'error'
                 });
+                return;
             }
-        });
-        
-        // API call to update service request status and send notification
-        async function updateServiceRequestStatus(requestId, staffNotes, notificationMessage) {
-            console.log("Updating service request status for ID:", requestId);
-            console.log("Staff notes:", staffNotes);
-            console.log("Notification message:", notificationMessage);
             
             try {
-                const requestBody = {
-                    requestId: requestId,
-                    status: 'In Progress',
-                    staffNotes: staffNotes,
-                    notificationMessage: notificationMessage
-                };
+                // Show loading state
+                const confirmBtn = document.getElementById('confirmFacilityBookingBtn');
+                confirmBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+                confirmBtn.disabled = true;
                 
-                console.log("Request body:", requestBody);
-                
-                const response = await fetch('/Staff/UpdateServiceRequestStatus', {
+                // Send API request
+                const response = await fetch('/Staff/BookFacilityReservation', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify(requestBody)
+                    body: JSON.stringify({
+                        reservationId: parseInt(currentFacilityReservation.id),
+                        staffNotes: staffNotes,
+                        notificationMessage: notificationMessage
+                    })
                 });
                 
-                const responseData = await response.json();
-                console.log("Server response:", responseData);
+                const data = await response.json();
+                console.log('Booking response:', data);
                 
-                return responseData;
+                if (data.success) {
+                    // Show success message
+                    Swal.fire({
+                        title: 'Booking Confirmed!',
+                        html: `The facility booking has been confirmed successfully.<br><br>
+                              <strong>Facility:</strong> ${currentFacilityReservation.facility}<br>
+                              <strong>Date & Time:</strong> ${currentFacilityReservation.dateTime}`,
+                        icon: 'success',
+                        confirmButtonColor: '#6B4423',
+                    });
+                    
+                    // Close modal and refresh reservations
+                    closeModal(facilityDetailsModal);
+                    fetchApprovedFacilityReservations();
+                } else {
+                    // Show error message
+                    Swal.fire({
+                        title: 'Error',
+                        text: data.message || 'Failed to confirm booking',
+                        icon: 'error'
+                    });
+                }
             } catch (error) {
-                console.error('Error updating service request:', error);
+                console.error('Error confirming booking:', error);
                 Swal.fire({
                     title: 'Error',
-                    text: 'Failed to update the service request. Please try again.',
+                    text: 'An error occurred while confirming the booking',
                     icon: 'error'
                 });
-                return { success: false, message: error.message };
+            } finally {
+                // Reset button state
+                const confirmBtn = document.getElementById('confirmFacilityBookingBtn');
+                confirmBtn.innerHTML = '<i class="fas fa-check-circle"></i> Confirm Booking';
+                confirmBtn.disabled = false;
             }
         }
+        
+        // Proper modal handling functions
+        function openModal(modal) {
+            if (modal) {
+                modal.classList.add('active');
+                document.body.style.overflow = 'hidden';
+            }
+        }
+        
+        function closeModal(modal) {
+            if (modal) {
+                modal.classList.remove('active');
+                document.body.style.overflow = 'auto';
+            }
+        }
+        
+        // Close all modals when clicking close buttons
+        closeModalButtons.forEach(btn => {
+            btn.addEventListener('click', function() {
+                const modal = this.closest('.modal-overlay') || this.closest('.modal');
+                closeModal(modal);
+            });
+        });
+        
+        // Close modal when clicking outside
+        document.querySelectorAll('.modal-overlay, .modal').forEach(modal => {
+            modal.addEventListener('click', function(e) {
+                if (e.target === this) {
+                    closeModal(this);
+                }
+            });
+        });
     });
 </script>
+
+@section Scripts {
+    <!-- SweetAlert for nicer alerts -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
+    <!-- Load Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Staff services JS -->
+    <script src="~/js/staff/staff-services.js"></script>
+    
+    <!-- Facility reservations JS -->
+    <script src="~/js/staff/facility-reservations.js"></script>
+    
+    <script>
+        // This script runs after all other scripts
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log("Initialization script loaded");
+            
+            // Force tab switching to ensure both tabs are initialized
+            setTimeout(() => {
+                // Check if elements exist
+                const tabs = document.querySelectorAll('.services-tabs .tab');
+                if (tabs.length > 0) {
+                    console.log("Initializing both tabs");
+                    
+                    // Get facility tab (first tab)
+                    const facilityTab = tabs[0];
+                    if (facilityTab) {
+                        // Click facility tab to ensure it's activated
+                        facilityTab.click();
+                        console.log("Facility tab clicked");
+                    }
+                    
+                    // Force facility fetch if not loaded yet
+                    try {
+                        if (window.FacilityReservationsManager && 
+                            typeof window.FacilityReservationsManager.refreshReservations === 'function') {
+                            console.log("Explicitly calling FacilityReservationsManager.refreshReservations");
+                            window.FacilityReservationsManager.refreshReservations();
+                        }
+                    } catch (e) {
+                        console.error("Error calling refreshReservations:", e);
+                    }
+                }
+            }, 300); // Small delay to ensure DOM is fully loaded
+        });
+    </script>
+}

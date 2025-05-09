@@ -522,27 +522,46 @@ async function confirmRejection() {
         return;
     }
 
+    const finalReason = reason === 'other' ? customReason : reason;
+
     try {
+        // Show loading indicator
+        Swal.fire({
+            title: 'Processing...',
+            text: 'Rejecting service request',
+            allowOutsideClick: false,
+            didOpen: () => {
+                Swal.showLoading();
+            }
+        });
+
         const response = await fetch(`/Admin/RejectServiceRequest/${currentRequestId}`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                reason: reason === 'other' ? customReason : reason
+                reason: finalReason
             })
         });
 
         if (response.ok) {
-            showSuccess('Service request rejected successfully');
-            closeModal(modals.rejection);
-            loadServiceRequests();
+            const data = await response.json();
+            if (data.success) {
+                showSuccess('Service request rejected successfully');
+                closeModal(modals.rejection);
+                
+                // Update the UI - either refresh the list or update the row
+                loadServiceRequests();
+            } else {
+                throw new Error(data.message || 'Failed to reject request');
+            }
         } else {
             throw new Error('Failed to reject request');
         }
     } catch (error) {
         console.error('Error rejecting request:', error);
-        showError('Failed to reject service request');
+        showError('Failed to reject service request: ' + error.message);
     }
 }
 

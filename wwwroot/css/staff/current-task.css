@@ -253,3 +253,75 @@
         flex-wrap: wrap;
     }
 }
+
+/* Loading and Error States */
+.loading-indicator {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 30px;
+    text-align: center;
+    background-color: #f9f9f9;
+    border-radius: var(--border-radius);
+    margin-bottom: 20px;
+}
+
+.loading-indicator i {
+    font-size: 2rem;
+    color: var(--primary);
+    margin-bottom: 10px;
+}
+
+.loading-indicator p {
+    color: var(--text-gray);
+    margin: 0;
+}
+
+.error-message {
+    padding: 15px;
+    background-color: #FFEBEE;
+    border-left: 4px solid #F44336;
+    color: #B71C1C;
+    margin-bottom: 20px;
+    border-radius: var(--border-radius);
+}
+
+/* Completion Form */
+.completion-form {
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid var(--medium-gray);
+}
+
+.completion-form h4 {
+    margin-bottom: 15px;
+    color: var(--text-dark);
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 500;
+    color: var(--text-dark);
+}
+
+.form-group textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid var(--medium-gray);
+    border-radius: 4px;
+    min-height: 100px;
+    resize: vertical;
+}
+
+.form-group .help-text {
+    display: block;
+    font-size: 12px;
+    color: var(--text-gray);
+    margin-top: 5px;
+}

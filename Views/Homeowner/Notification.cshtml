@@ -136,7 +136,7 @@
             showLoading();
             
             try {
-                const response = await fetch('/Homeowner/GetNotifications');
+                const response = await fetch('/Homeowner/GetUserNotificationsData');
                 
                 // Check if response is ok
                 if (!response.ok) {
@@ -322,7 +322,7 @@
         // API calls
         async function markNotificationAsRead(notificationId) {
             try {
-                const response = await fetch('/Homeowner/MarkNotificationAsRead?notificationId=' + notificationId, {
+                const response = await fetch('/Homeowner/MarkUserNotificationRead?notificationId=' + notificationId, {
                     method: 'POST'
                 });
                 
@@ -359,7 +359,7 @@
         
         async function markAllNotificationsAsRead() {
             try {
-                const response = await fetch('/Homeowner/MarkAllNotificationsAsRead', {
+                const response = await fetch('/Homeowner/MarkAllUserNotificationsRead', {
                     method: 'POST'
                 });
                 

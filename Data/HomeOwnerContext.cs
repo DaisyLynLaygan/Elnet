@@ -55,9 +55,28 @@ namespace HomeOwner.Data
                 .HasForeignKey(n => n.user_id)
                 .OnDelete(DeleteBehavior.Cascade);
 
+            // FacilityReservation-User relationship
+            modelBuilder.Entity<FacilityReservation>()
+                .HasOne(f => f.User)
+                .WithMany()
+                .HasForeignKey(f => f.user_id)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // FacilityReservation-Facility relationship
+            modelBuilder.Entity<FacilityReservation>()
+                .HasOne(f => f.Facility)
+                .WithMany()
+                .HasForeignKey(f => f.facility_id)
+                .OnDelete(DeleteBehavior.Restrict);
+
             // Configure decimal precision for price
             modelBuilder.Entity<ServiceRequest>()
                 .Property(s => s.price)
+                .HasColumnType("decimal(10,2)");
+
+            // Configure decimal precision for FacilityReservation price
+            modelBuilder.Entity<FacilityReservation>()
+                .Property(f => f.price)
                 .HasColumnType("decimal(10,2)");
         }
 
@@ -70,5 +89,6 @@ namespace HomeOwner.Data
         public DbSet<Feedback> Feedback { get; set; }
         public DbSet<Facility> Facility { get; set; }
         public DbSet<Notification> Notification { get; set; }
+        public DbSet<FacilityReservation> FacilityReservation { get; set; }
     }
 }

@@ -207,40 +207,260 @@ function closeServiceRequestModal() {
     document.body.style.overflow = 'auto';
 }
 
-function nextStep(currentStep) {
-    const currentStepElement = document.querySelector(`.booking-form-step[data-step="${currentStep}"]`);
-    const nextStepElement = document.querySelector(`.booking-form-step[data-step="${currentStep + 1}"]`);
+function nextStep(currentStep, modalType = 'maintenance') {
+    console.log(`nextStep called with currentStep=${currentStep}, modalType=${modalType}`);
+    
+    // Debug direct element access
+    if (modalType === 'facility') {
+        console.log("Trying to find facility elements directly by ID:");
+        const step1 = document.getElementById('facility-step-1');
+        const step2 = document.getElementById('facility-step-2');
+        const step3 = document.getElementById('facility-step-3');
+        console.log("facility-step-1:", step1);
+        console.log("facility-step-2:", step2);
+        console.log("facility-step-3:", step3);
+        
+        // Try alternative selectors
+        console.log("Trying alternative selectors:");
+        const alt1 = document.querySelector('#facilityBookingModal .booking-form-step[data-step="1"]');
+        const alt2 = document.querySelector('#facilityBookingModal .booking-form-step[data-step="2"]');
+        const alt3 = document.querySelector('#facilityBookingModal .booking-form-step[data-step="3"]');
+        console.log("Alt selector 1:", alt1);
+        console.log("Alt selector 2:", alt2);
+        console.log("Alt selector 3:", alt3);
+    }
+    
+    let currentStepElement, nextStepElement;
+    
+    if (modalType === 'facility') {
+        // Try direct selector first
+        currentStepElement = document.querySelector(`#facilityBookingModal .booking-form-step[data-step="${currentStep}"]`);
+        nextStepElement = document.querySelector(`#facilityBookingModal .booking-form-step[data-step="${currentStep + 1}"]`);
+        
+        // If that fails, try by ID
+        if (!currentStepElement) {
+            currentStepElement = document.getElementById(`facility-step-${currentStep}`);
+        }
+        if (!nextStepElement) {
+            nextStepElement = document.getElementById(`facility-step-${currentStep + 1}`);
+        }
+    } else {
+        // Use the original selector for maintenance steps
+        currentStepElement = document.querySelector(`#${modalType}BookingModal .booking-form-step[data-step="${currentStep}"]`);
+        nextStepElement = document.querySelector(`#${modalType}BookingModal .booking-form-step[data-step="${currentStep + 1}"]`);
+    }
+    
+    console.log('Current step element:', currentStepElement);
+    console.log('Next step element:', nextStepElement);
     
     if (currentStepElement && nextStepElement) {
+        // Validate the current step before moving to the next
+        if (modalType === 'facility' && currentStep === 1) {
+            console.log('Validating facility step 1');
+            // Validate facility booking step 1
+            const guests = document.getElementById('facility-guests').value;
+            const purpose = document.getElementById('facility-purpose').value.trim();
+            
+            console.log('Guests:', guests);
+            console.log('Purpose:', purpose);
+            
+            if (!purpose) {
+                Swal.fire('Missing Information', 'Please provide the purpose of your reservation.', 'warning');
+                return;
+            }
+            
+            if (!guests || isNaN(guests) || guests < 1) {
+                Swal.fire('Invalid Input', 'Please enter a valid number of guests.', 'warning');
+                return;
+            }
+        } else if (modalType === 'facility' && currentStep === 2) {
+            console.log('Validating facility step 2');
+            // Validate facility booking step 2
+            const date = document.getElementById('facility-date').value;
+            const time = document.getElementById('facility-time').value;
+            
+            console.log('Date:', date);
+            console.log('Time:', time);
+            
+            if (!date) {
+                Swal.fire('Missing Information', 'Please select a date for your reservation.', 'warning');
+                return;
+            }
+            
+            if (!time) {
+                Swal.fire('Missing Information', 'Please select a time for your reservation.', 'warning');
+                return;
+            }
+        } else if (currentStep === 1) {
+            // Validate service booking step 1
+            // No validation needed for service step 1
+            console.log('No validation needed for maintenance step 1');
+        } else if (currentStep === 2) {
+            console.log('Validating maintenance step 2');
+            // Validate service booking step 2
+            const date = document.getElementById('service-date').value;
+            const time = document.getElementById('service-time').value;
+            
+            console.log('Date:', date);
+            console.log('Time:', time);
+            
+            if (!date) {
+                Swal.fire('Missing Information', 'Please select a date for your service.', 'warning');
+                return;
+            }
+            
+            if (!time) {
+                Swal.fire('Missing Information', 'Please select a time for your service.', 'warning');
+                return;
+            }
+        }
+        
+        console.log('Validation passed, moving to next step');
+        
         currentStepElement.classList.remove('active');
         nextStepElement.classList.add('active');
         
         // Update step indicator
-        const currentIndicator = document.querySelector(`.booking-step[data-step="${currentStep}"]`);
-        const nextIndicator = document.querySelector(`.booking-step[data-step="${currentStep + 1}"]`);
+        let currentIndicator, nextIndicator;
+        
+        if (modalType === 'facility') {
+            currentIndicator = document.querySelector(`#facilityBookingModal .booking-step[data-step="${currentStep}"]`);
+            nextIndicator = document.querySelector(`#facilityBookingModal .booking-step[data-step="${currentStep + 1}"]`);
+        } else {
+            currentIndicator = document.querySelector(`#${modalType}BookingModal .booking-step[data-step="${currentStep}"]`);
+            nextIndicator = document.querySelector(`#${modalType}BookingModal .booking-step[data-step="${currentStep + 1}"]`);
+        }
+        
+        console.log('Current indicator:', currentIndicator);
+        console.log('Next indicator:', nextIndicator);
         
         if (currentIndicator && nextIndicator) {
             currentIndicator.classList.remove('active');
+            currentIndicator.classList.add('completed');
             nextIndicator.classList.add('active');
+        }
+        
+        // Update booking summary if moving to confirmation step
+        if (currentStep + 1 === 3) {
+            updateBookingSummary();
+        }
+    } else {
+        console.error(`Could not find step elements: currentStep=${currentStep}, modalType=${modalType}`);
+        // Emergency fallback - try direct manipulation of classes by index
+        if (modalType === 'facility') {
+            console.log("Trying emergency fallback with direct class manipulation");
+            const allSteps = document.querySelectorAll('#facilityBookingModal .booking-form-step');
+            console.log("All steps found:", allSteps);
+            
+            if (allSteps.length >= currentStep + 1) {
+                const currentIndex = currentStep - 1; // Arrays are 0-indexed
+                const nextIndex = currentStep; // Next step is current+1, but arrays are 0-indexed
+                
+                console.log(`Using indexes: currentIndex=${currentIndex}, nextIndex=${nextIndex}`);
+                
+                allSteps.forEach(step => step.classList.remove('active'));
+                allSteps[nextIndex].classList.add('active');
+                
+                // Also update indicators
+                const allIndicators = document.querySelectorAll('#facilityBookingModal .booking-step');
+                if (allIndicators.length >= currentStep + 1) {
+                    allIndicators.forEach(ind => ind.classList.remove('active', 'completed'));
+                    // Mark previous steps as completed
+                    for (let i = 0; i < currentStep; i++) {
+                        allIndicators[i].classList.add('completed');
+                    }
+                    allIndicators[nextIndex].classList.add('active');
+                    
+                    console.log("Step indicators updated");
+                }
+                
+                // If moving to confirmation step, update summary
+                if (currentStep + 1 === 3) {
+                    updateFacilitySummary();
+                    console.log("Facility summary updated");
+                }
+                
+                console.log("Emergency fallback activated - step updated");
+            }
         }
     }
 }
 
-function prevStep(currentStep) {
-    const currentStepElement = document.querySelector(`.booking-form-step[data-step="${currentStep}"]`);
-    const prevStepElement = document.querySelector(`.booking-form-step[data-step="${currentStep - 1}"]`);
+function prevStep(currentStep, modalType = 'maintenance') {
+    console.log(`prevStep called with currentStep=${currentStep}, modalType=${modalType}`);
+    
+    let currentStepElement, prevStepElement;
+    
+    if (modalType === 'facility') {
+        // Try direct selector first
+        currentStepElement = document.querySelector(`#facilityBookingModal .booking-form-step[data-step="${currentStep}"]`);
+        prevStepElement = document.querySelector(`#facilityBookingModal .booking-form-step[data-step="${currentStep - 1}"]`);
+        
+        // If that fails, try by ID
+        if (!currentStepElement) {
+            currentStepElement = document.getElementById(`facility-step-${currentStep}`);
+        }
+        if (!prevStepElement) {
+            prevStepElement = document.getElementById(`facility-step-${currentStep - 1}`);
+        }
+    } else {
+        // Use the original selector for maintenance steps
+        currentStepElement = document.querySelector(`#${modalType}BookingModal .booking-form-step[data-step="${currentStep}"]`);
+        prevStepElement = document.querySelector(`#${modalType}BookingModal .booking-form-step[data-step="${currentStep - 1}"]`);
+    }
+    
+    console.log('Current step element:', currentStepElement);
+    console.log('Previous step element:', prevStepElement);
     
     if (currentStepElement && prevStepElement) {
         currentStepElement.classList.remove('active');
         prevStepElement.classList.add('active');
         
         // Update step indicator
-        const currentIndicator = document.querySelector(`.booking-step[data-step="${currentStep}"]`);
-        const prevIndicator = document.querySelector(`.booking-step[data-step="${currentStep - 1}"]`);
+        let currentIndicator, prevIndicator;
+        
+        if (modalType === 'facility') {
+            currentIndicator = document.querySelector(`#facilityBookingModal .booking-step[data-step="${currentStep}"]`);
+            prevIndicator = document.querySelector(`#facilityBookingModal .booking-step[data-step="${currentStep - 1}"]`);
+        } else {
+            currentIndicator = document.querySelector(`#${modalType}BookingModal .booking-step[data-step="${currentStep}"]`);
+            prevIndicator = document.querySelector(`#${modalType}BookingModal .booking-step[data-step="${currentStep - 1}"]`);
+        }
+        
+        console.log('Current indicator:', currentIndicator);
+        console.log('Previous indicator:', prevIndicator);
         
         if (currentIndicator && prevIndicator) {
             currentIndicator.classList.remove('active');
+            prevIndicator.classList.remove('completed');
             prevIndicator.classList.add('active');
+        }
+    } else {
+        console.error(`Could not find step elements: currentStep=${currentStep}, modalType=${modalType}`);
+        // Emergency fallback - try direct manipulation of classes by index
+        if (modalType === 'facility') {
+            console.log("Trying emergency fallback with direct class manipulation");
+            const allSteps = document.querySelectorAll('#facilityBookingModal .booking-form-step');
+            console.log("All steps found:", allSteps);
+            
+            if (allSteps.length >= currentStep) {
+                const prevStepIndex = currentStep - 2; // Arrays are 0-indexed
+                allSteps.forEach(step => step.classList.remove('active'));
+                allSteps[prevStepIndex].classList.add('active');
+                
+                // Also update indicators
+                const allIndicators = document.querySelectorAll('#facilityBookingModal .booking-step');
+                if (allIndicators.length >= currentStep) {
+                    allIndicators.forEach(ind => ind.classList.remove('active', 'completed'));
+                    // Mark previous steps as completed
+                    for (let i = 0; i < currentStep - 1; i++) {
+                        allIndicators[i].classList.add('completed');
+                    }
+                    allIndicators[currentStep - 2].classList.add('active');
+                }
+                
+                console.log("Emergency fallback activated - step updated");
+            }
         }
     }
 }
@@ -309,6 +529,11 @@ function confirmMaintenanceBooking() {
         body: JSON.stringify(requestData)
     })
     .then(async response => {
+        console.log('Response status:', response.status);
+        if (!response.ok) {
+            throw new Error(`Server responded with status: ${response.status}`);
+        }
+        // Check if the response has content and is JSON
         const contentType = response.headers.get('content-type');
         if (contentType && contentType.includes('application/json')) {
             return response.json().then(data => ({
@@ -316,10 +541,11 @@ function confirmMaintenanceBooking() {
                 data: data
             }));
         } else {
-            return response.text().then(text => ({
-                ok: response.ok,
-                data: text
-            }));
+            // If the response is not JSON, convert it to a JSON object with an error message
+            return response.text().then(text => {
+                console.log('Non-JSON response:', text);
+                return { success: false, message: 'Unexpected response from server' };
+            });
         }
     })
     .then(result => {
@@ -579,34 +805,49 @@ function updateBookingSummary() {
     if (frequency === 'biweekly') total *= 2;
     document.getElementById('summary-total').textContent = `$${total.toFixed(2)}`;
     
-    // Facility summary
-    const facilityName = document.getElementById('facility-name-display').textContent;
-    const facilityDate = document.getElementById('facility-date').value;
-    const duration = document.getElementById('facility-duration').value;
-    const guests = document.getElementById('facility-guests').value;
-    const purpose = document.getElementById('facility-purpose').value;
-    const timeFacility = document.getElementById('facility-time').value;
-    const hourlyRate = parseFloat(document.getElementById('facilityBookingModal').getAttribute('data-hourly-rate'));
-    
-    document.getElementById('facility-summary-name').textContent = facilityName;
-    document.getElementById('facility-summary-date').textContent = facilityDate || '-';
-    document.getElementById('facility-summary-time').textContent = timeFacility || '-';
-    document.getElementById('facility-summary-duration').textContent = `${duration} hour${duration > 1 ? 's' : ''}`;
-    document.getElementById('facility-summary-guests').textContent = guests;
-    document.getElementById('facility-summary-purpose').textContent = purpose || '-';
-    
-    const totalFacility = hourlyRate * duration;
-    document.getElementById('facility-summary-total').textContent = `$${totalFacility.toFixed(2)}`;
+    // Call the specific facility summary update function for facility bookings
+    updateFacilitySummary();
 }
 
 function confirmFacilityBooking() {
     const facilityName = document.getElementById('facility-name-display').textContent;
     const date = document.getElementById('facility-date').value;
-    const duration = document.getElementById('facility-duration').value;
-    const guests = document.getElementById('facility-guests').value;
+    const duration = parseInt(document.getElementById('facility-duration').value);
+    const guests = parseInt(document.getElementById('facility-guests').value);
     const purpose = document.getElementById('facility-purpose').value;
     const time = document.getElementById('facility-time').value;
-    const price = document.getElementById('facility-summary-total').textContent;
+    const priceText = document.getElementById('facility-summary-total').textContent.replace('$', '');
+    const price = parseFloat(priceText);
+    
+    // Validation
+    if (!date) {
+        Swal.fire('Missing Information', 'Please select a date for your reservation.', 'warning');
+        return;
+    }
+    
+    if (!time) {
+        Swal.fire('Missing Information', 'Please select a time for your reservation.', 'warning');
+        return;
+    }
+    
+    if (!purpose) {
+        Swal.fire('Missing Information', 'Please provide the purpose of your reservation.', 'warning');
+        return;
+    }
+    
+    // Get facility ID based on the name
+    let facilityId = 1; // Default to Function Hall
+    if (facilityName === 'Sport Court') facilityId = 2;
+    if (facilityName === 'Swimming Pool') facilityId = 3;
+    if (facilityName === 'Fitness Gym') facilityId = 4;
+    
+    // Get current user ID from session storage
+    const userId = parseInt(sessionStorage.getItem('user_id') || currentUserId);
+    
+    if (!userId || userId <= 0) {
+        Swal.fire('Error', 'User not authenticated. Please log in and try again.', 'error');
+        return;
+    }
     
     Swal.fire({
         title: 'Confirm Booking',
@@ -617,7 +858,7 @@ function confirmFacilityBooking() {
                Duration: ${duration} hour${duration > 1 ? 's' : ''}<br>
                Guests: ${guests}<br>
                Purpose: ${purpose}<br>
-               Total: ${price}`,
+               Total: $${price.toFixed(2)}`,
         icon: 'question',
         showCancelButton: true,
         confirmButtonColor: '#4CAF50',
@@ -625,19 +866,96 @@ function confirmFacilityBooking() {
         confirmButtonText: 'Yes, confirm booking'
     }).then((result) => {
         if (result.isConfirmed) {
-            Swal.fire('Booked!', 'Your facility reservation has been confirmed.', 'success');
+            // Show loading state
+            Swal.fire({
+                title: 'Processing...',
+                text: 'Creating your facility reservation',
+                allowOutsideClick: false,
+                allowEscapeKey: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
             
-            // Reset facility form fields
-            document.getElementById('facility-purpose').value = '';
-            document.getElementById('facility-guests').value = '10';
-            document.getElementById('facility-date').value = '';
-            document.getElementById('facility-time').value = '';
-            document.getElementById('facility-duration').value = '1';
+            // Prepare reservation data
+            const reservation = {
+                user_id: userId,
+                facility_id: facilityId,
+                reservation_date: date,  // Already in YYYY-MM-DD format
+                reservation_time: time,
+                duration_hours: duration,
+                guest_count: guests,
+                purpose: purpose,
+                price: price
+            };
             
-            document.getElementById('facilityBookingModal').style.display = 'none';
-            document.body.style.overflow = 'auto';
+            console.log('Sending reservation data:', reservation);
+            
+            // Send reservation data to server
+            fetch('/Homeowner/CreateFacilityReservation', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(reservation)
+            })
+            .then(response => {
+                console.log('Response status:', response.status);
+                if (!response.ok) {
+                    throw new Error(`Server responded with status: ${response.status}`);
+                }
+                
+                // Check if the response has content and is JSON
+                const contentType = response.headers.get('content-type');
+                if (contentType && contentType.includes('application/json')) {
+                    return response.json();
+                } else {
+                    // If the response is not JSON, convert it to a JSON object with an error message
+                    return response.text().then(text => {
+                        console.log('Non-JSON response:', text);
+                        return { success: false, message: 'Unexpected response from server' };
+                    });
+                }
+            })
+            .then(data => {
+                console.log('Response data:', data);
+                if (data.success) {
+                    Swal.fire({
+                        title: 'Booked!',
+                        text: 'Your facility reservation has been created successfully with status "Pending". Please complete payment in the Payment page to approve it.',
+                        icon: 'success',
+                        confirmButtonText: 'Go to Payment',
+                        showCancelButton: true,
+                        cancelButtonText: 'Stay Here'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            window.location.href = '/Homeowner/Payment';
+                        } else {
+                            // Reset facility form fields
+                            resetFacilityForm();
+                        }
+                    });
+                } else {
+                    Swal.fire('Error', data.message || 'Failed to create reservation. Please try again.', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error creating reservation:', error);
+                Swal.fire('Error', 'An unexpected error occurred. Please try again.', 'error');
+            });
         }
     });
+}
+
+function resetFacilityForm() {
+    document.getElementById('facility-purpose').value = '';
+    document.getElementById('facility-guests').value = '10';
+    document.getElementById('facility-date').value = '';
+    document.getElementById('facility-time').value = '';
+    document.getElementById('facility-duration').value = '1';
+    
+    document.getElementById('facilityBookingModal').style.display = 'none';
+    document.body.style.overflow = 'auto';
 }
 
 // Add notification function if it doesn't exist
@@ -691,4 +1009,76 @@ function getStatusClass(status) {
         case 'Completed': return 'completed';
         default: return '';
     }
+}
+
+// Function to update facility booking summary
+function updateFacilitySummary() {
+    console.log("Updating facility booking summary");
+    
+    const facilityName = document.getElementById('facility-name-display').textContent;
+    const date = document.getElementById('facility-date').value;
+    const time = document.getElementById('facility-time').value;
+    const duration = document.getElementById('facility-duration').value;
+    const guests = document.getElementById('facility-guests').value;
+    const purpose = document.getElementById('facility-purpose').value;
+    
+    // Format date and time for display
+    let formattedDate = "-";
+    if (date) {
+        const dateObj = new Date(date);
+        formattedDate = dateObj.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
+    }
+    
+    let formattedTime = "-";
+    if (time) {
+        const [hours, minutes] = time.split(':');
+        const timeObj = new Date();
+        timeObj.setHours(hours);
+        timeObj.setMinutes(minutes);
+        formattedTime = timeObj.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+    }
+    
+    // Format duration
+    let formattedDuration = "-";
+    if (duration) {
+        if (duration === "5") {
+            formattedDuration = "5+ hours (custom)";
+        } else {
+            formattedDuration = `${duration} hour${duration > 1 ? 's' : ''}`;
+        }
+    }
+    
+    // Update summary fields
+    document.getElementById('facility-summary-name').textContent = facilityName;
+    document.getElementById('facility-summary-date').textContent = formattedDate;
+    document.getElementById('facility-summary-time').textContent = formattedTime;
+    document.getElementById('facility-summary-duration').textContent = formattedDuration;
+    document.getElementById('facility-summary-guests').textContent = guests || "-";
+    document.getElementById('facility-summary-purpose').textContent = purpose || "-";
+    
+    // Calculate and update total price
+    const facilityCard = document.querySelector('.facility-button[data-facility="' + facilityName + '"]');
+    if (facilityCard) {
+        const basePrice = parseFloat(facilityCard.getAttribute('data-price'));
+        const hourlyRate = parseFloat(facilityCard.getAttribute('data-hourly'));
+        
+        let totalPrice = basePrice; // Start with base price
+        
+        // Add hourly rate for additional hours beyond the first
+        if (duration && parseInt(duration) > 1) {
+            if (duration === "5") {
+                // For 5+ hours, charge for 4 additional hours
+                totalPrice += (hourlyRate * 4);
+            } else {
+                // For regular durations (2-4 hours), charge for additional hours
+                totalPrice += (hourlyRate * (parseInt(duration) - 1));
+            }
+        }
+        
+        document.getElementById('facility-summary-total').textContent = `$${totalPrice.toFixed(2)}`;
+    } else {
+        console.log("Facility card not found for:", facilityName);
+    }
+    
+    console.log("Facility summary updated successfully");
 }

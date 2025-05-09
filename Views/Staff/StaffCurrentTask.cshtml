@@ -22,6 +22,17 @@
     </div>
 
     <div class="task-list">
+        <!-- Loading indicator -->
+        <div id="loadingIndicator" class="loading-indicator">
+            <i class="fas fa-spinner fa-spin"></i>
+            <p>Loading your tasks...</p>
+        </div>
+        
+        <!-- Error message -->
+        <div id="errorMessage" class="error-message" style="display: none;">
+            Error loading tasks
+        </div>
+    
         <div class="task-category">
             <h2><i class="fas fa-building"></i> Facility Reservations</h2>
             <table class="task-table">
@@ -75,7 +86,7 @@
         <div class="modal-footer">
             <button class="btn btn-outline close-modal-btn">Close</button>
             <button class="btn btn-success" id="markTaskDoneBtn">
-                <i class="fas fa-check"></i> Mark as Done
+                <i class="fas fa-check"></i> Mark as Completed
             </button>
         </div>
     </div>
