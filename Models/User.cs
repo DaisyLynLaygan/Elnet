@@ -27,5 +27,6 @@ namespace HomeOwner.Models
         public ICollection<Report>? Reports { get; set; }
         public ICollection<Comment>? Comments { get; set; }
         public ICollection<ServiceRequest>? ServiceRequests { get; set; }
+        public ICollection<Notification>? Notifications { get; set; }
     }
 }

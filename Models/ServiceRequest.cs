@@ -37,6 +37,8 @@ namespace HomeOwner.Models
 
         [Required]
         public string notes { get; set; } = string.Empty;
+        
+        public string staffNotes { get; set; } = string.Empty;
 
         public DateTime date_created { get; set; } = DateTime.Now;
 

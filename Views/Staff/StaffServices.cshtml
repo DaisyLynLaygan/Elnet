@@ -7,6 +7,65 @@
 }
 
 <link rel="stylesheet" href="~/css/staff/services.css" />
+<style>
+    .loading-state {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 40px;
+        text-align: center;
+    }
+    
+    .loading-state i {
+        font-size: 2rem;
+        color: #6B4423;
+        margin-bottom: 15px;
+    }
+    
+    .error-message {
+        padding: 20px;
+        text-align: center;
+    }
+    
+    .error-message div {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        color: #721c24;
+    }
+    
+    .error-message i {
+        font-size: 2rem;
+        color: #dc3545;
+    }
+    
+    .error-message p {
+        font-size: 1rem;
+        margin: 0;
+    }
+    
+    .no-data {
+        padding: 30px;
+        text-align: center;
+    }
+    
+    .no-data-message {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        color: #6c757d;
+    }
+    
+    .no-data-message i {
+        font-size: 2rem;
+        color: #6c757d;
+    }
+</style>
 
 <div class="staff-services-container">
     <!-- Header Section -->
@@ -84,6 +143,12 @@
         </div>
 
         <div class="requests-table-container">
+            <!-- Loading State -->
+            <div class="loading-state" style="display: none;">
+                <i class="fas fa-circle-notch fa-spin"></i>
+                <p>Loading service requests...</p>
+            </div>
+            
             <table class="requests-table">
                 <thead>
                     <tr>
@@ -267,6 +332,14 @@
         const facilitySection = document.getElementById('facility-section');
         const maintenanceSection = document.getElementById('maintenance-section');
         
+        // Get current user information from ViewBag for notifications
+        const CurrentUser = {
+            user_id: @ViewBag.CurrentUser.user_id,
+            firstname: "@ViewBag.CurrentUser.firstname",
+            lastname: "@ViewBag.CurrentUser.lastname",
+            role: "@ViewBag.CurrentUser.role"
+        };
+        
         // Facility Reservation Elements
         const facilityTableBody = document.getElementById('facilityReservationsTable');
         const facilitySearch = document.getElementById('facility-search');
@@ -290,150 +363,157 @@
         const maintenanceDetailsModal = document.getElementById('maintenanceDetailsModal');
         const closeModalButtons = document.querySelectorAll('.close-modal, .close-modal-btn');
         
+        // API URLs
+        const serviceRequestApiUrl = '/Staff/GetServiceRequests';
+        
+        // WebSocket connection
+        let ws = null;
+        let wsConnected = false;
+        
         // Current selected items
         let currentFacilityReservation = null;
         let currentMaintenanceRequest = null;
+        let maintenanceRequests = [];
         
-        // Sample data - in a real app, this would come from an API
-        const facilityReservations = [
-            {
-                id: "RES-2023-001",
-                facility: "Function Hall",
-                resident: "John Smith (Unit 101)",
-                dateTime: "15 Oct 2023, 14:00-18:00",
-                date: "15 Oct 2023",
-                time: "14:00 - 18:00 (4 hours)",
-                status: "approved",
-                guests: "50 people",
-                purpose: "Wedding Anniversary",
-                amount: "$500.00",
-                staffNotes: "",
-                assignedStaff: null
-            },
-            {
-                id: "RES-2023-002",
-                facility: "Sports Court",
-                resident: "Maria Garcia (Unit 205)",
-                dateTime: "16 Oct 2023, 09:00-11:00",
-                date: "16 Oct 2023",
-                time: "09:00 - 11:00 (2 hours)",
-                status: "approved",
-                guests: "15 people",
-                purpose: "Badminton Tournament",
-                amount: "$100.00",
-                staffNotes: "",
-                assignedStaff: null
-            },
-            {
-                id: "RES-2023-006",
-                facility: "Sports Court",
-                resident: "Emily Wilson (Unit 315)",
-                dateTime: "20 Oct 2023, 15:00-17:00",
-                date: "20 Oct 2023",
-                time: "15:00 - 17:00 (2 hours)",
-                status: "approved",
-                guests: "12 people",
-                purpose: "Basketball Game",
-                amount: "$100.00",
-                staffNotes: "",
-                assignedStaff: null
-            },
-            {
-                id: "RES-2023-009",
-                facility: "Function Hall",
-                resident: "Daniel Anderson (Unit 305)",
-                dateTime: "23 Oct 2023, 12:00-16:00",
-                date: "23 Oct 2023",
-                time: "12:00 - 16:00 (4 hours)",
-                status: "approved",
-                guests: "60 people",
-                purpose: "Business Meeting",
-                amount: "$500.00",
-                staffNotes: "",
-                assignedStaff: null
+        // Initialize WebSocket connection
+        function initWebSocket() {
+            if (ws && (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING)) {
+                return; // Already connected or connecting
             }
-        ];
+
+            try {
+                const protocol = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
+                ws = new WebSocket(`${protocol}${window.location.host}/ws/homeowner/service-requests`);
+                
+                ws.onopen = function() {
+                    console.log('Service Request WebSocket connection established');
+                    wsConnected = true;
+                    loadMaintenanceRequests();
+                };
+                
+                ws.onmessage = function(event) {
+                    try {
+                        const data = JSON.parse(event.data);
+                        console.log('Received WebSocket message:', data);
+                        
+                        if (data.type === 'service_request_update') {
+                            // Refresh the maintenance requests when there's an update
+                            loadMaintenanceRequests();
+                        }
+                    } catch (error) {
+                        console.error('Error processing WebSocket message:', error);
+                    }
+                };
+                
+                ws.onclose = function(event) {
+                    console.log('Service Request WebSocket connection closed', event.code, event.reason);
+                    wsConnected = false;
+                    setTimeout(initWebSocket, 3000); // Try to reconnect after 3 seconds
+                };
+                
+                ws.onerror = function(error) {
+                    console.error('Service Request WebSocket error:', error);
+                    wsConnected = false;
+                };
+            } catch (error) {
+                console.error('Service Request WebSocket initialization failed:', error);
+                wsConnected = false;
+                setTimeout(initWebSocket, 3000);
+            }
+        }
         
-        const maintenanceRequests = [
-            {
-                id: "SR-2023-002",
-                user: {
-                    name: "Priya Sharma",
-                    unit: "Unit 5C",
-                    avatar: "https://randomuser.me/api/portraits/women/44.jpg",
-                    phone: "+1 (555) 987-6543",
-                    email: "priya.sharma@example.com"
-                },
-                service: {
-                    name: "Garden Maintenance",
-                    icon: "🌿",
-                    price: "$150.00",
-                    frequency: "Monthly"
-                },
-                date: {
-                    requested: "May 21, 2023",
-                    scheduled: "May 26, 2023",
-                    time: "02:00 PM"
-                },
-                status: "approved",
-                payment: "Paid",
-                instructions: "Please trim the hedges along the front walkway and remove weeds from the flower beds. The lawn needs mowing as well.",
-                staffNotes: "",
-                assignedStaff: null
-            },
-            {
-                id: "SR-2023-003",
-                user: {
-                    name: "Rahul Mehta",
-                    unit: "Unit 8A",
-                    avatar: "https://randomuser.me/api/portraits/men/67.jpg",
-                    phone: "+1 (555) 456-7890",
-                    email: "rahul.mehta@example.com"
-                },
-                service: {
-                    name: "Handyman Services",
-                    icon: "🔧",
-                    price: "$85.00",
-                    frequency: "One-time"
-                },
-                date: {
-                    requested: "May 22, 2023",
-                    scheduled: "May 27, 2023",
-                    time: "09:00 AM"
-                },
-                status: "approved",
-                payment: "Paid",
-                instructions: "Need help fixing a leaky faucet in the kitchen and installing new shelves in the living room.",
-                staffNotes: "",
-                assignedStaff: null
-            },
-            {
-                id: "SR-2023-011",
-                user: {
-                    name: "James White",
-                    unit: "Unit 207",
-                    avatar: "https://randomuser.me/api/portraits/men/55.jpg",
-                    phone: "+1 (555) 234-5678",
-                    email: "james.white@example.com"
-                },
-                service: {
-                    name: "HVAC Maintenance",
-                    icon: "❄️",
-                    price: "$120.00",
-                    frequency: "Seasonal"
-                },
-                date: {
-                    requested: "May 24, 2023",
-                    scheduled: "May 29, 2023",
-                    time: "03:00 PM"
-                },
-                status: "approved",
-                payment: "Paid",
-                instructions: "AC unit not cooling properly. Needs inspection and service.",
-                staffNotes: "",
-                assignedStaff: null
+        // Keep WebSocket connection alive
+        setInterval(() => {
+            if (ws && wsConnected && ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify({ type: 'ping' }));
             }
-        ];
+        }, 30000); // Every 30 seconds
+        
+        // Fetch real service requests from the API
+        async function loadMaintenanceRequests() {
+            try {
+                // Show loading state
+                const loadingState = document.querySelector('.loading-state');
+                loadingState.style.display = 'flex';
+                maintenanceTableBody.innerHTML = '';
+                
+                console.log("Fetching service requests from:", serviceRequestApiUrl);
+                
+                const response = await fetch(serviceRequestApiUrl);
+                const data = await response.json();
+                
+                console.log("Service request API response:", data);
+                
+                // Hide loading state
+                loadingState.style.display = 'none';
+                
+                if (data.success) {
+                    // Make sure we have properly filtered data
+                    maintenanceRequests = data.requests || [];
+                    console.log("Loaded service requests:", maintenanceRequests);
+                    
+                    if (maintenanceRequests.length === 0) {
+                        maintenanceTableBody.innerHTML = `
+                            <tr>
+                                <td colspan="6" class="no-data">
+                                    <div class="no-data-message">
+                                        <i class="fas fa-calendar-times"></i>
+                                        <p>No paid service requests found</p>
+                                    </div>
+                                </td>
+                            </tr>
+                        `;
+                    } else {
+                        renderMaintenanceRequests();
+                    }
+                } else {
+                    console.error('Failed to load service requests:', data.message);
+                    
+                    // Handle authentication errors
+                    if (data.message && data.message.includes("Not authenticated")) {
+                        Swal.fire({
+                            title: 'Authentication Error',
+                            text: 'You are not logged in or your session has expired. Please log in again.',
+                            icon: 'error',
+                            confirmButtonText: 'Go to Login',
+                            confirmButtonColor: '#6B4423',
+                        }).then(() => {
+                            window.location.href = '/';
+                        });
+                    } else {
+                        // For other errors
+                        maintenanceTableBody.innerHTML = `
+                            <tr>
+                                <td colspan="6" class="error-message">
+                                    <div>
+                                        <i class="fas fa-exclamation-triangle"></i>
+                                        <p>Failed to load service requests. ${data.message || 'Please try again later.'}</p>
+                                    </div>
+                                </td>
+                            </tr>
+                        `;
+                    }
+                }
+            } catch (error) {
+                console.error('Error fetching service requests:', error);
+                
+                // Hide loading state
+                const loadingState = document.querySelector('.loading-state');
+                loadingState.style.display = 'none';
+                
+                // Show error in the table
+                maintenanceTableBody.innerHTML = `
+                    <tr>
+                        <td colspan="6" class="error-message">
+                            <div>
+                                <i class="fas fa-exclamation-triangle"></i>
+                                <p>Error connecting to the server. Please check your connection and try again.</p>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }
+        }
         
         // Tab Switching
         tabs.forEach(tab => {
@@ -456,8 +536,41 @@
         });
         
         // Initialize both tables
-        renderFacilityReservations();
-        renderMaintenanceRequests();
+        // Skip facility reservations for now to focus on service requests
+        // renderFacilityReservations();
+        initWebSocket(); // This will load maintenance requests when connected
+        
+        // Proper modal handling functions
+        function openModal(modal) {
+            if (modal) {
+                modal.classList.add('active');
+                document.body.style.overflow = 'hidden';
+            }
+        }
+        
+        function closeModal(modal) {
+            if (modal) {
+                modal.classList.remove('active');
+                document.body.style.overflow = 'auto';
+            }
+        }
+        
+        // Close all modals when clicking close buttons
+        closeModalButtons.forEach(btn => {
+            btn.addEventListener('click', function() {
+                const modal = this.closest('.modal-overlay');
+                closeModal(modal);
+            });
+        });
+        
+        // Close modal when clicking outside
+        document.querySelectorAll('.modal-overlay').forEach(modal => {
+            modal.addEventListener('click', function(e) {
+                if (e.target === this) {
+                    closeModal(this);
+                }
+            });
+        });
         
         // Facility Reservations Functions
         function renderFacilityReservations(page = 1, searchTerm = '', filterValue = 'all') {
@@ -572,23 +685,31 @@
             document.getElementById('facilityNotificationMessage').value = 
                 `Dear Resident,\n\nThis is to confirm that a staff member will accompany you to the ${reservation.facility} on ${reservation.date} at ${reservation.time}.\n\nThank you,\nStaff Team`;
             
-            // Open modal
-            facilityDetailsModal.classList.add('active');
+            // Open modal with our new function
+            openModal(facilityDetailsModal);
         }
         
         // Service Maintenance Functions
         function renderMaintenanceRequests(page = 1, searchTerm = '', filterValue = 'all') {
+            console.log("Rendering maintenance requests, page:", page, "search:", searchTerm, "filter:", filterValue);
+            console.log("Total requests:", maintenanceRequests.length);
+            
             // Filter requests based on search and filter
             let filteredRequests = maintenanceRequests.filter(req => {
-                const matchesSearch = searchTerm === '' || 
-                    req.id.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                    req.user.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                    req.service.name.toLowerCase().includes(searchTerm.toLowerCase());
+                // Make sure we have all the required fields for filtering
+                if (!req || !req.user) return false;
                 
-                const matchesFilter = filterValue === 'all' || req.service.name === filterValue;
+                const matchesSearch = searchTerm === '' || 
+                    req.request_id.toString().includes(searchTerm) || 
+                    `${req.user.firstname} ${req.user.lastname}`.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                    req.service_type.toLowerCase().includes(searchTerm.toLowerCase());
+                
+                const matchesFilter = filterValue === 'all' || req.service_type === filterValue;
                 
                 return matchesSearch && matchesFilter;
             });
+            
+            console.log("Filtered requests:", filteredRequests.length);
             
             // Pagination logic
             const itemsPerPage = 5;
@@ -596,74 +717,97 @@
             const startIndex = (page - 1) * itemsPerPage;
             const paginatedRequests = filteredRequests.slice(startIndex, startIndex + itemsPerPage);
             
+            console.log("Paginated requests:", paginatedRequests.length);
+            
             // Clear table
             maintenanceTableBody.innerHTML = '';
             
+            if (paginatedRequests.length === 0) {
+                maintenanceTableBody.innerHTML = `
+                    <tr>
+                        <td colspan="6" class="no-data">
+                            <div class="no-data-message">
+                                <i class="fas fa-calendar-times"></i>
+                                <p>No paid service requests found</p>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
             // Populate table
             paginatedRequests.forEach(request => {
-                const row = document.createElement('tr');
-                row.dataset.id = request.id;
-                
-                // Determine status display
-                let statusDisplay = capitalizeFirstLetter(request.status);
-                if (request.assignedStaff) {
-                    statusDisplay = "Assigned to Staff";
-                }
-                
-                row.innerHTML = `
-                    <td>${request.id}</td>
-                    <td>
-                        <div class="user-info">
-                            <img src="${request.user.avatar}" alt="User" class="user-avatar">
-                            <div class="user-details">
-                                <h4>${request.user.name}</h4>
-                                <p>${request.user.unit}</p>
+                try {
+                    const row = document.createElement('tr');
+                    row.dataset.id = request.request_id;
+                    
+                    // Determine status display
+                    let statusDisplay = capitalizeFirstLetter(request.status);
+                    
+                    // Format the date properly
+                    let formattedDate = "N/A";
+                    try {
+                        formattedDate = new Date(request.scheduled_date).toLocaleDateString();
+                    } catch (e) {
+                        console.error("Error formatting date:", e);
+                    }
+                    
+                    row.innerHTML = `
+                        <td>#SR-${request.request_id}</td>
+                        <td>
+                            <div class="user-info">
+                                <div class="user-avatar">${request.user.firstname.charAt(0)}${request.user.lastname.charAt(0)}</div>
+                                <div class="user-details">
+                                    <h4>${request.user.firstname} ${request.user.lastname}</h4>
+                                    <p>${request.user.email}</p>
+                                </div>
                             </div>
-                        </div>
-                    </td>
-                    <td>
-                        <div class="service-info">
-                            <div class="service-icon">${request.service.icon}</div>
-                            <span>${request.service.name}</span>
-                        </div>
-                    </td>
-                    <td>
-                        <div class="date-time">
-                            <div class="date">${request.date.scheduled}</div>
-                            <div class="time">${request.date.time}</div>
-                        </div>
-                    </td>
-                    <td><span class="status-badge ${request.assignedStaff ? 'status-in-progress' : 'status-approved'}">${statusDisplay}</span></td>
-                    <td>
-                        <div class="action-buttons">
-                            <button class="btn-icon view-details" title="View Details" data-action="view">
-                                <i class="fas fa-eye"></i>
-                            </button>
-                            ${!request.assignedStaff ? 
-                                `<button class="btn-icon" title="Accept Booking" data-action="accept">
+                        </td>
+                        <td>
+                            <div class="service-info">
+                                <div class="service-icon">${request.service_icon}</div>
+                                <span>${request.service_type}</span>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="date-time">
+                                <div class="date">${formattedDate}</div>
+                                <div class="time">${request.scheduled_time}</div>
+                            </div>
+                        </td>
+                        <td><span class="status-badge status-approved">${statusDisplay}</span></td>
+                        <td>
+                            <div class="action-buttons">
+                                <button class="btn-icon view-details" title="View Details" data-action="view">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <button class="btn-icon" title="Accept Booking" data-action="accept">
                                     <i class="fas fa-user-check"></i>
-                                </button>` : ''
+                                </button>
+                            </div>
+                        </td>
+                    `;
+                    
+                    maintenanceTableBody.appendChild(row);
+                    
+                    // Add event listeners to action buttons
+                    row.querySelectorAll('[data-action]').forEach(btn => {
+                        btn.addEventListener('click', function(e) {
+                            e.stopPropagation();
+                            const action = this.dataset.action;
+                            const requestId = parseInt(this.closest('tr').dataset.id);
+                            
+                            if (action === 'view') {
+                                showMaintenanceDetails(requestId);
+                            } else if (action === 'accept') {
+                                showMaintenanceDetails(requestId);
                             }
-                        </div>
-                    </td>
-                `;
-                
-                maintenanceTableBody.appendChild(row);
-                
-                // Add event listeners to action buttons
-                row.querySelectorAll('[data-action]').forEach(btn => {
-                    btn.addEventListener('click', function(e) {
-                        e.stopPropagation();
-                        const action = this.dataset.action;
-                        const requestId = this.closest('tr').dataset.id;
-                        
-                        if (action === 'view') {
-                            showMaintenanceDetails(requestId);
-                        } else if (action === 'accept') {
-                            showMaintenanceDetails(requestId);
-                        }
+                        });
                     });
-                });
+                } catch (error) {
+                    console.error("Error rendering request:", request, error);
+                }
             });
             
             // Update pagination controls
@@ -681,35 +825,85 @@
             // Add click event to rows
             maintenanceTableBody.querySelectorAll('tr').forEach(row => {
                 row.addEventListener('click', function() {
-                    const requestId = this.dataset.id;
+                    const requestId = parseInt(this.dataset.id);
                     showMaintenanceDetails(requestId);
                 });
             });
         }
         
         function showMaintenanceDetails(requestId) {
-            const request = maintenanceRequests.find(r => r.id === requestId);
-            if (!request) return;
+            console.log("Showing details for request ID:", requestId);
+            console.log("Available requests:", maintenanceRequests);
             
+            const request = maintenanceRequests.find(r => r.request_id === requestId);
+            if (!request) {
+                console.error("Request not found:", requestId);
+                Swal.fire({
+                    title: 'Error',
+                    text: 'Service request not found',
+                    icon: 'error'
+                });
+                return;
+            }
+            
+            console.log("Found request:", request);
             currentMaintenanceRequest = request;
             
-            // Update modal content
-            document.getElementById('maintenanceDetailsId').textContent = `Request ${request.id}`;
-            document.getElementById('maintenanceDetailsStatus').innerHTML = 
-                `<span class="status-badge ${request.assignedStaff ? 'status-in-progress' : 'status-approved'}">${request.assignedStaff ? 'Assigned to Staff' : 'Approved'}</span>`;
-            document.getElementById('maintenanceDetailsService').textContent = request.service.name;
-            document.getElementById('maintenanceDetailsResident').textContent = `${request.user.name} (${request.user.unit})`;
-            document.getElementById('maintenanceDetailsDate').textContent = request.date.scheduled;
-            document.getElementById('maintenanceDetailsTime').textContent = request.date.time;
-            document.getElementById('maintenanceDetailsPayment').innerHTML = 
-                `<span class="status-badge status-paid">Paid</span>`;
-            document.getElementById('maintenanceDetailsInstructions').textContent = request.instructions;
-            document.getElementById('maintenanceStaffNotes').value = request.staffNotes || '';
-            document.getElementById('maintenanceNotificationMessage').value = 
-                `Dear Homeowner,\n\nThis is to confirm that a staff member will perform the ${request.service.name} service on ${request.date.scheduled} at ${request.date.time} as scheduled.\n\nThank you,\nStaff Team`;
-            
-            // Open modal
-            maintenanceDetailsModal.classList.add('active');
+            try {
+                // Format the date properly
+                let formattedDate = "N/A";
+                try {
+                    formattedDate = new Date(request.scheduled_date).toLocaleDateString();
+                } catch (e) {
+                    console.error("Error formatting date:", e);
+                }
+                
+                // Extract staff notes from the regular notes field
+                let staffNotes = "";
+                let notesForDisplay = request.notes || '';
+                
+                // Look for staff notes section in the regular notes
+                const staffNotesMatch = notesForDisplay.match(/Staff Notes \(\d{4}-\d{2}-\d{2}\): (.*?)(\n\n|$)/s);
+                if (staffNotesMatch) {
+                    staffNotes = staffNotesMatch[1];
+                    // Remove staff notes from the display notes
+                    notesForDisplay = notesForDisplay.replace(/\n\nStaff Notes \(\d{4}-\d{2}-\d{2}\): .*?(\n\n|$)/s, '');
+                }
+                
+                // Update modal content
+                document.getElementById('maintenanceDetailsId').textContent = `Request #SR-${request.request_id}`;
+                document.getElementById('maintenanceDetailsStatus').innerHTML = 
+                    `<span class="status-badge status-approved">${capitalizeFirstLetter(request.status)}</span>`;
+                document.getElementById('maintenanceDetailsService').textContent = request.service_type;
+                document.getElementById('maintenanceDetailsResident').textContent = `${request.user.firstname} ${request.user.lastname}`;
+                document.getElementById('maintenanceDetailsDate').textContent = formattedDate;
+                document.getElementById('maintenanceDetailsTime').textContent = request.scheduled_time;
+                document.getElementById('maintenanceDetailsPayment').innerHTML = 
+                    `<span class="status-badge status-paid">${request.payment_status}</span>`;
+                document.getElementById('maintenanceDetailsInstructions').textContent = notesForDisplay || 'No special instructions provided.';
+                document.getElementById('maintenanceStaffNotes').value = staffNotes;
+                document.getElementById('maintenanceNotificationMessage').value = 
+                    `Dear Homeowner,
+
+This is to confirm that your ${request.service_type} service scheduled for ${formattedDate} at ${request.scheduled_time} has been accepted by ${CurrentUser.firstname} ${CurrentUser.lastname}.
+
+Your service is now being processed and will be completed as scheduled. Please contact us if you have any questions.
+
+Thank you for using our services.
+
+${CurrentUser.firstname} ${CurrentUser.lastname}
+Staff Member`;
+                
+                // Open modal
+                openModal(maintenanceDetailsModal);
+            } catch (error) {
+                console.error("Error showing maintenance details:", error);
+                Swal.fire({
+                    title: 'Error',
+                    text: 'Error displaying service request details',
+                    icon: 'error'
+                });
+            }
         }
         
         // Common Functions
@@ -884,7 +1078,7 @@
                         }).then(() => {
                             // Refresh the table and close modal
                             renderFacilityReservations();
-                            facilityDetailsModal.classList.remove('active');
+                            closeModal(facilityDetailsModal);
                         });
                     }
                 });
@@ -898,7 +1092,11 @@
                 const notificationMessage = document.getElementById('maintenanceNotificationMessage').value;
                 
                 if (!notificationMessage.trim()) {
-                    alert('Please enter a notification message for the homeowner.');
+                    Swal.fire({
+                        title: 'Error',
+                        text: 'Please enter a notification message for the homeowner.',
+                        icon: 'error'
+                    });
                     return;
                 }
                 
@@ -912,45 +1110,76 @@
                     confirmButtonColor: '#6B4423',
                 }).then((result) => {
                     if (result.isConfirmed) {
-                        // Update the request
-                        currentMaintenanceRequest.staffNotes = staffNotes;
-                        currentMaintenanceRequest.assignedStaff = "Current Staff"; // In real app, use actual staff ID/name
-                        currentMaintenanceRequest.status = "in-progress";
-                        
-                        // In a real app, here you would send the notification to the homeowner
-                        console.log('Notification to homeowner:', notificationMessage);
-                        
+                        // In a real app, make an API call to update the service request
+                        updateServiceRequestStatus(currentMaintenanceRequest.request_id, staffNotes, notificationMessage)
+                            .then(response => {
+                                if (response.success) {
                         // Show success message
                         Swal.fire({
                             title: 'Booking Accepted!',
-                            text: 'The service booking has been accepted and the homeowner has been notified.',
+                                        html: `The service booking has been accepted and the homeowner has been notified.<br><br>
+                                              <strong>Assigned Staff:</strong> ${response.staffName || 'Current Staff'}`,
                             icon: 'success',
                             confirmButtonColor: '#6B4423',
                         }).then(() => {
                             // Refresh the table and close modal
-                            renderMaintenanceRequests();
-                            maintenanceDetailsModal.classList.remove('active');
-                        });
+                                        loadMaintenanceRequests();
+                                        closeModal(maintenanceDetailsModal);
+                                    });
+                                } else {
+                                    throw new Error(response.message || 'Failed to update service request');
+                                }
+                            })
+                            .catch(error => {
+                                console.error('Error accepting booking:', error);
+                                Swal.fire({
+                                    title: 'Error',
+                                    text: error.message || 'Failed to accept booking. Please try again.',
+                                    icon: 'error'
+                                });
+                            });
                     }
                 });
             }
         });
         
-        // Close all modals
-        closeModalButtons.forEach(btn => {
-            btn.addEventListener('click', function() {
-                facilityDetailsModal.classList.remove('active');
-                maintenanceDetailsModal.classList.remove('active');
-            });
-        });
-        
-        // Close modal when clicking outside
-        document.querySelectorAll('.modal-overlay').forEach(modal => {
-            modal.addEventListener('click', function(e) {
-                if (e.target === this) {
-                    this.classList.remove('active');
-                }
-            });
-        });
+        // API call to update service request status and send notification
+        async function updateServiceRequestStatus(requestId, staffNotes, notificationMessage) {
+            console.log("Updating service request status for ID:", requestId);
+            console.log("Staff notes:", staffNotes);
+            console.log("Notification message:", notificationMessage);
+            
+            try {
+                const requestBody = {
+                    requestId: requestId,
+                    status: 'In Progress',
+                    staffNotes: staffNotes,
+                    notificationMessage: notificationMessage
+                };
+                
+                console.log("Request body:", requestBody);
+                
+                const response = await fetch('/Staff/UpdateServiceRequestStatus', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(requestBody)
+                });
+                
+                const responseData = await response.json();
+                console.log("Server response:", responseData);
+                
+                return responseData;
+            } catch (error) {
+                console.error('Error updating service request:', error);
+                Swal.fire({
+                    title: 'Error',
+                    text: 'Failed to update the service request. Please try again.',
+                    icon: 'error'
+                });
+                return { success: false, message: error.message };
+            }
+        }
     });
 </script>

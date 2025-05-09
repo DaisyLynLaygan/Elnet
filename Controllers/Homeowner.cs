@@ -308,12 +308,6 @@ public class CommentModel
             public int postId { get; set; }
         }
 
-
-        public IActionResult Payment()
-        {
-            ViewContents();
-            return View();
-        }
         public IActionResult History()
         {
             ViewContents();
@@ -335,6 +329,138 @@ public class CommentModel
         {
             ViewContents();
             return View();
+        }
+
+        [HttpGet]
+        public async Task<JsonResult> GetNotifications()
+        {
+            try
+            {
+                // Check if user is authenticated
+                if (CurrentUser == null || CurrentUser.user_id <= 0)
+                {
+                    return Json(new { success = false, message = "User not authenticated" });
+                }
+                
+                // Get notifications for this user, ordered by date (newest first)
+                var notifications = await _context.Notification
+                    .Where(n => n.user_id == CurrentUser.user_id)
+                    .OrderByDescending(n => n.created_date)
+                    .Select(n => new
+                    {
+                        id = n.notification_id,
+                        title = n.title,
+                        message = n.message,
+                        created_date = n.created_date.ToString("MMM dd, yyyy hh:mm tt"),
+                        is_read = n.is_read,
+                        type = n.type,
+                        reference_id = n.reference_id
+                    })
+                    .ToListAsync();
+                
+                return Json(new { success = true, notifications });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error retrieving notifications: {ex.Message}");
+                return Json(new { success = false, message = "Error retrieving notifications" });
+            }
+        }
+        
+        [HttpGet]
+        public async Task<JsonResult> GetUnreadNotificationsCount()
+        {
+            try
+            {
+                // Check if user is authenticated
+                if (CurrentUser == null || CurrentUser.user_id <= 0)
+                {
+                    return Json(new { success = false, message = "User not authenticated" });
+                }
+                
+                // Count unread notifications
+                var unreadCount = await _context.Notification
+                    .Where(n => n.user_id == CurrentUser.user_id && !n.is_read)
+                    .CountAsync();
+                
+                return Json(new { success = true, unreadCount });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error counting unread notifications: {ex.Message}");
+                return Json(new { success = false, message = "Error retrieving notification count" });
+            }
+        }
+        
+        [HttpPost]
+        public async Task<JsonResult> MarkNotificationAsRead(int notificationId)
+        {
+            try
+            {
+                // Check if user is authenticated
+                if (CurrentUser == null || CurrentUser.user_id <= 0)
+                {
+                    return Json(new { success = false, message = "User not authenticated" });
+                }
+                
+                // Find the notification
+                var notification = await _context.Notification.FindAsync(notificationId);
+                
+                if (notification == null)
+                {
+                    return Json(new { success = false, message = "Notification not found" });
+                }
+                
+                // Verify the notification belongs to the current user
+                if (notification.user_id != CurrentUser.user_id)
+                {
+                    return Json(new { success = false, message = "Unauthorized access to notification" });
+                }
+                
+                // Mark as read
+                notification.is_read = true;
+                await _context.SaveChangesAsync();
+                
+                return Json(new { success = true });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error marking notification as read: {ex.Message}");
+                return Json(new { success = false, message = "Error updating notification" });
+            }
+        }
+        
+        [HttpPost]
+        public async Task<JsonResult> MarkAllNotificationsAsRead()
+        {
+            try
+            {
+                // Check if user is authenticated
+                if (CurrentUser == null || CurrentUser.user_id <= 0)
+                {
+                    return Json(new { success = false, message = "User not authenticated" });
+                }
+                
+                // Get all unread notifications for this user
+                var notifications = await _context.Notification
+                    .Where(n => n.user_id == CurrentUser.user_id && !n.is_read)
+                    .ToListAsync();
+                
+                // Mark all as read
+                foreach (var notification in notifications)
+                {
+                    notification.is_read = true;
+                }
+                
+                await _context.SaveChangesAsync();
+                
+                return Json(new { success = true });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error marking all notifications as read: {ex.Message}");
+                return Json(new { success = false, message = "Error updating notifications" });
+            }
         }
 
         [HttpPost]

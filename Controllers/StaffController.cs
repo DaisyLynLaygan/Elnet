@@ -293,13 +293,148 @@ namespace HomeOwner.Controllers
 
         public IActionResult StaffServices()
         {
-            ViewContents();
+            ViewBag.CurrentUser = CurrentUser;
             return View();
+        }
+
+        [HttpGet]
+        public async Task<JsonResult> GetServiceRequests()
+        {
+            try
+            {
+                // Check authentication first
+                if (CurrentUser == null || CurrentUser.role != "staff")
+                {
+                    Console.WriteLine("Authentication failed in GetServiceRequests");
+                    return Json(new { success = false, message = "Not authenticated or unauthorized access." });
+                }
+                
+                Console.WriteLine("Staff authenticated, fetching service requests...");
+                
+                var allRequests = await _context.ServiceRequest
+                    .Include(sr => sr.User)
+                    .ToListAsync();
+                
+                Console.WriteLine($"Total service requests found: {allRequests.Count}");
+                
+                // Filter for paid and approved requests
+                var serviceRequests = allRequests
+                    .Where(sr => sr.payment_status == "Paid" && sr.status == "Approved")
+                    .Select(sr => new
+                    {
+                        request_id = sr.request_id,
+                        user_id = sr.user_id,
+                        service_type = sr.service_type,
+                        service_icon = sr.service_icon,
+                        price = sr.price,
+                        frequency = sr.frequency,
+                        scheduled_date = sr.scheduled_date,
+                        scheduled_time = sr.scheduled_time,
+                        status = sr.status,
+                        payment_status = sr.payment_status,
+                        notes = sr.notes,
+                        date_created = sr.date_created,
+                        user = new
+                        {
+                            user_id = sr.User.user_id,
+                            firstname = sr.User.firstname,
+                            lastname = sr.User.lastname,
+                            email = sr.User.email,
+                            contact_no = sr.User.contact_no
+                        }
+                    })
+                    .ToList();
+                
+                Console.WriteLine($"Filtered service requests (Paid and Approved): {serviceRequests.Count}");
+
+                return Json(new { success = true, requests = serviceRequests });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error fetching service requests: {ex.Message}");
+                Console.WriteLine($"Stack trace: {ex.StackTrace}");
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+
+        [HttpPost]
+        public async Task<JsonResult> UpdateServiceRequestStatus([FromBody] ServiceRequestUpdateModel model)
+        {
+            try
+            {
+                // Validate the model
+                if (model.requestId <= 0)
+                {
+                    return Json(new { success = false, message = "Invalid request ID" });
+                }
+
+                // Find the service request
+                var serviceRequest = await _context.ServiceRequest.FindAsync(model.requestId);
+                if (serviceRequest == null)
+                {
+                    return Json(new { success = false, message = "Service request not found" });
+                }
+
+                // Update the service request status
+                serviceRequest.status = model.status;
+                
+                // Save the staff notes if provided
+                if (!string.IsNullOrEmpty(model.staffNotes))
+                {
+                    // Now we can use the staffNotes field directly
+                    serviceRequest.staffNotes = model.staffNotes;
+                }
+
+                // Create a notification for the user
+                if (!string.IsNullOrEmpty(model.notificationMessage))
+                {
+                    try
+                    {
+                        var notification = new Notification
+                        {
+                            user_id = serviceRequest.user_id,
+                            title = $"Service Request Update: {serviceRequest.service_type}",
+                            message = model.notificationMessage,
+                            created_date = DateTime.Now,
+                            is_read = false,
+                            type = "service_request",
+                            reference_id = serviceRequest.request_id.ToString()
+                        };
+
+                        _context.Notification.Add(notification);
+                        Console.WriteLine($"Created notification for user {serviceRequest.user_id} regarding service request {serviceRequest.request_id}");
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Error creating notification: {ex.Message}");
+                        // Continue even if notification creation fails
+                    }
+                }
+
+                // Save changes to the database
+                await _context.SaveChangesAsync();
+
+                // Broadcast the update via WebSocket
+                var serviceRequestWebSocketManager = HttpContext.RequestServices.GetRequiredService<ServiceRequestWebSocketManager>();
+                await serviceRequestWebSocketManager.BroadcastServiceRequestUpdate(serviceRequest);
+
+                return Json(new { 
+                    success = true, 
+                    message = "Service request status updated successfully",
+                    requestId = serviceRequest.request_id,
+                    staffName = $"{CurrentUser.firstname} {CurrentUser.lastname}"
+                });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error updating service request: {ex.Message}");
+                return Json(new { success = false, message = ex.Message });
+            }
         }
 
         public IActionResult StaffEvents()
         {
-            ViewContents();
+            ViewBag.CurrentUser = CurrentUser;
             return View();
         }
 
@@ -330,6 +465,14 @@ namespace HomeOwner.Controllers
         {
             public string facility { get; set; }
             public string type { get; set; }
+        }
+
+        public class ServiceRequestUpdateModel
+        {
+            public int requestId { get; set; }
+            public string status { get; set; }
+            public string staffNotes { get; set; }
+            public string notificationMessage { get; set; }
         }
     }
 }
