@@ -322,12 +322,6 @@ public class CommentModel
             return View();
         }
 
-        public IActionResult Events()
-        {
-            ViewContents();
-            return View();
-        }
-        
         public IActionResult Notification()
         {
             ViewContents();

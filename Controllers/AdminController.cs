@@ -315,19 +315,20 @@ namespace HomeOwner.Controllers
                     .Select(d => new
                     {
                         id = d.document_id,
-                        name = d.name ?? string.Empty,
-                        type = d.file_type ?? string.Empty,
-                        category = d.category ?? string.Empty,
+                        name = d.name != null ? d.name : string.Empty,
+                        type = d.file_type != null ? d.file_type : string.Empty,
+                        category = d.category != null ? d.category : string.Empty,
                         size = d.file_size,
                         uploaded = d.upload_date.ToString("yyyy-MM-dd"),
-                        visibility = d.visibility ?? "admin",
-                        url = d.file_path ?? string.Empty,
+                        visibility = d.visibility != null ? d.visibility : "admin",
+                        url = d.file_path != null ? d.file_path : string.Empty,
                         downloads = d.download_count,
                         uploader = new
                         {
                             id = d.uploader_id,
                             name = d.Uploader == null ? "Unknown User" : 
-                                $"{d.Uploader.firstname ?? string.Empty} {d.Uploader.lastname ?? string.Empty}".Trim()
+                                (d.Uploader.firstname != null ? d.Uploader.firstname : string.Empty) + " " + 
+                                (d.Uploader.lastname != null ? d.Uploader.lastname : string.Empty)
                         }
                     })
                     .ToList();
@@ -1046,8 +1047,508 @@ namespace HomeOwner.Controllers
             return View("AdminEvents");
         }
 
+        // Get all events
+        [HttpGet]
+        public JsonResult GetEvents(string filter = "upcoming")
+        {
+            try
+            {
+                var today = DateTime.Today;
+                var query = _context.Event.AsQueryable();
 
+                // Apply filter
+                if (filter == "upcoming")
+                {
+                    query = query.Where(e => e.event_date >= today);
+                }
+                else if (filter == "past")
+                {
+                    query = query.Where(e => e.event_date < today);
+                }
+                else if (filter == "featured")
+                {
+                    query = query.Where(e => e.is_featured);
+                }
 
+                // First fetch events
+                var eventsList = query.OrderBy(e => e.event_date).ToList();
+                
+                // Then transform to response format outside of the LINQ query
+                var events = eventsList.Select(e => {
+                    // Create tags list outside of the expression tree
+                    List<string> tagsList = e.tags != null 
+                        ? e.tags.Split(',').ToList() 
+                        : new List<string>();
+                    
+                    return new
+                    {
+                        id = e.event_id,
+                        title = e.title,
+                        date = e.event_date,
+                        formattedDate = e.event_date.ToString("yyyy-MM-dd"),
+                        startTime = e.start_time,
+                        endTime = e.end_time,
+                        location = e.location,
+                        description = e.description,
+                        organizer = e.organizer,
+                        contact = e.contact_email,
+                        capacity = e.capacity,
+                        rsvpCount = e.rsvp_count,
+                        image = e.image_url,
+                        featured = e.is_featured,
+                        tags = tagsList,
+                        createdAt = e.created_at,
+                        updatedAt = e.updated_at
+                    };
+                }).ToList();
+
+                return Json(new { success = true, events });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+
+        // Get event by ID
+        [HttpGet]
+        public JsonResult GetEvent(int id)
+        {
+            try
+            {
+                var evt = _context.Event.FirstOrDefault(e => e.event_id == id);
+                if (evt == null)
+                {
+                    return Json(new { success = false, message = "Event not found." });
+                }
+
+                var participants = _context.EventParticipant
+                    .Include(p => p.User)
+                    .Where(p => p.event_id == id)
+                    .Select(p => new
+                    {
+                        id = p.participant_id,
+                        type = p.participant_type,
+                        userId = p.user_id,
+                        name = $"{p.User.firstname} {p.User.lastname}",
+                        registeredAt = p.registered_at
+                    })
+                    .ToList();
+
+                // Create tags list outside of the anonymous object
+                List<string> tagsList = evt.tags != null 
+                    ? evt.tags.Split(',').ToList() 
+                    : new List<string>();
+
+                var eventDetails = new
+                {
+                    id = evt.event_id,
+                    title = evt.title,
+                    date = evt.event_date,
+                    formattedDate = evt.event_date.ToString("yyyy-MM-dd"),
+                    startTime = evt.start_time,
+                    endTime = evt.end_time,
+                    location = evt.location,
+                    description = evt.description,
+                    organizer = evt.organizer,
+                    contact = evt.contact_email,
+                    capacity = evt.capacity,
+                    rsvpCount = evt.rsvp_count,
+                    image = evt.image_url,
+                    featured = evt.is_featured,
+                    tags = tagsList,
+                    createdAt = evt.created_at,
+                    updatedAt = evt.updated_at,
+                    participants = participants
+                };
+
+                return Json(new { success = true, event_details = eventDetails });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+
+        // Add a new event
+        [HttpPost]
+        public JsonResult AddEvent([FromBody] EventSubmission eventData)
+        {
+            try
+            {
+                if (eventData == null)
+                {
+                    return Json(new { success = false, message = "Event data is null" });
+                }
+
+                // Validate required fields
+                if (string.IsNullOrEmpty(eventData.Title) || 
+                    eventData.EventDate == DateTime.MinValue ||
+                    string.IsNullOrEmpty(eventData.StartTime) ||
+                    string.IsNullOrEmpty(eventData.EndTime) ||
+                    string.IsNullOrEmpty(eventData.Location) ||
+                    eventData.Capacity <= 0)
+                {
+                    return Json(new { success = false, message = "Please fill in all required fields (title, date, time, location, capacity)" });
+                }
+
+                var newEvent = new Event
+                {
+                    title = eventData.Title,
+                    event_date = eventData.EventDate,
+                    start_time = eventData.StartTime,
+                    end_time = eventData.EndTime,
+                    location = eventData.Location,
+                    description = eventData.Description,
+                    organizer = eventData.Organizer,
+                    contact_email = eventData.ContactEmail,
+                    capacity = eventData.Capacity,
+                    rsvp_count = 0,
+                    image_url = eventData.ImageUrl,
+                    is_featured = eventData.IsFeatured,
+                    tags = string.Join(",", eventData.Tags ?? new List<string>()),
+                    created_at = DateTime.Now
+                };
+
+                _context.Event.Add(newEvent);
+                _context.SaveChanges();
+
+                return Json(new { 
+                    success = true, 
+                    message = "Event created successfully!", 
+                    event_id = newEvent.event_id 
+                });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+
+        // Update an existing event
+        [HttpPost]
+        public JsonResult UpdateEvent([FromBody] EventSubmission eventData)
+        {
+            try
+            {
+                if (eventData == null || eventData.EventId <= 0)
+                {
+                    return Json(new { success = false, message = "Invalid event data" });
+                }
+
+                var existingEvent = _context.Event.FirstOrDefault(e => e.event_id == eventData.EventId);
+                if (existingEvent == null)
+                {
+                    return Json(new { success = false, message = "Event not found." });
+                }
+
+                // Update event properties
+                existingEvent.title = eventData.Title;
+                existingEvent.event_date = eventData.EventDate;
+                existingEvent.start_time = eventData.StartTime;
+                existingEvent.end_time = eventData.EndTime;
+                existingEvent.location = eventData.Location;
+                existingEvent.description = eventData.Description;
+                existingEvent.organizer = eventData.Organizer;
+                existingEvent.contact_email = eventData.ContactEmail;
+                existingEvent.capacity = eventData.Capacity;
+                existingEvent.image_url = eventData.ImageUrl;
+                existingEvent.is_featured = eventData.IsFeatured;
+                existingEvent.tags = string.Join(",", eventData.Tags ?? new List<string>());
+                existingEvent.updated_at = DateTime.Now;
+
+                _context.SaveChanges();
+
+                return Json(new { success = true, message = "Event updated successfully!" });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+
+        // Upload event image
+        [HttpPost]
+        public async Task<JsonResult> UploadEventImage(IFormFile file)
+        {
+            try
+            {
+                if (file == null || file.Length == 0)
+                {
+                    return Json(new { success = false, message = "No file selected" });
+                }
+
+                // Create uploads directory if it doesn't exist
+                var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "events");
+                if (!Directory.Exists(uploadsFolder))
+                {
+                    Directory.CreateDirectory(uploadsFolder);
+                }
+
+                // Generate unique filename
+                var uniqueFileName = $"{Guid.NewGuid()}_{Path.GetFileName(file.FileName)}";
+                var filePath = Path.Combine(uploadsFolder, uniqueFileName);
+
+                // Save file to disk
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    await file.CopyToAsync(stream);
+                }
+
+                // Return the URL to the uploaded image
+                return Json(new { 
+                    success = true, 
+                    message = "Image uploaded successfully", 
+                    imageUrl = $"/uploads/events/{uniqueFileName}"
+                });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+
+        // Delete an event
+        [HttpPost]
+        public JsonResult DeleteEvent(int id)
+        {
+            try
+            {
+                var evt = _context.Event.FirstOrDefault(e => e.event_id == id);
+                if (evt == null)
+                {
+                    return Json(new { success = false, message = "Event not found." });
+                }
+
+                // Delete associated event image if it exists
+                if (!string.IsNullOrEmpty(evt.image_url) && evt.image_url.StartsWith("/uploads/events/"))
+                {
+                    try
+                    {
+                        // Get physical file path
+                        var imagePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", evt.image_url.TrimStart('/'));
+                        
+                        // Delete file if exists
+                        if (System.IO.File.Exists(imagePath))
+                        {
+                            System.IO.File.Delete(imagePath);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        // Log error but continue with deletion
+                        Console.WriteLine($"Error deleting image file: {ex.Message}");
+                    }
+                }
+
+                // Delete participants first (if cascade delete isn't set up)
+                var participants = _context.EventParticipant.Where(p => p.event_id == id).ToList();
+                if (participants.Any())
+                {
+                    _context.EventParticipant.RemoveRange(participants);
+                }
+
+                // Then delete the event
+                _context.Event.Remove(evt);
+                _context.SaveChanges();
+
+                return Json(new { success = true, message = "Event deleted successfully!" });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+
+        // Get event participants
+        [HttpGet]
+        public JsonResult GetEventParticipants(int eventId)
+        {
+            try
+            {
+                var participants = _context.EventParticipant
+                    .Include(p => p.User)
+                    .Where(p => p.event_id == eventId)
+                    .Select(p => new
+                    {
+                        id = p.participant_id,
+                        type = p.participant_type,
+                        userId = p.user_id,
+                        name = $"{p.User.firstname} {p.User.lastname}",
+                        email = p.User.email,
+                        avatar = "", // You can add avatar logic here if available
+                        registeredAt = p.registered_at
+                    })
+                    .ToList();
+
+                // Group participants by type
+                var grouped = new 
+                {
+                    homeowners = participants.Where(p => p.type == "homeowner").ToList(),
+                    staff = participants.Where(p => p.type == "staff").ToList(),
+                    admins = participants.Where(p => p.type == "admin").ToList(),
+                    total = participants.Count
+                };
+
+                return Json(new { success = true, participants = grouped });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+
+        // Add a participant to an event
+        [HttpPost]
+        public JsonResult AddEventParticipant([FromBody] EventParticipantSubmission participantData)
+        {
+            try
+            {
+                if (participantData == null || participantData.EventId <= 0 || participantData.UserId <= 0)
+                {
+                    return Json(new { success = false, message = "Invalid participant data" });
+                }
+
+                // Check if event exists
+                var evt = _context.Event.FirstOrDefault(e => e.event_id == participantData.EventId);
+                if (evt == null)
+                {
+                    return Json(new { success = false, message = "Event not found." });
+                }
+
+                // Check if user exists
+                var user = _context.User.FirstOrDefault(u => u.user_id == participantData.UserId);
+                if (user == null)
+                {
+                    return Json(new { success = false, message = "User not found." });
+                }
+
+                // Check if user is already a participant
+                var existingParticipant = _context.EventParticipant
+                    .FirstOrDefault(p => p.event_id == participantData.EventId && p.user_id == participantData.UserId);
+                
+                if (existingParticipant != null)
+                {
+                    return Json(new { success = false, message = "User is already a participant in this event." });
+                }
+
+                // Add new participant
+                var newParticipant = new EventParticipant
+                {
+                    event_id = participantData.EventId,
+                    user_id = participantData.UserId,
+                    participant_type = participantData.ParticipantType,
+                    registered_at = DateTime.Now
+                };
+
+                _context.EventParticipant.Add(newParticipant);
+                
+                // Update RSVP count
+                evt.rsvp_count = evt.rsvp_count + 1;
+                
+                _context.SaveChanges();
+
+                return Json(new { 
+                    success = true, 
+                    message = "Participant added successfully!",
+                    participant = new
+                    {
+                        id = newParticipant.participant_id,
+                        type = newParticipant.participant_type,
+                        userId = newParticipant.user_id,
+                        name = $"{user.firstname} {user.lastname}",
+                        email = user.email,
+                        registeredAt = newParticipant.registered_at
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+
+        // Remove a participant from an event
+        [HttpPost]
+        public JsonResult RemoveEventParticipant(int participantId)
+        {
+            try
+            {
+                var participant = _context.EventParticipant
+                    .FirstOrDefault(p => p.participant_id == participantId);
+                
+                if (participant == null)
+                {
+                    return Json(new { success = false, message = "Participant not found." });
+                }
+
+                // Update RSVP count
+                var evt = _context.Event.FirstOrDefault(e => e.event_id == participant.event_id);
+                if (evt != null)
+                {
+                    evt.rsvp_count = Math.Max(0, evt.rsvp_count - 1);
+                }
+
+                _context.EventParticipant.Remove(participant);
+                _context.SaveChanges();
+
+                return Json(new { success = true, message = "Participant removed successfully!" });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+
+        // Get users for participant selection
+        [HttpGet]
+        public JsonResult GetUsersForParticipantSelection(string userType = "homeowner")
+        {
+            try
+            {
+                var users = _context.User
+                    .Where(u => u.role == userType && u.status == "Active")
+                    .Select(u => new
+                    {
+                        id = u.user_id,
+                        name = $"{u.firstname} {u.lastname}",
+                        email = u.email,
+                        role = u.role
+                    })
+                    .ToList();
+
+                return Json(new { success = true, users });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+
+        // Helper classes for event submission
+        public class EventSubmission
+        {
+            public int EventId { get; set; }
+            public string Title { get; set; }
+            public DateTime EventDate { get; set; }
+            public string StartTime { get; set; }
+            public string EndTime { get; set; }
+            public string Location { get; set; }
+            public string Description { get; set; }
+            public string Organizer { get; set; }
+            public string ContactEmail { get; set; }
+            public int Capacity { get; set; }
+            public string ImageUrl { get; set; }
+            public bool IsFeatured { get; set; }
+            public List<string> Tags { get; set; }
+        }
+
+        public class EventParticipantSubmission
+        {
+            public int EventId { get; set; }
+            public int UserId { get; set; }
+            public string ParticipantType { get; set; }
+        }
 
         public IActionResult AdminUsers()
         {

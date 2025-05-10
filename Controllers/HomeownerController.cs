@@ -1149,6 +1149,335 @@ namespace HomeOwner.Controllers
             public decimal FacilitySpending { get; set; }
             public decimal RentSpending { get; set; }
         }
+
+        public IActionResult Events()
+        {
+            ViewContents();
+            return View();
+        }
+        
+        [HttpGet]
+        public JsonResult GetEvents(string filter = "upcoming")
+        {
+            try
+            {
+                var today = DateTime.Now.Date;
+                var query = _context.Event.AsQueryable();
+                
+                // Apply filter
+                if (filter == "upcoming")
+                {
+                    query = query.Where(e => e.event_date >= today);
+                }
+                else if (filter == "past")
+                {
+                    query = query.Where(e => e.event_date < today);
+                }
+                else if (filter == "featured")
+                {
+                    query = query.Where(e => e.is_featured);
+                }
+                
+                // Get user ID for checking RSVPs
+                int userId = CurrentUser?.user_id ?? 0;
+                
+                // Get events data
+                var events = query
+                    .OrderBy(e => e.event_date)
+                    .Select(e => new
+                    {
+                        id = e.event_id,
+                        title = e.title,
+                        date = e.event_date,
+                        startTime = e.start_time,
+                        endTime = e.end_time,
+                        location = e.location,
+                        description = e.description,
+                        organizer = e.organizer,
+                        contact = e.contact_email,
+                        capacity = e.capacity,
+                        rsvpCount = e.rsvp_count,
+                        tags = e.tags,
+                        featured = e.is_featured,
+                        image = e.image_url
+                    })
+                    .ToList();
+                
+                // Process tags after retrieving data from database
+                var processedEvents = events.Select(e => new
+                {
+                    e.id,
+                    e.title,
+                    e.date,
+                    e.startTime,
+                    e.endTime,
+                    e.location,
+                    e.description,
+                    e.organizer,
+                    e.contact,
+                    e.capacity,
+                    e.rsvpCount,
+                    tags = e.tags != null ? e.tags.Split(',').ToList() : new List<string>(),
+                    e.featured,
+                    e.image
+                }).ToList();
+                
+                // Get RSVPs for the current user using direct SQL to avoid navigation property issues
+                List<int> userRsvps = new List<int>();
+                if (userId > 0)
+                {
+                    // Create a simple query to get event IDs the user has RSVPed to
+                    var sql = $"SELECT event_id FROM EventParticipant WHERE user_id = {userId}";
+                    
+                    using (var command = _context.Database.GetDbConnection().CreateCommand())
+                    {
+                        command.CommandText = sql;
+                        
+                        if (command.Connection.State != System.Data.ConnectionState.Open)
+                            command.Connection.Open();
+                        
+                        using (var result = command.ExecuteReader())
+                        {
+                            while (result.Read())
+                            {
+                                userRsvps.Add(result.GetInt32(0)); // Get the event_id
+                            }
+                        }
+                    }
+                }
+                
+                var eventsWithRsvp = processedEvents.Select(e => new
+                {
+                    e.id,
+                    e.title,
+                    e.date,
+                    e.startTime,
+                    e.endTime,
+                    e.location,
+                    e.description,
+                    e.organizer,
+                    e.contact,
+                    e.capacity,
+                    e.rsvpCount,
+                    e.tags,
+                    e.featured,
+                    e.image,
+                    hasRsvp = userRsvps.Contains(e.id)
+                });
+                
+                return Json(new { success = true, events = eventsWithRsvp });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+        
+        [HttpPost]
+        public async Task<JsonResult> RsvpForEvent([FromBody] EventRsvpModel model)
+        {
+            try
+            {
+                if (CurrentUser == null)
+                {
+                    return Json(new { success = false, message = "You must be logged in to RSVP for events." });
+                }
+                
+                var evt = await _context.Event.FindAsync(model.EventId);
+                if (evt == null)
+                {
+                    return Json(new { success = false, message = "Event not found." });
+                }
+                
+                // Check if user is already registered - using direct query to avoid navigation property issues
+                var existingRsvp = await _context.Database.ExecuteSqlInterpolatedAsync(
+                    $"SELECT COUNT(1) FROM EventParticipant WHERE event_id = {model.EventId} AND user_id = {CurrentUser.user_id}");
+                
+                bool isRegistered = existingRsvp > 0;
+                
+                if (model.IsAttending)
+                {
+                    // User wants to attend
+                    if (isRegistered)
+                    {
+                        return Json(new { success = true, message = "You are already registered for this event." });
+                    }
+                    
+                    // Check if event is full
+                    if (evt.rsvp_count >= evt.capacity)
+                    {
+                        return Json(new { success = false, message = "This event is already at full capacity." });
+                    }
+                    
+                    // Insert directly using SQL to avoid navigation property issues
+                    await _context.Database.ExecuteSqlInterpolatedAsync(
+                        $"INSERT INTO EventParticipant (event_id, user_id, participant_type, registered_at) VALUES ({model.EventId}, {CurrentUser.user_id}, 'homeowner', {DateTime.Now})");
+                    
+                    // Increment RSVP count
+                    evt.rsvp_count += 1;
+                    await _context.SaveChangesAsync();
+                    
+                    return Json(new { 
+                        success = true, 
+                        message = "You have successfully RSVP'd for this event!",
+                        rsvpCount = evt.rsvp_count,
+                        capacity = evt.capacity
+                    });
+                }
+                else
+                {
+                    // User wants to cancel attendance
+                    if (!isRegistered)
+                    {
+                        return Json(new { success = false, message = "You are not registered for this event." });
+                    }
+                    
+                    // Delete directly using SQL to avoid navigation property issues
+                    await _context.Database.ExecuteSqlInterpolatedAsync(
+                        $"DELETE FROM EventParticipant WHERE event_id = {model.EventId} AND user_id = {CurrentUser.user_id}");
+                    
+                    // Decrement RSVP count
+                    evt.rsvp_count = Math.Max(0, evt.rsvp_count - 1);
+                    await _context.SaveChangesAsync();
+                    
+                    return Json(new { 
+                        success = true, 
+                        message = "Your RSVP has been canceled.",
+                        rsvpCount = evt.rsvp_count,
+                        capacity = evt.capacity
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+        
+        [HttpGet]
+        public JsonResult GetEventDetails(int id)
+        {
+            try
+            {
+                var userId = CurrentUser?.user_id ?? 0;
+                
+                var evt = _context.Event
+                    .Where(e => e.event_id == id)
+                    .Select(e => new
+                    {
+                        id = e.event_id,
+                        title = e.title,
+                        date = e.event_date,
+                        startTime = e.start_time,
+                        endTime = e.end_time,
+                        location = e.location,
+                        description = e.description,
+                        organizer = e.organizer,
+                        contact = e.contact_email,
+                        capacity = e.capacity,
+                        rsvpCount = e.rsvp_count,
+                        tags = e.tags,
+                        featured = e.is_featured,
+                        image = e.image_url
+                    })
+                    .FirstOrDefault();
+                
+                if (evt == null)
+                {
+                    return Json(new { success = false, message = "Event not found." });
+                }
+                
+                // Process tags after retrieving data from database
+                var processedEvent = new
+                {
+                    evt.id,
+                    evt.title,
+                    evt.date,
+                    evt.startTime,
+                    evt.endTime,
+                    evt.location,
+                    evt.description,
+                    evt.organizer,
+                    evt.contact,
+                    evt.capacity,
+                    evt.rsvpCount,
+                    tags = evt.tags != null ? evt.tags.Split(',').ToList() : new List<string>(),
+                    evt.featured,
+                    evt.image
+                };
+                
+                // Check if user has RSVP'd for this event using raw SQL to avoid navigation property issues
+                bool hasRsvp = false;
+                if (userId > 0)
+                {
+                    var sql = $"SELECT COUNT(1) FROM EventParticipant WHERE event_id = {id} AND user_id = {userId}";
+                    var count = _context.Database.ExecuteSqlRaw(sql);
+                    hasRsvp = count > 0;
+                }
+                
+                // Check if event is currently ongoing
+                var now = DateTime.Now;
+                var eventDate = evt.date.Date;
+                
+                // Parse start and end times and combine with event date
+                var startTimeParts = evt.startTime.Split(':');
+                var endTimeParts = evt.endTime.Split(':');
+                
+                var eventStartDateTime = new DateTime(
+                    eventDate.Year, 
+                    eventDate.Month, 
+                    eventDate.Day, 
+                    int.Parse(startTimeParts[0]), 
+                    int.Parse(startTimeParts[1]), 
+                    0
+                );
+                
+                var eventEndDateTime = new DateTime(
+                    eventDate.Year, 
+                    eventDate.Month, 
+                    eventDate.Day, 
+                    int.Parse(endTimeParts[0]), 
+                    int.Parse(endTimeParts[1]), 
+                    0
+                );
+                
+                bool isOngoing = now >= eventStartDateTime && now <= eventEndDateTime;
+                
+                return Json(new
+                {
+                    success = true,
+                    event_details = new
+                    {
+                        processedEvent.id,
+                        processedEvent.title,
+                        processedEvent.date,
+                        processedEvent.startTime,
+                        processedEvent.endTime,
+                        processedEvent.location,
+                        processedEvent.description,
+                        processedEvent.organizer,
+                        processedEvent.contact,
+                        processedEvent.capacity,
+                        processedEvent.rsvpCount,
+                        processedEvent.tags,
+                        processedEvent.featured,
+                        processedEvent.image,
+                        hasRsvp,
+                        isOngoing
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+        
+        public class EventRsvpModel
+        {
+            public int EventId { get; set; }
+            public bool IsAttending { get; set; }
+        }
     }
     
     public class PaymentRequest

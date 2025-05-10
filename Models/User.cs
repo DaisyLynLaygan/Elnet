@@ -34,5 +34,8 @@ namespace HomeOwner.Models
         
         [InverseProperty("Uploader")]
         public ICollection<Document>? UploadedDocuments { get; set; }
+        
+        // Collection of Event Participations
+        public ICollection<EventParticipant>? EventParticipations { get; set; }
     }
 }

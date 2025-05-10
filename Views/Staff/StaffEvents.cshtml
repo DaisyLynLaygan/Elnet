@@ -6,6 +6,37 @@
 <link rel="stylesheet" href="~/css/homeowners/events.css"/>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 
+<style>
+    /* Styles for ongoing badge */
+    .ongoing-badge {
+        background-color: #e67e22;
+        color: white;
+        padding: 3px 8px;
+        border-radius: 12px;
+        font-size: 0.7rem;
+        font-weight: 600;
+        margin-right: 5px;
+        display: inline-block;
+    }
+    
+    .event-status-badges {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 5px;
+        margin-top: 4px;
+    }
+    
+    .rsvp-badge-small {
+        background-color: #27ae60;
+        color: white;
+        padding: 3px 8px;
+        border-radius: 12px;
+        font-size: 0.7rem;
+        font-weight: 600;
+        display: inline-block;
+    }
+</style>
+
 <div class="homeowner-events-container">
     
 
@@ -97,95 +128,145 @@
         let currentDate = new Date();
         let currentMonth = currentDate.getMonth();
         let currentYear = currentDate.getFullYear();
+        let events = [];
         
-        // Sample events data - in a real app, this would come from your API
-        const events = [
-            {
-                id: 1,
-                title: "Community Spring Festival",
-                date: new Date(currentYear, currentMonth, currentDate.getDate() + 2),
-                startTime: "10:00",
-                endTime: "16:00",
-                location: "Central Park, Main Pavilion",
-                description: "Join us for our annual spring celebration! Enjoy live music, food trucks, games for all ages, and local artisan vendors. Don't miss the flower arranging workshop at 2pm.",
-                organizer: "Community Events Committee",
-                contact: "events@ourcommunity.org",
-                capacity: 200,
-                rsvpCount: 143,
-                tags: ["public", "family", "festival"],
-                featured: true,
-                image: "https://images.unsplash.com/photo-1527529482837-4698179dc6ce?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60"
-            },
-            {
-                id: 2,
-                title: "Tech Conference 2023",
-                date: new Date(currentYear, currentMonth, currentDate.getDate() + 5),
-                startTime: "09:00",
-                endTime: "18:00",
-                location: "Convention Center, Room 304",
-                description: "A full-day conference featuring the latest in technology trends. Keynote speakers include industry leaders discussing AI, blockchain, and the future of work. Lunch and refreshments provided.",
-                organizer: "Tech Community Group",
-                contact: "tech@community.org",
-                capacity: 150,
-                rsvpCount: 112,
-                tags: ["professional", "tech", "workshop"],
-                featured: true,
-                image: "https://images.unsplash.com/photo-1497366811353-6870744d04b2?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60"
-            },
-            {
-                id: 3,
-                title: "Yoga in the Park",
-                date: new Date(currentYear, currentMonth, currentDate.getDate() + 7),
-                startTime: "07:00",
-                endTime: "08:30",
-                location: "Riverside Park, South Lawn",
-                description: "Start your day with a refreshing outdoor yoga session suitable for all levels. Bring your own mat and water bottle. In case of rain, check our website for updates.",
-                organizer: "Wellness Collective",
-                contact: "wellness@community.org",
-                capacity: 50,
-                rsvpCount: 32,
-                tags: ["wellness", "outdoor", "fitness"],
-                featured: false,
-                image: "https://images.unsplash.com/photo-1545205597-3d9d02c29597?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60"
-            },
-            {
-                id: 4,
-                title: "Book Club Meeting",
-                date: new Date(currentYear, currentMonth, currentDate.getDate() + 10),
-                startTime: "19:00",
-                endTime: "21:00",
-                location: "Community Library, Meeting Room B",
-                description: "This month we're discussing 'The Midnight Library' by Matt Haig. New members always welcome! Light refreshments will be served.",
-                organizer: "Community Book Club",
-                contact: "bookclub@community.org",
-                capacity: 25,
-                rsvpCount: 18,
-                tags: ["culture", "books"],
-                featured: false,
-                image: "https://images.unsplash.com/photo-1544947950-fa07a98d237f?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60"
-            },
-            {
-                id: 5,
-                title: "Neighborhood Cleanup",
-                date: new Date(currentYear, currentMonth, currentDate.getDate() + 12),
-                startTime: "08:30",
-                endTime: "12:00",
-                location: "Meet at Community Center",
-                description: "Help keep our neighborhood beautiful! We'll provide gloves and trash bags. Great for families and groups. Volunteers will receive a free lunch after the cleanup.",
-                organizer: "Green Neighborhood Initiative",
-                contact: "green@community.org",
-                capacity: 100,
-                rsvpCount: 45,
-                tags: ["volunteer", "outdoor", "family"],
-                featured: true,
-                image: "https://images.unsplash.com/photo-1606787366850-de6330128bfc?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60"
+        // Fetch events from server
+        function fetchEvents(filter = 'upcoming') {
+            // Show loading state
+            eventsList.innerHTML = '<div class="loading"><i class="fas fa-circle-notch fa-spin"></i> Loading events...</div>';
+            
+            fetch(`/Staff/GetEvents?filter=${filter}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        events = data.events.map(event => ({
+                            ...event,
+                            date: new Date(event.date)
+                        }));
+                        initCalendar();
+                        renderUpcomingEvents();
+                    } else {
+                        eventsList.innerHTML = `
+                            <div class="empty-state error">
+                                <i class="fas fa-exclamation-circle"></i>
+                                <p>Error loading events</p>
+                                <p class="small">${data.message || 'Please try again later'}</p>
+                            </div>
+                        `;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching events:', error);
+                    eventsList.innerHTML = `
+                        <div class="empty-state error">
+                            <i class="fas fa-exclamation-circle"></i>
+                            <p>Error loading events</p>
+                            <p class="small">Please try again later</p>
+                        </div>
+                    `;
+                });
+        }
+        
+        // Handle RSVP globally
+        window.handleRsvp = function(eventId, isAttending) {
+            // Disable button to prevent multiple clicks
+            const rsvpBtn = document.querySelector('.rsvp-btn');
+            if (rsvpBtn) {
+                rsvpBtn.disabled = true;
+                rsvpBtn.innerHTML = `<i class="fas fa-circle-notch fa-spin"></i> Processing...`;
             }
-        ];
+            
+            // Send RSVP request to server
+            fetch('/Staff/RsvpForEvent', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    eventId: eventId,
+                    isAttending: isAttending
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Update UI
+                    showToast(data.message);
+                    
+                    // Get the event details
+                    fetch(`/Staff/GetEventDetails?id=${eventId}`)
+                        .then(response => response.json())
+                        .then(detailsData => {
+                            if (detailsData.success) {
+                                // Update the event in our local array
+                                const eventIndex = events.findIndex(e => e.id === eventId);
+                                if (eventIndex !== -1) {
+                                    events[eventIndex].rsvpCount = data.rsvpCount;
+                                    events[eventIndex].hasRsvp = isAttending;
+                                }
+                                
+                                // Close the modal
+                                eventDetailsModal.style.display = 'none';
+                                document.body.style.overflow = 'auto';
+                                
+                                // Refresh the calendar and event list
+                                renderCalendar();
+                                renderUpcomingEvents();
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error fetching updated event details:', error);
+                        });
+                } else {
+                    // Show error message
+                    showToast(data.message || 'Error processing RSVP');
+                    
+                    // Re-enable button
+                    if (rsvpBtn) {
+                        rsvpBtn.disabled = false;
+                        rsvpBtn.innerHTML = isAttending ? 
+                            `<i class="fas fa-calendar-check"></i> RSVP Now` : 
+                            `<i class="fas fa-calendar-times"></i> Cancel RSVP`;
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Error submitting RSVP:', error);
+                showToast('Error submitting RSVP. Please try again.');
+                
+                // Re-enable button
+                if (rsvpBtn) {
+                    rsvpBtn.disabled = false;
+                    rsvpBtn.innerHTML = isAttending ? 
+                        `<i class="fas fa-calendar-check"></i> RSVP Now` : 
+                        `<i class="fas fa-calendar-times"></i> Cancel RSVP`;
+                }
+            });
+        }
+        
+        // Share event function
+        window.shareEvent = function(eventId, title, date, location) {
+            const shareText = `Join me at ${title} on ${date} at ${location}`;
+            const shareUrl = window.location.origin + window.location.pathname + '?event=' + eventId;
+            
+            if (navigator.share) {
+                navigator.share({
+                    title: title,
+                    text: shareText,
+                    url: shareUrl
+                }).catch(err => {
+                    console.error('Error sharing:', err);
+                });
+            } else {
+                // Fallback for browsers that don't support Web Share API
+                const emailBody = encodeURIComponent(`${shareText}\n\n${shareUrl}`);
+                window.location.href = `mailto:?subject=${encodeURIComponent(title)}&body=${emailBody}`;
+            }
+        }
         
         // Initialize calendar and events
         function initCalendar() {
             renderCalendar();
-            renderUpcomingEvents();
             updateMonthYearSelectors();
         }
         
@@ -302,6 +383,18 @@
         function renderUpcomingEvents() {
             eventsList.innerHTML = '';
             
+            // Check if events array is empty
+            if (events.length === 0) {
+                eventsList.innerHTML = `
+                    <div class="empty-state">
+                        <i class="far fa-calendar-plus"></i>
+                        <p>No upcoming events scheduled</p>
+                        <p class="small">Check back later or contact your community manager</p>
+                    </div>
+                `;
+                return;
+            }
+            
             // Sort events by date
             const sortedEvents = [...events].sort((a, b) => a.date - b.date);
             
@@ -359,6 +452,7 @@
                             <span class="event-location"><i class="fas fa-map-marker-alt"></i> ${event.location.split(',')[0]}</span>
                         </div>
                         ${event.featured ? '<span class="featured-badge">Featured</span>' : ''}
+                        ${event.hasRsvp ? '<span class="rsvp-badge">You\'re Going</span>' : ''}
                     </div>
                     <button class="event-more-btn" aria-label="View details for ${event.title}" data-event-id="${event.id}">
                         <i class="fas fa-chevron-right"></i>
@@ -398,129 +492,137 @@
         
         // Show event details in modal
         function showEventDetails(event) {
-            const monthNames = ["January", "February", "March", "April", "May", "June", 
-                              "July", "August", "September", "October", "November", "December"];
-            const eventMonth = monthNames[event.date.getMonth()];
+            // First get the latest event details from the server
+            fetch(`/Staff/GetEventDetails?id=${event.id}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        const eventDetails = data.event_details;
+                        const eventDate = new Date(eventDetails.date);
+                        
+                        const monthNames = ["January", "February", "March", "April", "May", "June", 
+                                          "July", "August", "September", "October", "November", "December"];
+                        const eventMonth = monthNames[eventDate.getMonth()];
             
-            // Format date status (Today, Tomorrow, or date)
-            let dateStatus = `${eventMonth} ${event.date.getDate()}, ${event.date.getFullYear()}`;
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
-            
-            if (event.date.getTime() === today.getTime()) {
-                dateStatus = "Today";
-            } else if (event.date.getTime() === today.getTime() + 86400000) {
-                dateStatus = "Tomorrow";
-            }
-            
-            // Calculate spots remaining
-            const spotsRemaining = event.capacity - event.rsvpCount;
-            const spotsText = spotsRemaining > 0 ? 
-                `${spotsRemaining} spot${spotsRemaining === 1 ? '' : 's'} remaining` : 
-                'Event full';
-            
-            eventDetailsContent.innerHTML = `
-                <div class="event-header">
-                    ${event.image ? `<div class="event-image" style="background-image: url('${event.image}')"></div>` : ''}
-                    <div class="event-title-container">
-                        <h2>${event.title}</h2>
-                        <div class="event-meta">
-                            <span class="event-date"><i class="far fa-calendar"></i> ${dateStatus}</span>
-                            <span class="event-time"><i class="far fa-clock"></i> ${formatTime(event.startTime)} - ${formatTime(event.endTime)}</span>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="event-body">
-                    <div class="event-details">
-                        <div class="detail-row">
-                            <i class="fas fa-map-marker-alt"></i>
-                            <div>
-                                <h4>Location</h4>
-                                <p>${event.location}</p>
+                        // Format date status (Today, Tomorrow, or date)
+                        let dateStatus = `${eventMonth} ${eventDate.getDate()}, ${eventDate.getFullYear()}`;
+                        const today = new Date();
+                        today.setHours(0, 0, 0, 0);
+                        
+                        if (eventDate.getTime() === today.getTime()) {
+                            dateStatus = "Today";
+                        } else if (eventDate.getTime() === today.getTime() + 86400000) {
+                            dateStatus = "Tomorrow";
+                        }
+                        
+                        // Calculate spots remaining
+                        const spotsRemaining = eventDetails.capacity - eventDetails.rsvpCount;
+                        const spotsText = spotsRemaining > 0 ? 
+                            `${spotsRemaining} spot${spotsRemaining === 1 ? '' : 's'} remaining` : 
+                            'Event full';
+                        
+                        // Determine RSVP button state
+                        let rsvpButtonHtml = '';
+                        
+                        if (eventDetails.isOngoing) {
+                            // Event is currently ongoing
+                            rsvpButtonHtml = `
+                                <button class="btn rsvp-btn disabled" disabled>
+                                    <i class="fas fa-clock"></i> Event Started
+                                </button>`;
+                        } else if (spotsRemaining === 0 && !eventDetails.hasRsvp) {
+                            // Event is full
+                            rsvpButtonHtml = `
+                                <button class="btn rsvp-btn disabled" disabled>
+                                    <i class="fas fa-calendar-times"></i> Event Full
+                                </button>`;
+                        } else if (eventDetails.hasRsvp) {
+                            // User is already attending
+                            rsvpButtonHtml = `
+                                <button class="btn rsvp-btn confirmed" onclick="window.handleRsvp(${eventDetails.id}, false)">
+                                    <i class="fas fa-calendar-check"></i> You're Going!
+                                </button>`;
+                        } else {
+                            // Normal RSVP button
+                            rsvpButtonHtml = `
+                                <button class="btn rsvp-btn" onclick="window.handleRsvp(${eventDetails.id}, true)">
+                                    <i class="fas fa-calendar-plus"></i> RSVP Now
+                                </button>`;
+                        }
+                        
+                        eventDetailsContent.innerHTML = `
+                            <div class="event-header">
+                                ${eventDetails.image ? `<div class="event-image" style="background-image: url('${eventDetails.image}')"></div>` : ''}
+                                <div class="event-title-container">
+                                    <h2>${eventDetails.title}</h2>
+                                    <div class="event-meta">
+                                        <span class="event-date"><i class="far fa-calendar"></i> ${dateStatus}</span>
+                                        <span class="event-time"><i class="far fa-clock"></i> ${formatTime(eventDetails.startTime)} - ${formatTime(eventDetails.endTime)}</span>
+                                    </div>
+                                </div>
                             </div>
-                        </div>
-                        
-                        <div class="detail-row">
-                            <i class="fas fa-info-circle"></i>
-                            <div>
-                                <h4>Description</h4>
-                                <p>${event.description}</p>
+                            
+                            <div class="event-body">
+                                <div class="event-details">
+                                    <div class="detail-row">
+                                        <i class="fas fa-map-marker-alt"></i>
+                                        <div>
+                                            <h4>Location</h4>
+                                            <p>${eventDetails.location}</p>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="detail-row">
+                                        <i class="fas fa-info-circle"></i>
+                                        <div>
+                                            <h4>Description</h4>
+                                            <p>${eventDetails.description}</p>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="detail-row">
+                                        <i class="fas fa-user-friends"></i>
+                                        <div>
+                                            <h4>Organizer</h4>
+                                            <p>${eventDetails.organizer}</p>
+                                            ${eventDetails.contact ? `<p class="contact"><i class="fas fa-envelope"></i> ${eventDetails.contact}</p>` : ''}
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="event-tags">
+                                        ${eventDetails.tags.map(tag => `<span class="tag ${tag}">${capitalizeFirstLetter(tag)}</span>`).join('')}
+                                    </div>
+                                </div>
+                                
+                                <div class="event-actions">
+                                    <div class="attendance-info">
+                                        <div class="progress-container">
+                                            <div class="progress-bar" style="width: ${(eventDetails.rsvpCount / eventDetails.capacity) * 100}%"></div>
+                                        </div>
+                                        <span class="spots-remaining ${spotsRemaining === 0 ? 'full' : ''}">
+                                            ${spotsText}
+                                        </span>
+                                    </div>
+                                    
+                                    ${rsvpButtonHtml}
+                                    
+                                    <button class="btn share-btn" onclick="window.shareEvent(${eventDetails.id}, '${eventDetails.title.replace(/'/g, "\\'")}', '${dateStatus}', '${eventDetails.location.replace(/'/g, "\\'")}')">
+                                        <i class="fas fa-share-alt"></i> Share Event
+                                    </button>
+                                </div>
                             </div>
-                        </div>
+                        `;
                         
-                        <div class="detail-row">
-                            <i class="fas fa-user-friends"></i>
-                            <div>
-                                <h4>Organizer</h4>
-                                <p>${event.organizer}</p>
-                                ${event.contact ? `<p class="contact"><i class="fas fa-envelope"></i> ${event.contact}</p>` : ''}
-                            </div>
-                        </div>
-                        
-                        <div class="event-tags">
-                            ${event.tags.map(tag => `<span class="tag ${tag}">${capitalizeFirstLetter(tag)}</span>`).join('')}
-                        </div>
-                    </div>
-                    
-                    <div class="event-actions">
-                        <div class="attendance-info">
-                            <div class="progress-container">
-                                <div class="progress-bar" style="width: ${(event.rsvpCount / event.capacity) * 100}%"></div>
-                            </div>
-                            <span class="spots-remaining ${spotsRemaining === 0 ? 'full' : ''}">
-                                ${spotsText}
-                            </span>
-                        </div>
-                        
-                        <button class="btn rsvp-btn ${spotsRemaining === 0 ? 'disabled' : ''}" 
-                                ${spotsRemaining === 0 ? 'disabled' : ''}>
-                            <i class="fas fa-calendar-check"></i> RSVP Now
-                        </button>
-                        
-                        <button class="btn share-btn">
-                            <i class="fas fa-share-alt"></i> Share Event
-                        </button>
-                    </div>
-                </div>
-            `;
-            
-            // Add event listener to RSVP button
-            if (spotsRemaining > 0) {
-                document.querySelector('.rsvp-btn').addEventListener('click', function() {
-                    // In a real app, this would make an API call
-                    showToast('RSVP confirmed! We look forward to seeing you.');
-                    this.disabled = true;
-                    this.textContent = 'You\'re Going!';
-                    this.classList.add('confirmed');
+                        eventDetailsModal.style.display = 'flex';
+                        document.body.style.overflow = 'hidden';
+                    } else {
+                        showToast('Error loading event details.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching event details:', error);
+                    showToast('Error loading event details. Please try again.');
                 });
-            }
-            
-            // Add event listener to share button
-            document.querySelector('.share-btn').addEventListener('click', function() {
-                if (navigator.share) {
-                    navigator.share({
-                        title: event.title,
-                        text: `Join me at ${event.title} on ${dateStatus} at ${event.location}`,
-                        url: window.location.href
-                    }).catch(err => {
-                        showToast('Sharing failed: ' + err);
-                    });
-                } else {
-                    // Fallback for browsers that don't support Web Share API
-                    const shareUrl = `mailto:?subject=${encodeURIComponent(event.title)}&body=${encodeURIComponent(
-                        `Join me at ${event.title}\n\n` +
-                        `Date: ${dateStatus}\n` +
-                        `Time: ${formatTime(event.startTime)} - ${formatTime(event.endTime)}\n` +
-                        `Location: ${event.location}\n\n` +
-                        `${event.description}`
-                    )}`;
-                    window.location.href = shareUrl;
-                }
-            });
-            
-            eventDetailsModal.style.display = 'flex';
-            document.body.style.overflow = 'hidden';
         }
         
         // Show events for a specific date in modal
@@ -537,24 +639,54 @@
                         <i class="far fa-calendar-times"></i>
                         <h3>No events scheduled</h3>
                         <p>There are no events scheduled for this day.</p>
-                        <button class="btn suggest-event-btn">
-                            <i class="fas fa-lightbulb"></i> Suggest an Event
-                        </button>
                     </div>
                 `;
-                
-                document.querySelector('.suggest-event-btn').addEventListener('click', function() {
-                    // In a real app, this would open a form
-                    showToast('Event suggestion feature coming soon!');
-                });
             } else if (filteredEvents.length === 1) {
                 // If only one event, show its details directly
                 showEventDetails(filteredEvents[0]);
+                return;
             } else {
                 // Show list of events for this date
                 const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", 
                                    "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
                 const eventMonth = monthNames[month];
+                
+                // Check which events might be currently ongoing
+                const now = new Date();
+                const dateStr = `${year}-${month+1}-${day}`;
+                
+                // Create date-events-list HTML with information about event status
+                const eventsListHtml = filteredEvents.map(event => {
+                    // Check if event is ongoing
+                    const startParts = event.startTime.split(':');
+                    const endParts = event.endTime.split(':');
+                    
+                    const eventStartTime = new Date(year, month, day, 
+                        parseInt(startParts[0]), parseInt(startParts[1]), 0);
+                    const eventEndTime = new Date(year, month, day, 
+                        parseInt(endParts[0]), parseInt(endParts[1]), 0);
+                    
+                    const isOngoing = now >= eventStartTime && now <= eventEndTime;
+                    
+                    return `
+                        <div class="date-event-item ${event.featured ? 'featured' : ''}">
+                            <div class="event-time-badge">
+                                ${formatTime(event.startTime)}
+                            </div>
+                            <div class="event-info">
+                                <h4>${event.title}</h4>
+                                <p class="event-location"><i class="fas fa-map-marker-alt"></i> ${event.location.split(',')[0]}</p>
+                                <div class="event-status-badges">
+                                    ${event.hasRsvp ? '<span class="rsvp-badge-small">You\'re Going</span>' : ''}
+                                    ${isOngoing ? '<span class="ongoing-badge">Ongoing</span>' : ''}
+                                </div>
+                            </div>
+                            <button class="view-event-btn" data-event-id="${event.id}" aria-label="View details for ${event.title}">
+                                <i class="fas fa-chevron-right"></i>
+                            </button>
+                        </div>
+                    `;
+                }).join('');
                 
                 eventDetailsContent.innerHTML = `
                     <div class="date-events-header">
@@ -562,20 +694,7 @@
                         <p>${filteredEvents.length} event${filteredEvents.length === 1 ? '' : 's'}</p>
                     </div>
                     <div class="date-events-list">
-                        ${filteredEvents.map(event => `
-                            <div class="date-event-item ${event.featured ? 'featured' : ''}">
-                                <div class="event-time-badge">
-                                    ${formatTime(event.startTime)}
-                                </div>
-                                <div class="event-info">
-                                    <h4>${event.title}</h4>
-                                    <p class="event-location"><i class="fas fa-map-marker-alt"></i> ${event.location.split(',')[0]}</p>
-                                </div>
-                                <button class="view-event-btn" data-event-id="${event.id}" aria-label="View details for ${event.title}">
-                                    <i class="fas fa-chevron-right"></i>
-                                </button>
-                            </div>
-                        `).join('')}
+                        ${eventsListHtml}
                     </div>
                 `;
                 
@@ -680,7 +799,30 @@
             }
         });
         
+        // Get event ID from URL if present
+        const urlParams = new URLSearchParams(window.location.search);
+        const eventIdParam = urlParams.get('event');
+        
+        if (eventIdParam) {
+            const eventId = parseInt(eventIdParam);
+            // Fetch event details and show modal
+            fetch(`/Staff/GetEventDetails?id=${eventId}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        const event = {
+                            id: data.event_details.id,
+                            date: new Date(data.event_details.date)
+                        };
+                        showEventDetails(event);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching event details from URL param:', error);
+                });
+        }
+        
         // Initialize
-        initCalendar();
+        fetchEvents('upcoming');
     });
 </script>

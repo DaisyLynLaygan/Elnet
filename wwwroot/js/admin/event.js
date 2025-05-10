@@ -34,6 +34,7 @@ document.addEventListener('DOMContentLoaded', function() {
     let currentYear = currentDate.getFullYear();
     let selectedEventId = null;
     let uploadedImage = null;
+    let events = [];
     
     // Sample data
     const homeowners = [
@@ -55,7 +56,7 @@ document.addEventListener('DOMContentLoaded', function() {
     ];
 
     // Sample events data with participants
-    const events = [
+    const eventsData = [
         {
             id: 1,
             title: "Community Spring Festival",
@@ -131,8 +132,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Initialize the application
     function init() {
-        renderCalendar();
-        displayUpcomingEvents();
+        fetchEvents();
         setupEventListeners();
         
         // Force grid view
@@ -385,15 +385,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         deleteBtn.addEventListener('click', (e) => {
             e.stopPropagation();
-            if (confirm('Are you sure you want to delete this event?')) {
-                const index = events.findIndex(e => e.id === event.id);
-                if (index !== -1) {
-                    events.splice(index, 1);
-                    renderCalendar();
-                    displayUpcomingEvents();
-                    renderParticipantsTable();
-                }
-            }
+            deleteEvent(event.id);
         });
         
         // Click event to show details
@@ -484,12 +476,34 @@ document.addEventListener('DOMContentLoaded', function() {
                             ${spotsText} (${event.rsvpCount}/${event.capacity})
                         </span>
                     </div>
+                    
+                    <div class="modal-action-buttons">
+                        <button class="btn-edit-event" onclick="openEditModal(${event.id})">
+                            <i class="fas fa-edit"></i> Edit Event
+                        </button>
+                        <button class="btn-delete-event" onclick="deleteEvent(${event.id})">
+                            <i class="fas fa-trash"></i> Delete Event
+                        </button>
+                    </div>
                 </div>
             </div>
         `;
         
-        // Show participants section
-        showParticipants(event);
+        // Display a loading indicator for participants
+        participantsList.innerHTML = '<p class="loading-participants"><i class="fas fa-spinner fa-spin"></i> Loading participants...</p>';
+        participantCount.textContent = '...';
+        
+        // Fetch participants from server
+        fetchEventParticipants(event.id)
+            .then(updatedEvent => {
+                // Show participants with the updated event data
+                showParticipants(updatedEvent);
+            })
+            .catch(error => {
+                console.error('Error fetching participants:', error);
+                participantsList.innerHTML = '<p class="error-message"><i class="fas fa-exclamation-triangle"></i> Failed to load participants</p>';
+                participantCount.textContent = '0';
+            });
         
         eventDetailsModal.style.display = 'flex';
         document.body.style.overflow = 'hidden';
@@ -663,12 +677,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 <td class="actions">
                     <button class="btn-action view" title="View Participants"><i class="fas fa-users"></i></button>
                     <button class="btn-action edit" title="Edit Event"><i class="fas fa-edit"></i></button>
+                    <button class="btn-action delete" title="Delete Event"><i class="fas fa-trash"></i></button>
                 </td>
             `;
             
             // Add event listeners to action buttons
             const viewBtn = row.querySelector('.view');
             const editBtn = row.querySelector('.edit');
+            const deleteBtn = row.querySelector('.delete');
             
             viewBtn.addEventListener('click', () => {
                 showEventDetails(event);
@@ -676,6 +692,8 @@ document.addEventListener('DOMContentLoaded', function() {
             });
             
             editBtn.addEventListener('click', () => openEditModal(event));
+            
+            deleteBtn.addEventListener('click', () => deleteEvent(event.id));
             
             eventsTableBody.appendChild(row);
         });
@@ -690,6 +708,7 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('eventForm').reset();
         imagePreview.style.display = 'none';
         uploadedImage = null;
+        imageUpload.value = '';
         eventModal.style.display = 'flex';
         document.body.style.overflow = 'hidden';
     }
@@ -728,7 +747,10 @@ document.addEventListener('DOMContentLoaded', function() {
         
         document.getElementById('featuredEvent').checked = event.featured;
         
-        // Show image preview if exists
+        // Show image preview if exists, reset uploadedImage variable
+        uploadedImage = null;
+        imageUpload.value = '';
+        
         if (event.image) {
             previewImage.src = event.image;
             imagePreview.style.display = 'block';
@@ -798,7 +820,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const capacity = parseInt(document.getElementById('eventCapacity').value);
         const organizer = document.getElementById('eventOrganizer').value;
         const contact = document.getElementById('eventContact').value;
-        const imageUrl = document.getElementById('eventImage').value || uploadedImage;
+        const imageUrl = document.getElementById('eventImage').value;
         
         // Get selected tags
         const tags = [];
@@ -808,50 +830,108 @@ document.addEventListener('DOMContentLoaded', function() {
         
         const featured = document.getElementById('featuredEvent').checked;
         
-        // Create/update event object
-        const eventData = {
-            id: selectedEventId || events.length + 1,
-            title,
-            date: new Date(date),
-            startTime,
-            endTime,
-            location,
-            description,
-            capacity,
-            organizer,
-            contact,
-            tags,
-            featured,
-            rsvpCount: selectedEventId ? events.find(e => e.id === selectedEventId).rsvpCount : 0,
-            image: imageUrl,
-            participants: selectedEventId ? events.find(e => e.id === selectedEventId).participants : []
+        // Validate required fields
+        if (!title || !date || !startTime || !endTime || !location || capacity <= 0) {
+            alert('Please fill in all required fields');
+            return;
+        }
+        
+        // Show loading state
+        const saveButton = document.querySelector('.btn-save');
+        const originalButtonText = saveButton.innerHTML;
+        saveButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+        saveButton.disabled = true;
+        
+        // Function to continue with saving event after image is uploaded
+        const saveEvent = (imageUploadUrl) => {
+            // Create event data object
+            const eventData = {
+                EventId: selectedEventId || 0,
+                Title: title,
+                EventDate: new Date(date),
+                StartTime: startTime,
+                EndTime: endTime,
+                Location: location,
+                Description: description,
+                Capacity: capacity,
+                Organizer: organizer,
+                ContactEmail: contact,
+                ImageUrl: imageUploadUrl || imageUrl,
+                IsFeatured: featured,
+                Tags: tags
+            };
+            
+            // Determine if it's an add or update operation
+            const url = selectedEventId ? '/Admin/UpdateEvent' : '/Admin/AddEvent';
+            
+            // Send AJAX request to save the event
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(eventData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Close modal
+                    closeAllModals();
+                    
+                    // Refresh data
+                    fetchEvents();
+                    
+                    // Show success message
+                    alert(data.message);
+                } else {
+                    // Show error
+                    alert('Error: ' + data.message);
+                    
+                    // Reset button
+                    saveButton.innerHTML = originalButtonText;
+                    saveButton.disabled = false;
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while saving the event.');
+                
+                // Reset button
+                saveButton.innerHTML = originalButtonText;
+                saveButton.disabled = false;
+            });
         };
         
-        // Only add future events
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        
-        if (eventData.date >= today) {
-            if (selectedEventId) {
-                // Update existing event
-                const index = events.findIndex(e => e.id === selectedEventId);
-                if (index !== -1) {
-                    events[index] = eventData;
+        // First handle file upload if needed, then save event
+        if (uploadedImage) {
+            // Create FormData and upload the image first
+            const formData = new FormData();
+            formData.append('file', uploadedImage);
+            
+            fetch('/Admin/UploadEventImage', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Save event with the uploaded image URL
+                    saveEvent(data.imageUrl);
+                } else {
+                    alert('Error uploading image: ' + data.message);
+                    saveButton.innerHTML = originalButtonText;
+                    saveButton.disabled = false;
                 }
-            } else {
-                // Add new event
-                events.push(eventData);
-            }
-            
-            // Update UI
-            renderCalendar();
-            displayUpcomingEvents();
-            renderParticipantsTable();
-            
-            // Close modal
-            closeAllModals();
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while uploading the image.');
+                saveButton.innerHTML = originalButtonText;
+                saveButton.disabled = false;
+            });
         } else {
-            alert('Please select a current or future date for the event.');
+            // No new image to upload, save event with existing URL
+            saveEvent();
         }
     }
 
@@ -909,12 +989,30 @@ document.addEventListener('DOMContentLoaded', function() {
     function handleImageUpload(e) {
         if (e.target.files.length > 0) {
             const file = e.target.files[0];
-            const reader = new FileReader();
             
-            reader.onload = function(event) {
-                previewImage.src = event.target.result;
+            // Instead of uploading immediately, just show a preview
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                // Update preview
+                previewImage.src = e.target.result;
+                imagePreview.innerHTML = '';
+                imagePreview.appendChild(previewImage);
+                
+                // Add remove button
+                const removeBtn = document.createElement('button');
+                removeBtn.type = 'button';
+                removeBtn.className = 'btn-remove-image';
+                removeBtn.innerHTML = '<i class="fas fa-times"></i>';
+                removeBtn.onclick = removeImage;
+                imagePreview.appendChild(removeBtn);
+                
                 imagePreview.style.display = 'block';
-                uploadedImage = event.target.result;
+                
+                // Store the file for later upload
+                uploadedImage = file;
+                
+                // Clear the URL field since we'll be uploading a file
+                document.getElementById('eventImage').value = '';
             };
             
             reader.readAsDataURL(file);
@@ -934,7 +1032,7 @@ document.addEventListener('DOMContentLoaded', function() {
         return string.charAt(0).toUpperCase() + string.slice(1);
     }
 
-    // Global function for image removal
+    // Global functions for use in inline handlers
     window.removeImage = function() {
         previewImage.src = '#';
         imagePreview.style.display = 'none';
@@ -942,6 +1040,162 @@ document.addEventListener('DOMContentLoaded', function() {
         imageUpload.value = '';
         uploadedImage = null;
     };
+    
+    window.openEditModal = function(eventId) {
+        // Find the event by ID
+        const event = events.find(e => e.id === eventId);
+        if (event) {
+            // Close event details modal if open
+            eventDetailsModal.style.display = 'none';
+            
+            // Call the internal function
+            openEditModal(event);
+        }
+    };
+    
+    window.deleteEvent = function(eventId) {
+        // Call the internal function
+        deleteEvent(eventId);
+    };
+
+    // Fetch events from the server
+    function fetchEvents(filter = 'upcoming') {
+        // Show loading indicator
+        eventsList.innerHTML = '<div class="loading-indicator"><i class="fas fa-spinner fa-spin"></i> Loading events...</div>';
+        
+        // Fetch data from server
+        fetch(`/Admin/GetEvents?filter=${filter}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Transform server data to our format
+                    events = data.events.map(event => ({
+                        id: event.id,
+                        title: event.title,
+                        date: new Date(event.date),
+                        startTime: event.startTime,
+                        endTime: event.endTime,
+                        location: event.location,
+                        description: event.description,
+                        organizer: event.organizer,
+                        contact: event.contact,
+                        capacity: event.capacity,
+                        rsvpCount: event.rsvpCount,
+                        tags: event.tags || [],
+                        featured: event.featured,
+                        image: event.image,
+                        participants: [] // We'll fetch participants separately when needed
+                    }));
+                    
+                    // Update UI
+                    renderCalendar();
+                    displayUpcomingEvents();
+                    if (eventsTableSection.style.display !== 'none') {
+                        renderParticipantsTable();
+                    }
+                } else {
+                    // Show error
+                    eventsList.innerHTML = `<div class="error-message"><i class="fas fa-exclamation-triangle"></i><p>${data.message || 'Error loading events'}</p></div>`;
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                eventsList.innerHTML = '<div class="error-message"><i class="fas fa-exclamation-triangle"></i><p>Failed to load events. Please try again later.</p></div>';
+            });
+    }
+    
+    // Get event participants
+    function fetchEventParticipants(eventId) {
+        return fetch(`/Admin/GetEventParticipants?eventId=${eventId}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Find event and update its participants
+                    const eventIndex = events.findIndex(e => e.id === eventId);
+                    if (eventIndex !== -1) {
+                        // Format participants to match our expected structure
+                        const allParticipants = [];
+                        
+                        // Add homeowners
+                        data.participants.homeowners.forEach(p => {
+                            allParticipants.push({ type: 'homeowner', id: p.userId });
+                        });
+                        
+                        // Add staff
+                        data.participants.staff.forEach(p => {
+                            allParticipants.push({ type: 'staff', id: p.userId });
+                        });
+                        
+                        // Add admins
+                        data.participants.admins.forEach(p => {
+                            allParticipants.push({ type: 'admin', id: p.userId });
+                        });
+                        
+                        events[eventIndex].participants = allParticipants;
+                        return events[eventIndex];
+                    }
+                }
+                throw new Error('Failed to load participants');
+            });
+    }
+
+    // Delete an event
+    function deleteEvent(eventId) {
+        if (confirm('Are you sure you want to delete this event? This cannot be undone.')) {
+            // Show loading state
+            const deleteButtons = document.querySelectorAll('.btn-action.delete');
+            deleteButtons.forEach(btn => {
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+                btn.disabled = true;
+            });
+            
+            // Send delete request to server
+            fetch('/Admin/DeleteEvent', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ id: eventId })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Remove event from local array
+                    const index = events.findIndex(e => e.id === eventId);
+                    if (index !== -1) {
+                        events.splice(index, 1);
+                    }
+                    
+                    // Update UI
+                    renderCalendar();
+                    displayUpcomingEvents();
+                    renderParticipantsTable();
+                    
+                    // Show success message
+                    alert('Event deleted successfully');
+                } else {
+                    // Show error
+                    alert('Error: ' + data.message);
+                    
+                    // Reset buttons
+                    deleteButtons.forEach(btn => {
+                        btn.innerHTML = '<i class="fas fa-trash"></i>';
+                        btn.disabled = false;
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while deleting the event');
+                
+                // Reset buttons
+                deleteButtons.forEach(btn => {
+                    btn.innerHTML = '<i class="fas fa-trash"></i>';
+                    btn.disabled = false;
+                });
+            });
+        }
+    }
 
     // Initialize the application
     init();

@@ -97,6 +97,20 @@ namespace HomeOwner.Data
             modelBuilder.Entity<RentPayment>()
                 .Property(r => r.amount)
                 .HasColumnType("decimal(10,2)");
+
+            // Event-EventParticipant relationship
+            modelBuilder.Entity<EventParticipant>()
+                .HasOne(ep => ep.Event)
+                .WithMany(e => e.Participants)
+                .HasForeignKey(ep => ep.event_id)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // EventParticipant-User relationship
+            modelBuilder.Entity<EventParticipant>()
+                .HasOne(ep => ep.User)
+                .WithMany()
+                .HasForeignKey(ep => ep.user_id)
+                .OnDelete(DeleteBehavior.Restrict);
         }
 
         public DbSet<HomeOwner.Models.User> User { get; set; } = default!;
@@ -111,5 +125,7 @@ namespace HomeOwner.Data
         public DbSet<FacilityReservation> FacilityReservation { get; set; }
         public DbSet<RentPayment> RentPayment { get; set; }
         public DbSet<Document> Document { get; set; }
+        public DbSet<Event> Event { get; set; }
+        public DbSet<EventParticipant> EventParticipant { get; set; }
     }
 }
