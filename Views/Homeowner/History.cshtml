@@ -1,6 +1,7 @@
 @page
 @{
     Layout = "~/Views/Shared/Dashboard_Layout.cshtml";
+    var user = ViewBag.CurrentUser as HomeOwner.Models.User;
 }
 
 <link rel="stylesheet" href="~/css/homeowners/history.css" />
@@ -11,7 +12,7 @@
     <div class="container">
         <div class="history-header">
             <h1>Payment History</h1>
-            <p>Track and analyze all your property-related payments in one place. View detailed records of rent, maintenance, and facility payments.</p>
+            <p>Track and analyze all your property-related payments in one place. View detailed records of maintenance services and facility reservations.</p>
         </div>
 
         <div class="history-stats">
@@ -21,7 +22,7 @@
                 </div>
                 <div class="stat-info">
                     <span class="stat-label">Total Spent</span>
-                    <span class="stat-value">$12,450.00</span>
+                    <span class="stat-value">$0.00</span>
                 </div>
             </div>
             
@@ -31,7 +32,7 @@
                 </div>
                 <div class="stat-info">
                     <span class="stat-label">This Month</span>
-                    <span class="stat-value">$3,200.00</span>
+                    <span class="stat-value">$0.00</span>
                 </div>
             </div>
             
@@ -41,7 +42,7 @@
                 </div>
                 <div class="stat-info">
                     <span class="stat-label">Rent Payments</span>
-                    <span class="stat-value">10</span>
+                    <span class="stat-value">0</span>
                 </div>
             </div>
             
@@ -51,7 +52,17 @@
                 </div>
                 <div class="stat-info">
                     <span class="stat-label">Maintenance</span>
-                    <span class="stat-value">7</span>
+                    <span class="stat-value">0</span>
+                </div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-building"></i>
+                </div>
+                <div class="stat-info">
+                    <span class="stat-label">Facilities</span>
+                    <span class="stat-value">0</span>
                 </div>
             </div>
         </div>
@@ -77,9 +88,9 @@
                 <label for="paymentType"><i class="fas fa-filter"></i> Payment Type</label>
                 <select id="paymentType">
                     <option value="all">All Types</option>
-                    <option value="rent">Rent</option>
                     <option value="maintenance">Maintenance</option>
                     <option value="facilities">Facilities</option>
+                    <option value="rent">Rent</option>
                 </select>
             </div>
             
@@ -98,8 +109,9 @@
                 <select id="statusFilter">
                     <option value="all">All Statuses</option>
                     <option value="completed">Completed</option>
+                    <option value="approved">Approved</option>
+                    <option value="in-progress">In Progress</option>
                     <option value="pending">Pending</option>
-                    <option value="failed">Failed</option>
                 </select>
             </div>
             
@@ -115,11 +127,14 @@
                 <div class="header-item">Type</div>
                 <div class="header-item">Amount</div>
                 <div class="header-item">Status</div>
-                <div class="header-item">Receipt</div>
             </div>
             
             <div class="list-items" id="paymentHistoryItems">
                 <!-- Payment items will be loaded here by JavaScript -->
+                <div class="loading-state">
+                    <i class="fas fa-spinner fa-spin"></i>
+                    <p>Loading your payment history...</p>
+                </div>
             </div>
             
             <div class="list-pagination">
@@ -127,9 +142,9 @@
                     <i class="fas fa-chevron-left"></i> Previous
                 </button>
                 <div class="page-numbers">
-                    <span class="current-page">1</span> of <span class="total-pages">3</span>
+                    <span class="current-page">1</span> of <span class="total-pages">1</span>
                 </div>
-                <button class="pagination-button" id="nextPage">
+                <button class="pagination-button" id="nextPage" disabled>
                     Next <i class="fas fa-chevron-right"></i>
                 </button>
             </div>
@@ -138,3 +153,12 @@
 </section>
 
 <script src="~/js/history.js" asp-append-version="true"></script>
+<script>
+    // Store the user ID in session storage if available
+    @if(user != null)
+    {
+        <text>
+        sessionStorage.setItem('user_id', '@user.user_id');
+        </text>
+    }
+</script>

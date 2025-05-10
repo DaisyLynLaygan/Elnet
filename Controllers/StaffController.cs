@@ -277,7 +277,245 @@ namespace HomeOwner.Controllers
         public IActionResult StaffDashboard()
         {
             ViewContents();
+            
+            // Get the current user's ID
+            int staffId = CurrentUser.user_id;
+            
+            // Get service request statistics - SERVICES
+            var completedServices = _context.ServiceRequest
+                .Count(sr => sr.status == "Completed");
+                
+            var pendingServices = _context.ServiceRequest
+                .Count(sr => sr.status == "Approved" && sr.payment_status == "Paid");
+                
+            var inProgressServices = _context.ServiceRequest
+                .Count(sr => sr.status == "In Progress");
+            
+            // Get facility reservation statistics - FACILITIES
+            var completedFacilities = _context.FacilityReservation
+                .Count(fr => fr.status == "Completed");
+                
+            var pendingFacilities = _context.FacilityReservation
+                .Count(fr => fr.status == "Approved" && fr.payment_status == "Paid");
+                
+            var inProgressFacilities = _context.FacilityReservation
+                .Count(fr => fr.status == "In Progress");
+            
+            // Combined statistics
+            int totalCompleted = completedServices + completedFacilities;
+            int totalPending = pendingServices + pendingFacilities;
+            int totalInProgress = inProgressServices + inProgressFacilities;
+            
+            // Calculate completion rate
+            int totalTasks = totalCompleted + totalPending + totalInProgress;
+            double completionRate = totalTasks > 0 ? (double)totalCompleted / totalTasks * 100 : 0;
+            
+            // Get upcoming service requests within the next 7 days, ordered by scheduled date
+            var today = DateTime.Now.Date;
+            var nextWeek = today.AddDays(7);
+            
+            // Get upcoming service requests
+            var upcomingServices = _context.ServiceRequest
+                .Include(sr => sr.User)
+                .Where(sr => sr.scheduled_date >= today && 
+                            sr.scheduled_date <= nextWeek && 
+                            (sr.status == "Approved" || sr.status == "In Progress"))
+                .OrderBy(sr => sr.scheduled_date)
+                .ThenBy(sr => sr.scheduled_time)
+                .Select(sr => new {
+                    Id = sr.request_id,
+                    Type = sr.service_type,
+                    Facility = "", // Not related to facility
+                    Date = sr.scheduled_date,
+                    Time = sr.scheduled_time,
+                    Status = sr.status,
+                    HomeownerName = $"{sr.User.firstname} {sr.User.lastname}",
+                    IsServiceRequest = true
+                })
+                .ToList();
+            
+            // Get upcoming facility reservations
+            var upcomingFacilities = _context.FacilityReservation
+                .Include(fr => fr.User)
+                .Include(fr => fr.Facility)
+                .Where(fr => fr.reservation_date >= today && 
+                            fr.reservation_date <= nextWeek && 
+                            (fr.status == "Approved" || fr.status == "In Progress"))
+                .OrderBy(fr => fr.reservation_date)
+                .ThenBy(fr => fr.reservation_time)
+                .Select(fr => new {
+                    Id = fr.reservation_id,
+                    Type = "Facility Reservation",
+                    Facility = fr.Facility.name,
+                    Date = fr.reservation_date,
+                    Time = fr.reservation_time,
+                    Status = fr.status,
+                    HomeownerName = $"{fr.User.firstname} {fr.User.lastname}",
+                    IsServiceRequest = false
+                })
+                .ToList();
+            
+            // Combine and sort all upcoming tasks
+            var allUpcomingTasks = upcomingServices.Cast<object>()
+                .Concat(upcomingFacilities.Cast<object>())
+                .OrderBy(t => ((dynamic)t).Date)
+                .ThenBy(t => ((dynamic)t).Time)
+                .ToList();
+            
+            // Get service request count by month for the last 6 months
+            var sixMonthsAgo = today.AddMonths(-6);
+            
+            // Service requests by month
+            var serviceRequests = _context.ServiceRequest
+                .Where(sr => sr.date_created >= sixMonthsAgo)
+                .GroupBy(sr => new { Month = sr.date_created.Month, Year = sr.date_created.Year })
+                .Select(g => new {
+                    Month = g.Key.Month,
+                    Year = g.Key.Year,
+                    Count = g.Count(),
+                    Type = "Service"
+                });
+            
+            // Facility reservations by month
+            var facilityReservations = _context.FacilityReservation
+                .Where(fr => fr.date_created >= sixMonthsAgo)
+                .GroupBy(fr => new { Month = fr.date_created.Month, Year = fr.date_created.Year })
+                .Select(g => new {
+                    Month = g.Key.Month,
+                    Year = g.Key.Year,
+                    Count = g.Count(),
+                    Type = "Facility"
+                });
+            
+            // Combine both datasets
+            var combinedMonthlyData = serviceRequests.Concat(facilityReservations)
+                .GroupBy(x => new { x.Month, x.Year, x.Type })
+                .Select(g => new {
+                    Month = g.Key.Month,
+                    Year = g.Key.Year,
+                    Type = g.Key.Type,
+                    Count = g.Sum(x => x.Count)
+                })
+                .OrderBy(x => x.Year)
+                .ThenBy(x => x.Month)
+                .ToList();
+            
+            // Create a data structure to represent last 6 months
+            var serviceData = new List<int>();
+            var facilityData = new List<int>();
+            var monthLabels = new List<string>();
+            
+            for (int i = 5; i >= 0; i--)
+            {
+                var date = DateTime.Now.AddMonths(-i);
+                var monthName = date.ToString("MMM");
+                var monthNumber = date.Month;
+                var year = date.Year;
+                
+                monthLabels.Add(monthName);
+                
+                var serviceCount = combinedMonthlyData
+                    .FirstOrDefault(x => x.Month == monthNumber && x.Year == year && x.Type == "Service")?.Count ?? 0;
+                
+                var facilityCount = combinedMonthlyData
+                    .FirstOrDefault(x => x.Month == monthNumber && x.Year == year && x.Type == "Facility")?.Count ?? 0;
+                
+                serviceData.Add(serviceCount);
+                facilityData.Add(facilityCount);
+            }
+            
+            // Add all data to ViewBag
+            ViewBag.CompletedServices = totalCompleted;
+            ViewBag.PendingTasks = totalPending;
+            ViewBag.InProgress = totalInProgress;
+            ViewBag.CompletionRate = Math.Round(completionRate, 1);
+            ViewBag.UpcomingTasks = allUpcomingTasks;
+            ViewBag.MonthLabels = monthLabels;
+            ViewBag.ServiceData = serviceData;
+            ViewBag.FacilityData = facilityData;
+            
+            // Get recent completed activities
+            var recentServiceActivities = _context.ServiceRequest
+                .Include(sr => sr.User)
+                .Where(sr => sr.status == "Completed")
+                .OrderByDescending(sr => sr.date_created)
+                .Take(3)
+                .Select(sr => new {
+                    StaffName = "Staff", 
+                    ActivityType = sr.service_type,
+                    Location = "",
+                    TimeAgo = sr.date_created // Store the actual datetime instead of calling the method
+                })
+                .ToList()
+                .Select(sr => new {
+                    sr.StaffName,
+                    sr.ActivityType,
+                    sr.Location,
+                    TimeAgo = GetTimeAgo(sr.TimeAgo) // Now apply the method after data is materialized
+                });
+                
+            var recentFacilityActivities = _context.FacilityReservation
+                .Include(fr => fr.User)
+                .Include(fr => fr.Facility)
+                .Where(fr => fr.status == "Completed")
+                .OrderByDescending(fr => fr.date_created)
+                .Take(3)
+                .Select(fr => new {
+                    StaffName = "Staff",
+                    ActivityType = "Facility Reservation",
+                    Location = fr.Facility.name,
+                    TimeAgo = fr.date_created // Store the actual datetime
+                })
+                .ToList()
+                .Select(fr => new {
+                    fr.StaffName,
+                    fr.ActivityType,
+                    fr.Location,
+                    TimeAgo = GetTimeAgo(fr.TimeAgo) // Apply method after data is materialized
+                });
+                
+            // Combine and order the activities
+            var recentActivities = recentServiceActivities
+                .Concat(recentFacilityActivities)
+                .OrderByDescending(a => {
+                    // Try to parse the timespan from the text format
+                    if (a.TimeAgo.Contains("just now")) return 0;
+                    if (a.TimeAgo.Contains("minutes")) {
+                        int.TryParse(a.TimeAgo.Split(' ')[0], out int minutes);
+                        return minutes;
+                    }
+                    if (a.TimeAgo.Contains("hours")) {
+                        int.TryParse(a.TimeAgo.Split(' ')[0], out int hours);
+                        return hours * 60;
+                    }
+                    if (a.TimeAgo.Contains("days")) {
+                        int.TryParse(a.TimeAgo.Split(' ')[0], out int days);
+                        return days * 24 * 60;
+                    }
+                    return int.MaxValue; // For older dates
+                })
+                .Take(6)
+                .ToList();
+                
+            ViewBag.RecentActivities = recentActivities;
+            
             return View();
+        }
+        
+        private static string GetTimeAgo(DateTime dateTime)
+        {
+            var timeSpan = DateTime.Now - dateTime;
+            
+            if (timeSpan.TotalMinutes < 1)
+                return "just now";
+            if (timeSpan.TotalMinutes < 60)
+                return $"{(int)timeSpan.TotalMinutes} minutes ago";
+            if (timeSpan.TotalHours < 24)
+                return $"{(int)timeSpan.TotalHours} hours ago";
+            if (timeSpan.TotalDays < 7)
+                return $"{(int)timeSpan.TotalDays} days ago";
+            
+            return dateTime.ToString("MMM dd, yyyy");
         }
 
         public IActionResult StaffCommunity()

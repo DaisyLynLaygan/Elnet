@@ -257,11 +257,13 @@ namespace HomeOwner.Controllers
                     .Select(n => new { requestId = n.reference_id, message = n.message })
                     .ToListAsync();
 
-                // Create a dictionary of rejection messages by request ID for quick lookup
-                var rejectionMessages = rejectionNotifications.ToDictionary(
-                    n => int.Parse(n.requestId),
-                    n => n.message
-                );
+                // Group notifications by request ID and take the most recent one for each request
+                var rejectionMessagesByRequestId = rejectionNotifications
+                    .GroupBy(n => n.requestId)
+                    .ToDictionary(
+                        g => int.Parse(g.Key),
+                        g => g.OrderByDescending(n => n.message?.Length ?? 0).First().message // Take the one with longest message as it's likely most detailed
+                    );
 
                 // Enhance service requests with rejection reasons
                 var enhancedRequests = serviceRequests.Select(r => new
@@ -276,8 +278,8 @@ namespace HomeOwner.Controllers
                     r.status,
                     r.paymentStatus,
                     rejectionReason = r.status == "Rejected" ? 
-                        (rejectionMessages.ContainsKey(r.id) ? 
-                            ExtractRejectionReason(rejectionMessages[r.id]) : 
+                        (rejectionMessagesByRequestId.ContainsKey(r.id) ? 
+                            ExtractRejectionReason(rejectionMessagesByRequestId[r.id]) : 
                             r.staffNotes) : 
                         null
                 }).ToList();
@@ -382,15 +384,22 @@ namespace HomeOwner.Controllers
                 }
                 
                 // For security, also check that the user making the payment owns the request
-                int currentUserId = 0;
-                if (HttpContext.Session.GetString("user_id") != null)
-                {
-                    currentUserId = Convert.ToInt32(HttpContext.Session.GetString("user_id"));
-                }
+                int currentUserId = CurrentUser?.user_id ?? 0;
                 
                 if (serviceRequest.user_id != currentUserId && currentUserId != 0)
                 {
                     return Json(new { success = false, message = "You are not authorized to pay for this request" });
+                }
+                
+                // Check if payment is needed
+                if (serviceRequest.payment_status == "Paid")
+                {
+                    return Json(new { success = false, message = "This service request has already been paid" });
+                }
+                
+                if (serviceRequest.status == "Rejected")
+                {
+                    return Json(new { success = false, message = "Cannot pay for a rejected service request" });
                 }
                 
                 // Update the payment status
@@ -747,6 +756,138 @@ namespace HomeOwner.Controllers
             }
             
             return message; // Return full message if we can't extract the reason
+        }
+
+        [HttpGet]
+        public async Task<JsonResult> GetPaymentHistory(int months = 12)
+        {
+            try
+            {
+                if (CurrentUser == null)
+                {
+                    return Json(new { success = false, message = "User not authenticated" });
+                }
+
+                int userId = CurrentUser.user_id;
+                
+                // Calculate the start date based on months parameter
+                var startDate = DateTime.Now.AddMonths(-months);
+                
+                // Get service requests with payment data
+                var serviceRequests = await _context.ServiceRequest
+                    .Where(sr => sr.user_id == userId && 
+                                sr.payment_status == "Paid" && 
+                                sr.date_created >= startDate)
+                    .Select(sr => new
+                    {
+                        id = sr.request_id,
+                        type = "service",
+                        service = sr.service_type,
+                        date = sr.date_created.ToString("yyyy-MM-dd"),
+                        amount = sr.price,
+                        status = sr.status,
+                        paymentDate = sr.date_created // Using date_created as a proxy for payment date
+                    })
+                    .ToListAsync();
+                
+                // Get facility reservations with payment data
+                var facilityReservations = await _context.FacilityReservation
+                    .Include(fr => fr.Facility)
+                    .Where(fr => fr.user_id == userId && 
+                                fr.payment_status == "Paid" && 
+                                fr.date_created >= startDate)
+                    .Select(fr => new
+                    {
+                        id = fr.reservation_id,
+                        type = "facility",
+                        facility = fr.Facility.name,
+                        date = fr.date_created.ToString("yyyy-MM-dd"),
+                        amount = fr.price,
+                        status = fr.status,
+                        paymentDate = fr.date_created // Using date_created as a proxy for payment date
+                    })
+                    .ToListAsync();
+                
+                // Calculate summary statistics - all time totals
+                var allTimeServiceRequests = await _context.ServiceRequest
+                    .Where(sr => sr.user_id == userId && sr.payment_status == "Paid")
+                    .ToListAsync();
+                    
+                var allTimeFacilityReservations = await _context.FacilityReservation
+                    .Where(fr => fr.user_id == userId && fr.payment_status == "Paid")
+                    .ToListAsync();
+                
+                var totalSpent = allTimeServiceRequests.Sum(sr => sr.price) + allTimeFacilityReservations.Sum(fr => fr.price);
+                
+                // Calculate this month's spending
+                var firstDayOfMonth = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1);
+                var thisMonthServices = allTimeServiceRequests
+                    .Where(sr => sr.date_created >= firstDayOfMonth)
+                    .ToList();
+                    
+                var thisMonthFacilities = allTimeFacilityReservations
+                    .Where(fr => fr.date_created >= firstDayOfMonth)
+                    .ToList();
+                    
+                var thisMonthSpending = thisMonthServices.Sum(sr => sr.price) + thisMonthFacilities.Sum(fr => fr.price);
+                
+                // Get monthly spending for chart - only for the requested months
+                var monthlySpending = new List<MonthlySpending>();
+                
+                // Get data for the requested number of months
+                for (int i = 0; i < months; i++)
+                {
+                    var date = DateTime.Now.AddMonths(-i);
+                    var firstDay = new DateTime(date.Year, date.Month, 1);
+                    var lastDay = firstDay.AddMonths(1).AddDays(-1);
+                    
+                    var serviceSpending = allTimeServiceRequests
+                        .Where(sr => sr.date_created >= firstDay && sr.date_created <= lastDay)
+                        .Sum(sr => sr.price);
+                        
+                    var facilitySpending = allTimeFacilityReservations
+                        .Where(fr => fr.date_created >= firstDay && fr.date_created <= lastDay)
+                        .Sum(fr => fr.price);
+                    
+                    monthlySpending.Add(new MonthlySpending
+                    {
+                        Month = date.ToString("MMM"),
+                        Year = date.Year,
+                        ServiceSpending = serviceSpending,
+                        FacilitySpending = facilitySpending,
+                        RentSpending = 0 // Rent not implemented yet
+                    });
+                }
+                
+                return Json(new
+                {
+                    success = true,
+                    serviceRequests,
+                    facilityReservations,
+                    stats = new
+                    {
+                        totalSpent,
+                        thisMonthSpending,
+                        serviceCount = allTimeServiceRequests.Count,
+                        facilityCount = allTimeFacilityReservations.Count
+                    },
+                    monthlySpending
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error fetching payment history");
+                return Json(new { success = false, message = "Error retrieving payment history" });
+            }
+        }
+        
+        public class MonthlySpending
+        {
+            public string Month { get; set; }
+            public int Year { get; set; }
+            public decimal ServiceSpending { get; set; }
+            public decimal FacilitySpending { get; set; }
+            public decimal RentSpending { get; set; }
         }
     }
     

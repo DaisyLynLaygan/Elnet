@@ -1,121 +1,23 @@
-// Sample payment history data (in a real app, this would come from your backend)
-const paymentHistory = [
-    {
-        id: 1,
-        date: "2023-07-01",
-        description: "Monthly Rent - Luxury Villa",
-        type: "rent",
-        amount: 8500.00,
-        status: "completed",
-        method: "Visa •••• 4242",
-        receipt: "receipt_001.pdf"
-    },
-    {
-        id: 2,
-        date: "2023-06-15",
-        description: "House Cleaning Service",
-        type: "maintenance",
-        amount: 120.00,
-        status: "completed",
-        method: "Mastercard •••• 5555",
-        receipt: "receipt_002.pdf"
-    },
-    {
-        id: 3,
-        date: "2023-06-10",
-        description: "Garden Maintenance",
-        type: "maintenance",
-        amount: 150.00,
-        status: "completed",
-        method: "Visa •••• 4242",
-        receipt: "receipt_003.pdf"
-    },
-    {
-        id: 4,
-        date: "2023-06-01",
-        description: "Monthly Rent - Luxury Villa",
-        type: "rent",
-        amount: 8500.00,
-        status: "completed",
-        method: "Visa •••• 4242",
-        receipt: "receipt_004.pdf"
-    },
-    {
-        id: 5,
-        date: "2023-05-20",
-        description: "Function Hall Reservation",
-        type: "facilities",
-        amount: 500.00,
-        status: "completed",
-        method: "Mastercard •••• 5555",
-        receipt: "receipt_005.pdf"
-    },
-    {
-        id: 6,
-        date: "2023-05-01",
-        description: "Monthly Rent - Luxury Villa",
-        type: "rent",
-        amount: 8500.00,
-        status: "completed",
-        method: "Visa •••• 4242",
-        receipt: "receipt_006.pdf"
-    },
-    {
-        id: 7,
-        date: "2023-04-15",
-        description: "Plumbing Repair",
-        type: "maintenance",
-        amount: 320.00,
-        status: "pending",
-        method: "Visa •••• 4242",
-        receipt: "receipt_007.pdf"
-    },
-    {
-        id: 8,
-        date: "2023-04-01",
-        description: "Monthly Rent - Luxury Villa",
-        type: "rent",
-        amount: 8500.00,
-        status: "completed",
-        method: "Visa •••• 4242",
-        receipt: "receipt_008.pdf"
-    },
-    {
-        id: 9,
-        date: "2023-03-25",
-        description: "Swimming Pool Maintenance",
-        type: "maintenance",
-        amount: 250.00,
-        status: "failed",
-        method: "Mastercard •••• 5555",
-        receipt: "receipt_009.pdf"
-    },
-    {
-        id: 10,
-        date: "2023-03-01",
-        description: "Monthly Rent - Luxury Villa",
-        type: "rent",
-        amount: 8500.00,
-        status: "completed",
-        method: "Visa •••• 4242",
-        receipt: "receipt_010.pdf"
-    }
-];
+// Real payment history data
+let paymentHistory = [];
+let currentPage = 1;
+let pageSize = 10;
+let totalPages = 1;
 
-// Sample spending data for the chart
-const monthlySpending = {
-    labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
-    rent: [8500, 8500, 8500, 8500, 8500, 8500, 8500, 0, 0, 0, 0, 0],
-    maintenance: [120, 180, 250, 320, 150, 270, 120, 0, 0, 0, 0, 0],
-    facilities: [0, 0, 0, 0, 500, 0, 0, 0, 0, 0, 0, 0]
+// Initial empty chart data
+const emptyChartData = {
+    labels: [],
+    rent: [],
+    maintenance: [],
+    facilities: []
 };
 
 document.addEventListener('DOMContentLoaded', function() {
-    // Initialize the spending chart
+    // Initialize the spending chart with empty data
     initSpendingChart();
     
-    // Load payment history
-    loadPaymentHistory();
+    // Load real payment history from the server
+    fetchRealPaymentHistory();
     
     // Set up filter event listeners
     document.getElementById('paymentType').addEventListener('change', filterHistory);
@@ -128,7 +30,10 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('nextPage').addEventListener('click', goToNextPage);
     
     // Time filter for chart
-    document.getElementById('timeFilter').addEventListener('change', updateChartTimeRange);
+    document.getElementById('timeFilter').addEventListener('change', function() {
+        // Reload payment history with new time range
+        fetchRealPaymentHistory();
+    });
 });
 
 function initSpendingChart() {
@@ -137,11 +42,11 @@ function initSpendingChart() {
     window.spendingChart = new Chart(ctx, {
         type: 'bar',
         data: {
-            labels: monthlySpending.labels,
+            labels: [],
             datasets: [
                 {
                     label: 'Rent',
-                    data: monthlySpending.rent,
+                    data: [],
                     backgroundColor: 'rgba(107, 68, 35, 0.8)',
                     borderColor: 'rgba(107, 68, 35, 1)',
                     borderWidth: 1,
@@ -150,7 +55,7 @@ function initSpendingChart() {
                 },
                 {
                     label: 'Maintenance',
-                    data: monthlySpending.maintenance,
+                    data: [],
                     backgroundColor: 'rgba(78, 121, 167, 0.8)',
                     borderColor: 'rgba(78, 121, 167, 1)',
                     borderWidth: 1,
@@ -159,7 +64,7 @@ function initSpendingChart() {
                 },
                 {
                     label: 'Facilities',
-                    data: monthlySpending.facilities,
+                    data: [],
                     backgroundColor: 'rgba(89, 161, 79, 0.8)',
                     borderColor: 'rgba(89, 161, 79, 1)',
                     borderWidth: 1,
@@ -244,20 +149,6 @@ function initSpendingChart() {
     });
 }
 
-function updateChartTimeRange() {
-    const monthsToShow = parseInt(document.getElementById('timeFilter').value);
-    const allLabels = monthlySpending.labels;
-    const allRent = monthlySpending.rent;
-    const allMaintenance = monthlySpending.maintenance;
-    const allFacilities = monthlySpending.facilities;
-    
-    window.spendingChart.data.labels = allLabels.slice(-monthsToShow);
-    window.spendingChart.data.datasets[0].data = allRent.slice(-monthsToShow);
-    window.spendingChart.data.datasets[1].data = allMaintenance.slice(-monthsToShow);
-    window.spendingChart.data.datasets[2].data = allFacilities.slice(-monthsToShow);
-    window.spendingChart.update();
-}
-
 function loadPaymentHistory(filteredData = null) {
     const container = document.getElementById('paymentHistoryItems');
     container.innerHTML = '';
@@ -295,11 +186,7 @@ function loadPaymentHistory(filteredData = null) {
             <div class="item-status ${statusClass}">
                 <i class="${getStatusIcon(payment.status)}"></i> ${formatStatus(payment.status)}
             </div>
-            <div class="item-receipt">
-                <a href="/receipts/${payment.receipt}" target="_blank" class="receipt-link">
-                    <i class="fas fa-file-pdf"></i> View
-                </a>
-            </div>
+          
         `;
         
         container.appendChild(paymentItem);
@@ -311,7 +198,7 @@ function filterHistory() {
     const dateFilter = document.getElementById('dateRange').value;
     const statusFilter = document.getElementById('statusFilter').value;
     
-    let filteredData = paymentHistory;
+    let filteredData = [...paymentHistory]; // Clone the array to avoid modifying the original
     
     // Filter by type
     if (typeFilter !== 'all') {
@@ -346,6 +233,7 @@ function filterHistory() {
         filteredData = filteredData.filter(payment => payment.status === statusFilter);
     }
     
+    // Display filtered data
     loadPaymentHistory(filteredData);
 }
 
@@ -353,6 +241,8 @@ function resetFilters() {
     document.getElementById('paymentType').value = 'all';
     document.getElementById('dateRange').value = 'all';
     document.getElementById('statusFilter').value = 'all';
+    
+    // Reset to original data
     loadPaymentHistory();
 }
 
@@ -391,18 +281,166 @@ function getTypeIcon(type) {
 
 function formatStatus(status) {
     const statusNames = {
-        completed: 'Completed',
-        pending: 'Pending',
-        failed: 'Failed'
+        'completed': 'Completed',
+        'pending': 'Pending',
+        'approved': 'Approved',
+        'in-progress': 'In Progress',
+        'rejected': 'Rejected',
+        'cancelled': 'Cancelled'
     };
     return statusNames[status] || status;
 }
 
 function getStatusIcon(status) {
     const statusIcons = {
-        completed: 'fas fa-check-circle',
-        pending: 'fas fa-clock',
-        failed: 'fas fa-times-circle'
+        'completed': 'fas fa-check-circle',
+        'pending': 'fas fa-clock',
+        'approved': 'fas fa-thumbs-up',
+        'in-progress': 'fas fa-spinner fa-spin',
+        'rejected': 'fas fa-times-circle',
+        'cancelled': 'fas fa-ban'
     };
     return statusIcons[status] || 'fas fa-info-circle';
+}
+
+// Fetch real payment history from service requests and facility reservations
+async function fetchRealPaymentHistory() {
+    try {
+        // Show loading state
+        const container = document.getElementById('paymentHistoryItems');
+        container.innerHTML = `
+            <div class="loading-state">
+                <i class="fas fa-spinner fa-spin"></i>
+                <p>Loading your payment history...</p>
+            </div>
+        `;
+        
+        // Get time filter value
+        const timeRange = document.getElementById('timeFilter').value;
+        
+        // Fetch payment history from our new endpoint with time range parameter
+        const response = await fetch(`/Homeowner/GetPaymentHistory?months=${timeRange}`);
+        const data = await response.json();
+        
+        if (!data.success) {
+            throw new Error(data.message || 'Failed to load payment history');
+        }
+        
+        // Process service requests
+        const servicePayments = [];
+        if (data.serviceRequests && data.serviceRequests.length > 0) {
+            data.serviceRequests.forEach(request => {
+                servicePayments.push({
+                    id: 'sr-' + request.id,
+                    date: request.date,
+                    description: `Service: ${request.service}`,
+                    type: 'maintenance',
+                    amount: parseFloat(request.amount),
+                    status: request.status === "Completed" ? "completed" : 
+                           request.status === "Approved" ? "approved" :
+                           request.status === "In Progress" ? "in-progress" : "pending",
+                    method: "Credit Card",
+                    receipt: request.status === "Completed" ? `service_receipt_${request.id}.pdf` : null
+                });
+            });
+        }
+        
+        // Process facility reservations
+        const facilityPayments = [];
+        if (data.facilityReservations && data.facilityReservations.length > 0) {
+            data.facilityReservations.forEach(reservation => {
+                facilityPayments.push({
+                    id: 'fr-' + reservation.id,
+                    date: reservation.date,
+                    description: `Facility: ${reservation.facility}`,
+                    type: 'facilities',
+                    amount: parseFloat(reservation.amount),
+                    status: reservation.status === "Completed" ? "completed" : 
+                           reservation.status === "Approved" ? "approved" :
+                           reservation.status === "In Progress" ? "in-progress" : "pending",
+                    method: "Credit Card",
+                    receipt: reservation.status === "Completed" ? `facility_receipt_${reservation.id}.pdf` : null
+                });
+            });
+        }
+        
+        // Combine and sort by date (newest first)
+        paymentHistory = [...servicePayments, ...facilityPayments].sort((a, b) => {
+            return new Date(b.date) - new Date(a.date);
+        });
+        
+        // Update stats directly from the API response
+        updatePaymentStatsFromData(data.stats);
+        
+        // Update chart data directly from the API response
+        updateChartDataFromAPI(data.monthlySpending);
+        
+        // Display payment history
+        loadPaymentHistory();
+        
+    } catch (error) {
+        console.error('Error fetching payment history:', error);
+        const container = document.getElementById('paymentHistoryItems');
+        container.innerHTML = `
+            <div class="error-state">
+                <i class="fas fa-exclamation-circle"></i>
+                <p>Error loading payment history: ${error.message}</p>
+                <button class="retry-button" onclick="fetchRealPaymentHistory()">Retry</button>
+            </div>
+        `;
+    }
+}
+
+// Update payment statistics from API data
+function updatePaymentStatsFromData(stats) {
+    // Update stats in the UI using the data from the API
+    document.querySelector('.stat-card:nth-child(1) .stat-value').textContent = '$' + stats.totalSpent.toFixed(2);
+    document.querySelector('.stat-card:nth-child(2) .stat-value').textContent = '$' + stats.thisMonthSpending.toFixed(2);
+    document.querySelector('.stat-card:nth-child(3) .stat-value').textContent = '0'; // Rent Payments (not implemented yet)
+    document.querySelector('.stat-card:nth-child(4) .stat-value').textContent = stats.serviceCount.toString();
+    
+    // Add a new card for facility reservations if it doesn't exist
+    if (!document.querySelector('.stat-card:nth-child(5)')) {
+        const statsContainer = document.querySelector('.history-stats');
+        const facilityCard = document.createElement('div');
+        facilityCard.className = 'stat-card';
+        facilityCard.innerHTML = `
+            <div class="stat-icon">
+                <i class="fas fa-building"></i>
+            </div>
+            <div class="stat-info">
+                <span class="stat-label">Facilities</span>
+                <span class="stat-value">${stats.facilityCount}</span>
+            </div>
+        `;
+        statsContainer.appendChild(facilityCard);
+    } else {
+        document.querySelector('.stat-card:nth-child(5) .stat-value').textContent = stats.facilityCount.toString();
+    }
+}
+
+// Update chart data from API data
+function updateChartDataFromAPI(monthlySpendingData) {
+    // Sort monthly spending data by year and month (oldest to newest)
+    const sortedData = monthlySpendingData.sort((a, b) => {
+        if (a.year !== b.year) {
+            return a.year - b.year;
+        }
+        // Get month number from month name
+        const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+        return months.indexOf(a.month) - months.indexOf(b.month);
+    });
+    
+    // Extract labels and data for chart
+    const labels = sortedData.map(item => item.month);
+    const serviceData = sortedData.map(item => parseFloat(item.serviceSpending));
+    const facilityData = sortedData.map(item => parseFloat(item.facilitySpending));
+    const rentData = sortedData.map(item => parseFloat(item.rentSpending));
+    
+    // Update chart data
+    window.spendingChart.data.labels = labels;
+    window.spendingChart.data.datasets[0].data = rentData;
+    window.spendingChart.data.datasets[1].data = serviceData;
+    window.spendingChart.data.datasets[2].data = facilityData;
+    window.spendingChart.update();
 }

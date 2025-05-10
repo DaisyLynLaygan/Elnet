@@ -143,8 +143,13 @@ function displayServiceRequests() {
     // Clear existing content
     maintenanceContainer.innerHTML = '';
     
-    // Filter out rejected service requests completely
-    const filteredRequests = userServiceRequests.filter(request => request.status !== "Rejected");
+    // Filter service requests: 
+    // 1. Show Pending Approval and Approved but Unpaid
+    // 2. Hide Rejected, Completed, and Paid ones
+    const filteredRequests = userServiceRequests.filter(request => 
+        (request.status === "Pending Approval" || request.status === "Approved") && 
+        request.paymentStatus === "Unpaid"
+    );
     
     // Add maintenance bookings if they exist
     if (filteredRequests && filteredRequests.length > 0) {
@@ -159,7 +164,7 @@ function displayServiceRequests() {
         maintenanceContainer.innerHTML = `
             <div class="no-bookings">
                 <i class="fas fa-calendar-times"></i>
-                <p>You have no active maintenance bookings</p>
+                <p>You have no pending payment service requests</p>
                 <a href="/Homeowner/Dashboard" class="book-now-button">Book a Service</a>
             </div>
         `;
@@ -193,9 +198,10 @@ async function displayFacilityBookings() {
         const data = await response.json();
         
         if (data.success && data.reservations && data.reservations.length > 0) {
-            // Filter out cancelled/rejected reservations only (keep paid ones)
+            // Only show reservations that need payment (Pending or Approved but Unpaid)
             const filteredReservations = data.reservations.filter(reservation => 
-                reservation.status !== "Cancelled" && reservation.status !== "Rejected"
+                (reservation.status === "Pending" || reservation.status === "Approved") && 
+                reservation.paymentStatus === "Unpaid"
             );
             
             if (filteredReservations.length > 0) {
@@ -209,7 +215,7 @@ async function displayFacilityBookings() {
                 facilityContainer.innerHTML = `
                     <div class="no-bookings">
                         <i class="fas fa-calendar-times"></i>
-                        <p>You have no active facility reservations</p>
+                        <p>You have no pending payment facility reservations</p>
                         <a href="/Homeowner/Dashboard" class="book-now-button">Reserve a Facility</a>
                     </div>
                 `;
@@ -337,10 +343,20 @@ async function processPayment() {
         return;
     }
     
+    // Check that a payment method is selected
+    if (!document.querySelector('.method-card.active')) {
+        showAlert('Error', 'Please select a payment method', 'error');
+        return;
+    }
+    
+    // Get the booking name for success message
+    const paymentFor = document.getElementById('payment-for').textContent;
+    
     try {
         // Show loading state
-        document.querySelector('.confirm-button').innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
-        document.querySelector('.confirm-button').disabled = true;
+        const confirmButton = document.querySelector('.confirm-button');
+        confirmButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+        confirmButton.disabled = true;
         
         let endpoint = '/Homeowner/ProcessServicePayment';
         if (requestType === 'facility') {
@@ -353,8 +369,8 @@ async function processPayment() {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                requestId: parseInt(requestId),
-                paymentMethod: paymentMethod
+                RequestId: parseInt(requestId),
+                PaymentMethod: paymentMethod
             })
         });
         
@@ -365,7 +381,13 @@ async function processPayment() {
             paymentModal.style.display = 'none';
             
             // Show success message
-            showAlert('Success', 'Payment processed successfully!', 'success');
+            Swal.fire({
+                title: 'Payment Successful!',
+                text: `Your payment for ${paymentFor} has been processed successfully.`,
+                icon: 'success',
+                confirmButtonText: 'Great!',
+                confirmButtonColor: '#6D4C41'
+            });
             
             // Refresh the appropriate bookings list
             if (requestType === 'facility') {
@@ -374,11 +396,11 @@ async function processPayment() {
                 fetchUserServiceRequests();
             }
         } else {
-            showAlert('Error', data.message || 'Payment failed', 'error');
+            showAlert('Payment Failed', data.message || 'Payment could not be processed', 'error');
         }
     } catch (error) {
         console.error('Payment processing error:', error);
-        showAlert('Error', 'An error occurred while processing your payment', 'error');
+        showAlert('Error', 'An error occurred while processing your payment. Please try again later.', 'error');
     } finally {
         // Reset button state
         document.querySelector('.confirm-button').innerHTML = '<i class="fas fa-lock"></i> Confirm Payment';
