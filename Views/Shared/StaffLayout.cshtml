@@ -45,6 +45,11 @@
                     <span>Events</span>
                 </a>
             </li>
+            <li class="nav-item @(ViewBag.ActiveMenu == "Documents" ? "active" : "")">
+                <a asp-controller="Staff" asp-action="Documents" class="nav-link">
+                    <span>Documents</span>
+                </a>
+            </li>
         </ul>
 
         <div class="user-hamburger-container">

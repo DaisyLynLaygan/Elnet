@@ -1,5 +1,7 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using System.Collections.Generic;
 
 namespace HomeOwner.Models
 {
@@ -29,5 +31,8 @@ namespace HomeOwner.Models
         public ICollection<ServiceRequest>? ServiceRequests { get; set; }
         public ICollection<Notification>? Notifications { get; set; }
         public ICollection<RentPayment>? RentPayments { get; set; }
+        
+        [InverseProperty("Uploader")]
+        public ICollection<Document>? UploadedDocuments { get; set; }
     }
 }

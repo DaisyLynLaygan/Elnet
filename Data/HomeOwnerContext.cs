@@ -76,6 +76,13 @@ namespace HomeOwner.Data
                 .HasForeignKey(r => r.user_id)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            // Document-User relationship
+            modelBuilder.Entity<Document>()
+                .HasOne(d => d.Uploader)
+                .WithMany()
+                .HasForeignKey(d => d.uploader_id)
+                .OnDelete(DeleteBehavior.Restrict);
+
             // Configure decimal precision for price
             modelBuilder.Entity<ServiceRequest>()
                 .Property(s => s.price)
@@ -103,5 +110,6 @@ namespace HomeOwner.Data
         public DbSet<Notification> Notification { get; set; }
         public DbSet<FacilityReservation> FacilityReservation { get; set; }
         public DbSet<RentPayment> RentPayment { get; set; }
+        public DbSet<Document> Document { get; set; }
     }
 }

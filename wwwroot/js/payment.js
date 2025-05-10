@@ -284,6 +284,9 @@ function setupPayButtons() {
             paymentModal.setAttribute('data-request-id', requestId);
             paymentModal.setAttribute('data-request-type', requestType);
             
+            // Set the payment type attribute correctly
+            paymentModal.setAttribute('data-payment-type', requestType);
+            
             // Get booking details
             const bookingCard = button.closest('.booking-card');
             const bookingType = requestType === 'facility' ? 'Facility Booking' : 'Maintenance Service';
@@ -396,8 +399,17 @@ async function processPayment() {
                 PaymentMethod: paymentMethod
             };
             paymentFor = document.getElementById('payment-for').textContent;
+        } else if (paymentType === 'service') {
+            // Handle service payment explicitly
+            const requestId = paymentModal.getAttribute('data-request-id');
+            endpoint = '/Homeowner/ProcessServicePayment';
+            requestData = {
+                RequestId: parseInt(requestId),
+                PaymentMethod: paymentMethod
+            };
+            paymentFor = document.getElementById('payment-for').textContent;
         } else {
-            // Default to service payment
+            // Fallback for any other payment type
             const requestId = paymentModal.getAttribute('data-request-id');
             endpoint = '/Homeowner/ProcessServicePayment';
             requestData = {
@@ -647,7 +659,7 @@ function createMaintenanceBookingCard(booking) {
     } else if (booking.paymentStatus === "Unpaid") {
         // If not rejected and unpaid, show pay now button
         actionButtons = `
-            <button class="pay-booking-button" data-id="${booking.id}">
+            <button class="pay-booking-button" data-id="${booking.id}" data-type="service">
                 <i class="fas fa-credit-card"></i> Pay Now
             </button>
             <button class="cancel-booking-button">

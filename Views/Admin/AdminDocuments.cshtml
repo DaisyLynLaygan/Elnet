@@ -11,10 +11,13 @@
 <div class="admin-documents-container">
     <div class="admin-header">
         <div>
+            <h2>Document Management</h2>
+            <p>Upload, organize and manage all documents in one place</p>
         </div>
         <div class="document-stats">
             <div class="stat-item">
-
+                <span class="stat-value" id="totalDocuments">4</span>
+                <span class="stat-label">Documents</span>
             </div>
         </div>
     </div>
@@ -24,46 +27,11 @@
         <button class="admin-action-btn btn-admin-primary" id="adminUploadBtn">
             <i class="fas fa-upload"></i> Upload Documents
         </button>
-    </div>
-
-    <!-- Breadcrumb Navigation -->
-    <div class="breadcrumb" id="adminBreadcrumb">
-        <a href="#" class="breadcrumb-item root" data-id="root">All Documents</a>
-    </div>
+    </div>  
 
     <!-- Documents Grid -->
     <div class="admin-documents-grid" id="adminDocumentsGrid">
-        <!-- Folders will be displayed here -->
-        <div class="admin-folder-item" data-id="confidential">
-            <span class="folder-badge">12 items</span>
-            <i class="fas fa-folder"></i>
-            <span class="folder-name">Confidential</span>
-            <div class="folder-actions">
-                <button class="btn-action edit" title="Edit Folder"><i class="fas fa-cog"></i></button>
-            </div>
-        </div>
-        
-        <!-- Documents will be displayed here -->
-        <div class="admin-document-item" data-id="doc1">
-            <div class="document-icon-admin">
-                <i class="fas fa-file-pdf"></i>
-            </div>
-            <div class="document-info-admin">
-                <div class="document-name-admin">2024 Budget Proposal.pdf</div>
-                <div class="document-meta-admin">
-                    <span class="document-type">Financial</span>
-                    <span class="document-date">Jan 15, 2024</span>
-                    <span class="document-size">4.2 MB</span>
-                </div>
-                <span class="document-visibility visibility-board">Board Only</span>
-            </div>
-            <div class="document-actions-admin">
-                <button class="btn-action download" title="Download"><i class="fas fa-download"></i></button>
-                <button class="btn-action security" title="Security"><i class="fas fa-lock"></i></button>
-                <button class="btn-action history" title="Version History"><i class="fas fa-history"></i></button>
-                <button class="btn-action delete" title="Delete"><i class="fas fa-trash"></i></button>
-            </div>
-        </div>
+        <!-- Documents will be displayed here by JavaScript -->
     </div>
 </div>
 
@@ -161,6 +129,24 @@
                     <div class="file-requirements">
                         <p>Max 10 files, 50MB total. Formats: PDF, DOCX, XLSX, PPTX, JPG, PNG</p>
                     </div>
+                </div>
+                
+                <div class="admin-form-group">
+                    <label for="adminDocumentCategory">Category (Optional)</label>
+                    <select id="adminDocumentCategory" class="admin-form-control">
+                        <option value="">-- Select Category --</option>
+                        <option value="financial">Financial</option>
+                        <option value="policy">Policy</option>
+                        <option value="minutes">Meeting Minutes</option>
+                        <option value="form">Form</option>
+                        <option value="guideline">Guideline</option>
+                        <option value="notice">Notice</option>
+                    </select>
+                </div>
+                
+                <div class="admin-form-group">
+                    <label for="adminDocumentDescription">Description (Optional)</label>
+                    <textarea id="adminDocumentDescription" class="admin-form-control" rows="3"></textarea>
                 </div>
                 
                 <div class="admin-form-group">

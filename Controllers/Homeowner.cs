@@ -2,8 +2,11 @@
 using HomeOwner.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System;
 using System.IO;
-
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace HomeOwner.Controllers
 {
@@ -787,6 +790,332 @@ public class CommentModel
             public string Title { get; set; }
             public string Comment { get; set; }
             public string[] Photos { get; set; }
+        }
+
+        public IActionResult Documents()
+        {
+            ViewContents();
+            return View();
+        }
+
+        [HttpGet]
+        public JsonResult GetHomeownerDocuments()
+        {
+            try
+            {
+                // Use direct SQL to avoid EF Core issues
+                var connection = _context.Database.GetDbConnection();
+                var wasOpen = connection.State == System.Data.ConnectionState.Open;
+                
+                if (!wasOpen)
+                    connection.Open();
+                
+                try
+                {
+                    var documents = new List<object>();
+                    
+                    using (var command = connection.CreateCommand())
+                    {
+                        command.CommandText = @"
+                            SELECT d.document_id, d.name, d.file_path, d.file_type, d.file_size, 
+                                   d.description, d.visibility, d.allow_download, d.apply_watermark, 
+                                   d.upload_date, d.category, d.download_count, d.view_count,
+                                   u.firstname, u.lastname
+                            FROM Document d
+                            LEFT JOIN [User] u ON d.uploader_id = u.user_id
+                            WHERE d.visibility = 'homeowner'
+                            ORDER BY d.upload_date DESC";
+                        
+                        using (var reader = command.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                var uploaderName = "Unknown User";
+                                if (!reader.IsDBNull(reader.GetOrdinal("firstname")) && !reader.IsDBNull(reader.GetOrdinal("lastname")))
+                                {
+                                    string firstname = reader.GetString(reader.GetOrdinal("firstname"));
+                                    string lastname = reader.GetString(reader.GetOrdinal("lastname"));
+                                    uploaderName = $"{firstname} {lastname}".Trim();
+                                }
+                                
+                                documents.Add(new
+                                {
+                                    id = reader.GetInt32(reader.GetOrdinal("document_id")),
+                                    name = reader.IsDBNull(reader.GetOrdinal("name")) ? string.Empty : reader.GetString(reader.GetOrdinal("name")),
+                                    type = reader.IsDBNull(reader.GetOrdinal("file_type")) ? string.Empty : reader.GetString(reader.GetOrdinal("file_type")),
+                                    category = reader.IsDBNull(reader.GetOrdinal("category")) ? string.Empty : reader.GetString(reader.GetOrdinal("category")),
+                                    size = reader.GetInt64(reader.GetOrdinal("file_size")),
+                                    uploaded = reader.GetDateTime(reader.GetOrdinal("upload_date")).ToString("yyyy-MM-dd"),
+                                    url = reader.IsDBNull(reader.GetOrdinal("file_path")) ? string.Empty : reader.GetString(reader.GetOrdinal("file_path")),
+                                    downloads = reader.GetInt32(reader.GetOrdinal("download_count")),
+                                    allow_download = reader.GetBoolean(reader.GetOrdinal("allow_download")),
+                                    uploader = uploaderName
+                                });
+                            }
+                        }
+                    }
+                    
+                    // Calculate statistics
+                    var stats = new
+                    {
+                        total = documents.Count
+                    };
+                    
+                    return Json(new { success = true, documents, stats });
+                }
+                finally
+                {
+                    if (!wasOpen)
+                        connection.Close();
+                }
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+
+        [HttpPost]
+        public async Task<JsonResult> TrackDocumentView(int id)
+        {
+            try
+            {
+                var connection = _context.Database.GetDbConnection();
+                var wasOpen = connection.State == System.Data.ConnectionState.Open;
+                
+                if (!wasOpen)
+                    await connection.OpenAsync();
+                
+                try
+                {
+                    using (var command = connection.CreateCommand())
+                    {
+                        command.CommandText = @"
+                            UPDATE Document 
+                            SET view_count = view_count + 1
+                            WHERE document_id = @id AND visibility = 'homeowner'";
+                        
+                        var idParam = command.CreateParameter();
+                        idParam.ParameterName = "@id";
+                        idParam.Value = id;
+                        command.Parameters.Add(idParam);
+                        
+                        await command.ExecuteNonQueryAsync();
+                    }
+                    
+                    return Json(new { success = true });
+                }
+                finally
+                {
+                    if (!wasOpen)
+                        connection.Close();
+                }
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+
+        [HttpPost]
+        public async Task<JsonResult> TrackDocumentDownload(int id)
+        {
+            try
+            {
+                var connection = _context.Database.GetDbConnection();
+                var wasOpen = connection.State == System.Data.ConnectionState.Open;
+                
+                if (!wasOpen)
+                    await connection.OpenAsync();
+                
+                try
+                {
+                    string filePath = null;
+                    
+                    // First check if the document exists and is available for homeowners
+                    using (var command = connection.CreateCommand())
+                    {
+                        command.CommandText = @"
+                            SELECT file_path, allow_download 
+                            FROM Document 
+                            WHERE document_id = @id AND visibility = 'homeowner'";
+                        
+                        var idParam = command.CreateParameter();
+                        idParam.ParameterName = "@id";
+                        idParam.Value = id;
+                        command.Parameters.Add(idParam);
+                        
+                        using (var reader = await command.ExecuteReaderAsync())
+                        {
+                            if (await reader.ReadAsync())
+                            {
+                                bool allowDownload = reader.GetBoolean(reader.GetOrdinal("allow_download"));
+                                if (!allowDownload)
+                                {
+                                    return Json(new { success = false, message = "Downloads are not allowed for this document" });
+                                }
+                                
+                                filePath = reader.IsDBNull(reader.GetOrdinal("file_path")) ? null : reader.GetString(reader.GetOrdinal("file_path"));
+                                
+                                // Check if file path is null or empty
+                                if (string.IsNullOrEmpty(filePath))
+                                {
+                                    return Json(new { success = false, message = "Document file path is missing" });
+                                }
+                                
+                                // Check if file exists on server
+                                string fullPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", filePath.TrimStart('/'));
+                                if (!System.IO.File.Exists(fullPath))
+                                {
+                                    return Json(new { success = false, message = "Document file not found on server" });
+                                }
+                                
+                                // Make sure the file path starts with a forward slash for proper URL construction
+                                if (!filePath.StartsWith("/"))
+                                {
+                                    filePath = "/" + filePath;
+                                }
+                            }
+                            else
+                            {
+                                return Json(new { success = false, message = "Document not found or not accessible" });
+                            }
+                        }
+                    }
+                    
+                    // Update download count
+                    using (var command = connection.CreateCommand())
+                    {
+                        command.CommandText = @"
+                            UPDATE Document 
+                            SET download_count = download_count + 1
+                            WHERE document_id = @id";
+                        
+                        var idParam = command.CreateParameter();
+                        idParam.ParameterName = "@id";
+                        idParam.Value = id;
+                        command.Parameters.Add(idParam);
+                        
+                        await command.ExecuteNonQueryAsync();
+                    }
+                    
+                    return Json(new { success = true, url = filePath });
+                }
+                finally
+                {
+                    if (!wasOpen)
+                        connection.Close();
+                }
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+
+        [HttpGet]
+        public JsonResult GetDocumentDetails(int id)
+        {
+            try
+            {
+                // Use direct SQL to avoid EF Core issues
+                var connection = _context.Database.GetDbConnection();
+                var wasOpen = connection.State == System.Data.ConnectionState.Open;
+                
+                if (!wasOpen)
+                    connection.Open();
+                
+                try
+                {
+                    // Create a document object to hold our result
+                    Document document = null;
+                    string uploaderName = "Unknown User";
+                    
+                    using (var command = connection.CreateCommand())
+                    {
+                        command.CommandText = @"
+                            SELECT d.document_id, d.name, d.file_path, d.file_type, d.file_size, 
+                                   d.description, d.visibility, d.allow_download, d.apply_watermark, 
+                                   d.upload_date, d.expiration_date, d.category, d.uploader_id, 
+                                   d.download_count, d.view_count,
+                                   u.firstname, u.lastname
+                            FROM Document d
+                            LEFT JOIN [User] u ON d.uploader_id = u.user_id
+                            WHERE d.document_id = @id AND d.visibility = 'homeowner'";
+                        
+                        var idParam = command.CreateParameter();
+                        idParam.ParameterName = "@id";
+                        idParam.Value = id;
+                        command.Parameters.Add(idParam);
+                        
+                        using (var reader = command.ExecuteReader())
+                        {
+                            if (reader.Read())
+                            {
+                                document = new Document
+                                {
+                                    document_id = reader.GetInt32(reader.GetOrdinal("document_id")),
+                                    name = reader.IsDBNull(reader.GetOrdinal("name")) ? string.Empty : reader.GetString(reader.GetOrdinal("name")),
+                                    file_path = reader.IsDBNull(reader.GetOrdinal("file_path")) ? string.Empty : reader.GetString(reader.GetOrdinal("file_path")),
+                                    file_type = reader.IsDBNull(reader.GetOrdinal("file_type")) ? null : reader.GetString(reader.GetOrdinal("file_type")),
+                                    file_size = reader.GetInt64(reader.GetOrdinal("file_size")),
+                                    description = reader.IsDBNull(reader.GetOrdinal("description")) ? null : reader.GetString(reader.GetOrdinal("description")),
+                                    visibility = reader.IsDBNull(reader.GetOrdinal("visibility")) ? "admin" : reader.GetString(reader.GetOrdinal("visibility")),
+                                    allow_download = reader.GetBoolean(reader.GetOrdinal("allow_download")),
+                                    apply_watermark = reader.GetBoolean(reader.GetOrdinal("apply_watermark")),
+                                    upload_date = reader.GetDateTime(reader.GetOrdinal("upload_date")),
+                                    expiration_date = reader.IsDBNull(reader.GetOrdinal("expiration_date")) ? null : (DateTime?)reader.GetDateTime(reader.GetOrdinal("expiration_date")),
+                                    category = reader.IsDBNull(reader.GetOrdinal("category")) ? null : reader.GetString(reader.GetOrdinal("category")),
+                                    uploader_id = reader.GetInt32(reader.GetOrdinal("uploader_id")),
+                                    download_count = reader.GetInt32(reader.GetOrdinal("download_count")),
+                                    view_count = reader.GetInt32(reader.GetOrdinal("view_count"))
+                                };
+                                
+                                // Get uploader name if available
+                                if (!reader.IsDBNull(reader.GetOrdinal("firstname")) && !reader.IsDBNull(reader.GetOrdinal("lastname")))
+                                {
+                                    string firstname = reader.GetString(reader.GetOrdinal("firstname"));
+                                    string lastname = reader.GetString(reader.GetOrdinal("lastname"));
+                                    uploaderName = $"{firstname} {lastname}".Trim();
+                                }
+                            }
+                        }
+                    }
+                    
+                    if (document == null)
+                    {
+                        return Json(new { success = false, message = "Document not found or not accessible" });
+                    }
+
+                    var result = new
+                    {
+                        id = document.document_id,
+                        name = document.name ?? string.Empty,
+                        type = document.file_type ?? string.Empty,
+                        size = document.file_size,
+                        uploaded = document.upload_date.ToString("yyyy-MM-dd"),
+                        uploader = uploaderName,
+                        category = document.category ?? string.Empty,
+                        description = document.description ?? string.Empty,
+                        allow_download = document.allow_download,
+                        apply_watermark = document.apply_watermark,
+                        download_count = document.download_count,
+                        view_count = document.view_count,
+                        url = document.file_path ?? string.Empty
+                    };
+
+                    return Json(new { success = true, document = result });
+                }
+                finally
+                {
+                    if (!wasOpen)
+                        connection.Close();
+                }
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
         }
     }
 }
