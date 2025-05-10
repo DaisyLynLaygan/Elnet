@@ -9,11 +9,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
 
-namespace HomeOwner.Data.Migrations
+namespace HomeOwner.Migrations
 {
     [DbContext(typeof(HomeOwnerContext))]
-    [Migration("20250509141400_AddFacilityReservationsTable")]
-    partial class AddFacilityReservationsTable
+    [Migration("20250510112627_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -92,6 +92,173 @@ namespace HomeOwner.Data.Migrations
                     b.ToTable("Comment");
                 });
 
+            modelBuilder.Entity("HomeOwner.Models.Document", b =>
+                {
+                    b.Property<int>("document_id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("document_id"));
+
+                    b.Property<bool>("allow_download")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("apply_watermark")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("category")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("description")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("download_count")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("expiration_date")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("file_path")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<long>("file_size")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("file_type")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("upload_date")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("uploader_id")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("user_id")
+                        .HasColumnType("int");
+
+                    b.Property<int>("view_count")
+                        .HasColumnType("int");
+
+                    b.Property<string>("visibility")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("document_id");
+
+                    b.HasIndex("uploader_id");
+
+                    b.HasIndex("user_id");
+
+                    b.ToTable("Document");
+                });
+
+            modelBuilder.Entity("HomeOwner.Models.Event", b =>
+                {
+                    b.Property<int>("event_id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("event_id"));
+
+                    b.Property<int>("capacity")
+                        .HasColumnType("int");
+
+                    b.Property<string>("contact_email")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("created_at")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("description")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("end_time")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("event_date")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("image_url")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("is_featured")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("location")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("organizer")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("rsvp_count")
+                        .HasColumnType("int");
+
+                    b.Property<string>("start_time")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("tags")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("title")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("updated_at")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("event_id");
+
+                    b.ToTable("Event");
+                });
+
+            modelBuilder.Entity("HomeOwner.Models.EventParticipant", b =>
+                {
+                    b.Property<int>("participant_id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("participant_id"));
+
+                    b.Property<int>("event_id")
+                        .HasColumnType("int");
+
+                    b.Property<string>("participant_type")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("registered_at")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("user_id")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("user_id1")
+                        .HasColumnType("int");
+
+                    b.HasKey("participant_id");
+
+                    b.HasIndex("event_id");
+
+                    b.HasIndex("user_id");
+
+                    b.HasIndex("user_id1");
+
+                    b.ToTable("EventParticipant");
+                });
+
             modelBuilder.Entity("HomeOwner.Models.Facility", b =>
                 {
                     b.Property<int>("facility_id")
@@ -144,7 +311,7 @@ namespace HomeOwner.Data.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("reservation_id"));
 
-                    b.Property<DateTime>("created_date")
+                    b.Property<DateTime>("date_created")
                         .HasColumnType("datetime2");
 
                     b.Property<int>("duration_hours")
@@ -156,12 +323,12 @@ namespace HomeOwner.Data.Migrations
                     b.Property<int>("guest_count")
                         .HasColumnType("int");
 
-                    b.Property<string>("notes")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("payment_status")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<decimal>("price")
+                        .HasColumnType("decimal(10,2)");
 
                     b.Property<string>("purpose")
                         .IsRequired()
@@ -180,12 +347,6 @@ namespace HomeOwner.Data.Migrations
                     b.Property<string>("status")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<decimal>("total_amount")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<DateTime?>("updated_date")
-                        .HasColumnType("datetime2");
 
                     b.Property<int>("user_id")
                         .HasColumnType("int");
@@ -324,6 +485,46 @@ namespace HomeOwner.Data.Migrations
                     b.HasIndex("user_id");
 
                     b.ToTable("Post");
+                });
+
+            modelBuilder.Entity("HomeOwner.Models.RentPayment", b =>
+                {
+                    b.Property<int>("payment_id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("payment_id"));
+
+                    b.Property<decimal>("amount")
+                        .HasColumnType("decimal(10,2)");
+
+                    b.Property<DateTime>("date_created")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("due_date")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("payment_date")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("payment_method")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("status")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("transaction_id")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("user_id")
+                        .HasColumnType("int");
+
+                    b.HasKey("payment_id");
+
+                    b.HasIndex("user_id");
+
+                    b.ToTable("RentPayment");
                 });
 
             modelBuilder.Entity("HomeOwner.Models.Report", b =>
@@ -482,6 +683,44 @@ namespace HomeOwner.Data.Migrations
                     b.Navigation("Post");
                 });
 
+            modelBuilder.Entity("HomeOwner.Models.Document", b =>
+                {
+                    b.HasOne("HomeOwner.Models.User", "Uploader")
+                        .WithMany()
+                        .HasForeignKey("uploader_id")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("HomeOwner.Models.User", null)
+                        .WithMany("UploadedDocuments")
+                        .HasForeignKey("user_id");
+
+                    b.Navigation("Uploader");
+                });
+
+            modelBuilder.Entity("HomeOwner.Models.EventParticipant", b =>
+                {
+                    b.HasOne("HomeOwner.Models.Event", "Event")
+                        .WithMany("Participants")
+                        .HasForeignKey("event_id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("HomeOwner.Models.User", "User")
+                        .WithMany()
+                        .HasForeignKey("user_id")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("HomeOwner.Models.User", null)
+                        .WithMany("EventParticipations")
+                        .HasForeignKey("user_id1");
+
+                    b.Navigation("Event");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("HomeOwner.Models.FacilityReservation", b =>
                 {
                     b.HasOne("HomeOwner.Models.Facility", "Facility")
@@ -541,6 +780,17 @@ namespace HomeOwner.Data.Migrations
                     b.Navigation("Author");
                 });
 
+            modelBuilder.Entity("HomeOwner.Models.RentPayment", b =>
+                {
+                    b.HasOne("HomeOwner.Models.User", "HomeOwner")
+                        .WithMany("RentPayments")
+                        .HasForeignKey("user_id")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("HomeOwner");
+                });
+
             modelBuilder.Entity("HomeOwner.Models.Report", b =>
                 {
                     b.HasOne("HomeOwner.Models.User", "Author")
@@ -562,6 +812,11 @@ namespace HomeOwner.Data.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("HomeOwner.Models.Event", b =>
+                {
+                    b.Navigation("Participants");
+                });
+
             modelBuilder.Entity("HomeOwner.Models.Post", b =>
                 {
                     b.Navigation("Comments");
@@ -571,13 +826,19 @@ namespace HomeOwner.Data.Migrations
                 {
                     b.Navigation("Comments");
 
+                    b.Navigation("EventParticipations");
+
                     b.Navigation("Notifications");
 
                     b.Navigation("Posts");
 
+                    b.Navigation("RentPayments");
+
                     b.Navigation("Reports");
 
                     b.Navigation("ServiceRequests");
+
+                    b.Navigation("UploadedDocuments");
                 });
 #pragma warning restore 612, 618
         }

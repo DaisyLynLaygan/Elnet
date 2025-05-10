@@ -104,11 +104,9 @@ namespace HomeOwner.Migrations
                         .HasColumnType("bit");
 
                     b.Property<string>("category")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("description")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("download_count")
@@ -125,7 +123,6 @@ namespace HomeOwner.Migrations
                         .HasColumnType("bigint");
 
                     b.Property<string>("file_type")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("name")
@@ -155,6 +152,108 @@ namespace HomeOwner.Migrations
                     b.HasIndex("user_id");
 
                     b.ToTable("Document");
+                });
+
+            modelBuilder.Entity("HomeOwner.Models.Event", b =>
+                {
+                    b.Property<int>("event_id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("event_id"));
+
+                    b.Property<int>("capacity")
+                        .HasColumnType("int");
+
+                    b.Property<string>("contact_email")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("created_at")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("description")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("end_time")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("event_date")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("image_url")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("is_featured")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("location")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("organizer")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("rsvp_count")
+                        .HasColumnType("int");
+
+                    b.Property<string>("start_time")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("tags")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("title")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("updated_at")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("event_id");
+
+                    b.ToTable("Event");
+                });
+
+            modelBuilder.Entity("HomeOwner.Models.EventParticipant", b =>
+                {
+                    b.Property<int>("participant_id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("participant_id"));
+
+                    b.Property<int>("event_id")
+                        .HasColumnType("int");
+
+                    b.Property<string>("participant_type")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("registered_at")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("user_id")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("user_id1")
+                        .HasColumnType("int");
+
+                    b.HasKey("participant_id");
+
+                    b.HasIndex("event_id");
+
+                    b.HasIndex("user_id");
+
+                    b.HasIndex("user_id1");
+
+                    b.ToTable("EventParticipant");
                 });
 
             modelBuilder.Entity("HomeOwner.Models.Facility", b =>
@@ -596,6 +695,29 @@ namespace HomeOwner.Migrations
                     b.Navigation("Uploader");
                 });
 
+            modelBuilder.Entity("HomeOwner.Models.EventParticipant", b =>
+                {
+                    b.HasOne("HomeOwner.Models.Event", "Event")
+                        .WithMany("Participants")
+                        .HasForeignKey("event_id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("HomeOwner.Models.User", "User")
+                        .WithMany()
+                        .HasForeignKey("user_id")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("HomeOwner.Models.User", null)
+                        .WithMany("EventParticipations")
+                        .HasForeignKey("user_id1");
+
+                    b.Navigation("Event");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("HomeOwner.Models.FacilityReservation", b =>
                 {
                     b.HasOne("HomeOwner.Models.Facility", "Facility")
@@ -687,6 +809,11 @@ namespace HomeOwner.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("HomeOwner.Models.Event", b =>
+                {
+                    b.Navigation("Participants");
+                });
+
             modelBuilder.Entity("HomeOwner.Models.Post", b =>
                 {
                     b.Navigation("Comments");
@@ -695,6 +822,8 @@ namespace HomeOwner.Migrations
             modelBuilder.Entity("HomeOwner.Models.User", b =>
                 {
                     b.Navigation("Comments");
+
+                    b.Navigation("EventParticipations");
 
                     b.Navigation("Notifications");
 
