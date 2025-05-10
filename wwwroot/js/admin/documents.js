@@ -9,6 +9,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const adminSecurityBtn = document.getElementById('adminSecurityBtn');
     const adminReplaceBtn = document.getElementById('adminReplaceBtn');
     const adminDeleteBtn = document.getElementById('adminDeleteBtn');
+    const totalDocumentsEl = document.getElementById('totalDocuments');
 
     // Modal Elements
     const adminUploadModal = document.getElementById('adminUploadModal');
@@ -20,10 +21,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const securityLevel = document.getElementById('securityLevel');
 
     // State
-    let currentFolder = 'root';
     let selectedDocument = null;
     let documents = [];
-    let folders = [];
 
     // Initialize
     initAdminDocuments();
@@ -31,9 +30,7 @@ document.addEventListener('DOMContentLoaded', function() {
     function initAdminDocuments() {
         setupAdminEventListeners();
         loadAdminDocuments();
-        loadAdminFolders();
         renderAdminDocuments();
-        renderAdminBreadcrumb();
     }
 
     function setupAdminEventListeners() {
@@ -52,95 +49,53 @@ document.addEventListener('DOMContentLoaded', function() {
         securitySaveBtn.addEventListener('click', saveSecuritySettings);
     }
 
-    function loadAdminDocuments() {
-        // In a real app, this would be an API call
-        documents = [
-            {
-                id: 'doc1',
-                name: '2024 Budget Proposal.pdf',
-                type: 'financial',
-                folder: 'root',
-                size: '4.2 MB',
-                uploaded: '2024-01-15',
-                visibility: 'board',
-                url: '/documents/financial/2024-budget.pdf',
-                downloads: 14,
-                versions: [
-                    { number: '1.2', date: '2024-01-10' },
-                    { number: '1.1', date: '2023-12-15' }
-                ],
-                accessLog: [
-                    { user: 'John Smith (Board)', action: 'Downloaded', time: 'Today, 10:45 AM' },
-                    { user: 'Sarah Johnson (Admin)', action: 'Viewed', time: 'Yesterday, 3:22 PM' }
-                ]
-            },
-            {
-                id: 'doc2',
-                name: 'Architectural Guidelines.docx',
-                type: 'policy',
-                folder: 'root',
-                size: '2.8 MB',
-                uploaded: '2023-11-20',
-                visibility: 'public',
-                url: '/documents/policies/arch-guidelines.docx',
-                downloads: 42,
-                versions: [
-                    { number: '3.1', date: '2023-11-20' }
-                ],
-                accessLog: []
+    async function loadAdminDocuments() {
+        try {
+            // Show loading state
+            adminDocumentsGrid.innerHTML = `
+                <div class="loading-state" style="text-align: center; padding: 40px;">
+                    <i class="fas fa-spinner fa-spin fa-2x"></i>
+                    <p>Loading documents...</p>
+                </div>
+            `;
+            
+            // Fetch documents from the server
+            const response = await fetch('/Admin/GetDocuments');
+            const data = await response.json();
+            
+            if (data.success) {
+                documents = data.documents;
+                
+                // Update document count
+                if (totalDocumentsEl) {
+                    totalDocumentsEl.textContent = data.stats.total;
+                }
+                
+                renderAdminDocuments();
+            } else {
+                showError('Failed to load documents: ' + data.message);
             }
-        ];
-    }
-
-    function loadAdminFolders() {
-        // In a real app, this would be an API call
-        folders = [
-            { id: 'confidential', name: 'Confidential', parent: 'root', itemCount: 12, visibility: 'admin' },
-            { id: 'financial', name: 'Financial', parent: 'root', itemCount: 8, visibility: 'board' },
-            { id: 'meetings', name: 'Meetings', parent: 'root', itemCount: 15, visibility: 'public' },
-            { id: 'policies', name: 'Policies', parent: 'root', itemCount: 5, visibility: 'public' }
-        ];
+        } catch (error) {
+            console.error('Error loading documents:', error);
+            showError('An error occurred while loading documents');
+        }
     }
 
     function renderAdminDocuments() {
         adminDocumentsGrid.innerHTML = '';
         
-        // Show folders first
-        const currentFolders = folders.filter(folder => folder.parent === currentFolder);
-        currentFolders.forEach(folder => {
-            const folderElement = document.createElement('div');
-            folderElement.className = 'admin-folder-item';
-            folderElement.dataset.id = folder.id;
-            
-            folderElement.innerHTML = `
-                <span class="folder-badge">${folder.itemCount} items</span>
-                <i class="fas fa-folder"></i>
-                <span class="folder-name">${folder.name}</span>
-                <div class="folder-actions">
-                    <button class="btn-action edit" title="Edit Folder"><i class="fas fa-cog"></i></button>
+        if (documents.length === 0) {
+            adminDocumentsGrid.innerHTML = `
+                <div class="no-documents" style="text-align: center; padding: 40px;">
+                    <i class="fas fa-file-alt fa-3x" style="color: #ccc; margin-bottom: 15px;"></i>
+                    <p>No documents found. Upload your first document to get started.</p>
                 </div>
             `;
-            
-            folderElement.addEventListener('click', function(e) {
-                if (!e.target.closest('.folder-actions')) {
-                    navigateToAdminFolder(folder.id);
-                }
-            });
-            
-            // Add event listeners to folder actions
-            const editBtn = folderElement.querySelector('.edit');
-            
-            editBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                editAdminFolder(folder);
-            });
-            
-            adminDocumentsGrid.appendChild(folderElement);
-        });
+            return;
+        }
         
         // Show documents
-        const currentDocs = documents.filter(doc => doc.folder === currentFolder);
-        currentDocs.forEach(doc => {
+        documents.forEach(doc => {
             const docElement = document.createElement('div');
             docElement.className = 'admin-document-item';
             docElement.dataset.id = doc.id;
@@ -164,7 +119,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     <div class="document-meta-admin">
                         <span class="document-type">${formatDocumentType(doc.type)}</span>
                         <span class="document-date">${formatDate(doc.uploaded)}</span>
-                        <span class="document-size">${doc.size}</span>
+                        <span class="document-size">${formatFileSize(doc.size)}</span>
                     </div>
                     <span class="document-visibility ${visibilityClass}">${visibilityText}</span>
                 </div>
@@ -179,7 +134,7 @@ document.addEventListener('DOMContentLoaded', function() {
             // Add event listeners
             docElement.addEventListener('click', function(e) {
                 if (!e.target.closest('.document-actions-admin')) {
-                    previewAdminDocument(doc);
+                    getDocumentDetails(doc.id);
                 }
             });
             
@@ -212,45 +167,20 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    function renderAdminBreadcrumb() {
-        adminBreadcrumb.innerHTML = '';
-        
-        // Always show root link
-        const rootItem = document.createElement('a');
-        rootItem.href = '#';
-        rootItem.className = 'breadcrumb-item root';
-        rootItem.dataset.id = 'root';
-        rootItem.textContent = 'All Documents';
-        rootItem.addEventListener('click', function(e) {
-            e.preventDefault();
-            navigateToAdminFolder('root');
-        });
-        adminBreadcrumb.appendChild(rootItem);
-        
-        // In a real app, we would show the full folder hierarchy
-        if (currentFolder !== 'root') {
-            const current = folders.find(f => f.id === currentFolder);
-            if (current) {
-                adminBreadcrumb.innerHTML += '<span class="breadcrumb-separator">/</span>';
-                
-                const folderItem = document.createElement('a');
-                folderItem.href = '#';
-                folderItem.className = 'breadcrumb-item';
-                folderItem.dataset.id = current.id;
-                folderItem.textContent = current.name;
-                folderItem.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    navigateToAdminFolder(current.id);
-                });
-                adminBreadcrumb.appendChild(folderItem);
+    async function getDocumentDetails(docId) {
+        try {
+            const response = await fetch(`/Admin/GetDocumentDetails?id=${docId}`);
+            const data = await response.json();
+            
+            if (data.success) {
+                previewAdminDocument(data.document);
+            } else {
+                showError('Failed to load document details: ' + data.message);
             }
+        } catch (error) {
+            console.error('Error loading document details:', error);
+            showError('An error occurred while loading document details');
         }
-    }
-
-    function navigateToAdminFolder(folderId) {
-        currentFolder = folderId;
-        renderAdminDocuments();
-        renderAdminBreadcrumb();
     }
 
     function previewAdminDocument(doc) {
@@ -259,9 +189,9 @@ document.addEventListener('DOMContentLoaded', function() {
         // Update preview panel
         document.getElementById('previewDocName').textContent = doc.name;
         document.getElementById('previewDocType').textContent = formatDocumentType(doc.type);
-        document.getElementById('previewDocDate').textContent = `${formatDate(doc.uploaded)} by Admin`;
-        document.getElementById('previewDocSize').textContent = doc.size;
-        document.getElementById('previewDocDownloads').textContent = doc.downloads;
+        document.getElementById('previewDocDate').textContent = `${formatDate(doc.uploaded)} by ${doc.uploader}`;
+        document.getElementById('previewDocSize').textContent = formatFileSize(doc.size);
+        document.getElementById('previewDocDownloads').textContent = doc.download_count;
         
         // Update visibility text based on new options
         const visibilityText = 
@@ -269,38 +199,14 @@ document.addEventListener('DOMContentLoaded', function() {
             doc.visibility === 'staff' ? 'Staff Access' : 'Admin Access';
         document.getElementById('previewDocVisibility').textContent = visibilityText;
         
-        // Show version history
-        const versionHistoryContainer = document.querySelector('.version-history');
-        versionHistoryContainer.innerHTML = `
-            <h4><i class="fas fa-code-branch"></i> Version History</h4>
-            ${doc.versions.map(version => `
-                <div class="version-item">
-                    <div>
-                        <span class="version-number">Version ${version.number}</span>
-                        <span class="version-date">Updated: ${formatDate(version.date)}</span>
-                    </div>
-                    <div class="version-actions">
-                        <button class="btn-action" title="Restore"><i class="fas fa-undo"></i></button>
-                        <button class="btn-action" title="Download"><i class="fas fa-download"></i></button>
-                    </div>
-                </div>
-            `).join('')}
-        `;
-        
-        // Show access log
-        const accessLogContainer = document.querySelector('.access-log');
-        accessLogContainer.innerHTML = `
-            <h4><i class="fas fa-list"></i> Recent Access</h4>
-            ${doc.accessLog.length > 0 ? 
-                doc.accessLog.map(access => `
-                    <div class="access-log-item">
-                        <span class="access-user">${access.user}</span>
-                        <span class="access-time">${access.time}</span>
-                        <div class="access-action">${access.action}</div>
-                    </div>
-                `).join('') : 
-                '<div class="access-log-item">No recent access</div>'}
-        `;
+        // Track document view
+        fetch('/Admin/TrackDocumentView', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ id: doc.id })
+        }).catch(error => console.error('Error tracking document view:', error));
         
         adminDocumentPreview.style.display = 'flex';
     }
@@ -310,34 +216,47 @@ document.addEventListener('DOMContentLoaded', function() {
         selectedDocument = null;
     }
 
-    function downloadAdminDocument(doc = selectedDocument) {
+    async function downloadAdminDocument(doc = selectedDocument) {
         if (doc) {
-            // In a real app, this would trigger the file download
-            console.log(`Admin downloading document: ${doc.name}`);
-            window.open(doc.url, '_blank');
-            
-            // Track download in access log
-            const now = new Date();
-            const timeString = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-            const dateString = now.toDateString() === new Date().toDateString() ? 
-                'Today' : now.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-            
-            doc.accessLog.unshift({
-                user: 'Admin User (Admin)',
-                action: 'Downloaded',
-                time: `${dateString}, ${timeString}`
-            });
-            
-            doc.downloads++;
-            
-            // Show success notification
-            Swal.fire({
-                title: 'Download Started',
-                text: `${doc.name} is being downloaded`,
-                icon: 'success',
-                timer: 2000,
-                showConfirmButton: false
-            });
+            try {
+                // Track the download
+                const response = await fetch('/Admin/TrackDocumentDownload', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ id: doc.id })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Open the document in a new tab using the URL we already have from the document object
+                    window.open(doc.url, '_blank');
+                    
+                    // Update the download count in the UI
+                    if (selectedDocument && selectedDocument.id === doc.id) {
+                        const downloadCountEl = document.getElementById('previewDocDownloads');
+                        if (downloadCountEl) {
+                            downloadCountEl.textContent = (parseInt(downloadCountEl.textContent) + 1).toString();
+                        }
+                    }
+                    
+                    // Show success notification
+                    Swal.fire({
+                        title: 'Download Started',
+                        text: `${doc.name} is being downloaded`,
+                        icon: 'success',
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+                } else {
+                    showError('Failed to download document: ' + data.message);
+                }
+            } catch (error) {
+                console.error('Error downloading document:', error);
+                showError('An error occurred while downloading the document');
+            }
         }
     }
 
@@ -347,111 +266,244 @@ document.addEventListener('DOMContentLoaded', function() {
         // Set current security level
         securityLevel.value = doc.visibility;
         
+        // Set other fields if available
+        if (document.getElementById('downloadRestriction')) {
+            document.getElementById('downloadRestriction').value = doc.allow_download ? 'allow' : 'restrict';
+        }
+        
+        if (document.getElementById('expirationDate') && doc.expiration_date) {
+            document.getElementById('expirationDate').value = doc.expiration_date;
+        }
+        
         securityModal.style.display = 'flex';
     }
 
-    function saveSecuritySettings() {
+    async function saveSecuritySettings() {
         if (!selectedDocument) return;
         
-        // Update document visibility
-        selectedDocument.visibility = securityLevel.value;
-        
-        // In a real app, this would save to the server
-        console.log(`Updated security settings for ${selectedDocument.name} to ${securityLevel.value}`);
-        
-        // Update UI
-        const visibilityClass = `visibility-${selectedDocument.visibility}`;
-        const visibilityText = 
-            selectedDocument.visibility === 'homeowner' ? 'Homeowner' :
-            selectedDocument.visibility === 'staff' ? 'Staff' : 'Admin';
-        
-        document.querySelector(`.admin-document-item[data-id="${selectedDocument.id}"] .document-visibility`)
-            .className = `document-visibility ${visibilityClass}`;
-        document.querySelector(`.admin-document-item[data-id="${selectedDocument.id}"] .document-visibility`)
-            .textContent = visibilityText;
-        
-        document.getElementById('previewDocVisibility').textContent = 
-            selectedDocument.visibility === 'homeowner' ? 'Homeowner Access' :
-            selectedDocument.visibility === 'staff' ? 'Staff Access' : 'Admin Access';
-        
-        securityModal.style.display = 'none';
-        
-        // Show success notification
-        Swal.fire({
-            title: 'Settings Saved',
-            text: `Security settings for ${selectedDocument.name} have been updated`,
-            icon: 'success',
-            timer: 2000,
-            showConfirmButton: false
-        });
+        try {
+            // Prepare data
+            const visibility = securityLevel.value;
+            const allowDownload = document.getElementById('downloadRestriction') ? 
+                document.getElementById('downloadRestriction').value === 'allow' : true;
+            const applyWatermark = document.getElementById('downloadRestriction') ? 
+                document.getElementById('downloadRestriction').value === 'watermark' : false;
+            const category = selectedDocument.category || '';
+            const description = selectedDocument.description || '';
+            
+            // Send update request
+            const response = await fetch('/Admin/UpdateDocumentSettings', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ 
+                    id: selectedDocument.id,
+                    visibility,
+                    allowDownload,
+                    applyWatermark,
+                    category,
+                    description
+                })
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                // Update document in the list
+                const docIndex = documents.findIndex(d => d.id === selectedDocument.id);
+                if (docIndex !== -1) {
+                    documents[docIndex].visibility = visibility;
+                }
+                
+                // Update UI
+                const visibilityClass = `visibility-${visibility}`;
+                const visibilityText = 
+                    visibility === 'homeowner' ? 'Homeowner' :
+                    visibility === 'staff' ? 'Staff' : 'Admin';
+                
+                document.querySelector(`.admin-document-item[data-id="${selectedDocument.id}"] .document-visibility`)
+                    .className = `document-visibility ${visibilityClass}`;
+                document.querySelector(`.admin-document-item[data-id="${selectedDocument.id}"] .document-visibility`)
+                    .textContent = visibilityText;
+                
+                document.getElementById('previewDocVisibility').textContent = 
+                    visibility === 'homeowner' ? 'Homeowner Access' :
+                    visibility === 'staff' ? 'Staff Access' : 'Admin Access';
+                
+                securityModal.style.display = 'none';
+                
+                // Show success notification
+                Swal.fire({
+                    title: 'Settings Saved',
+                    text: `Security settings for ${selectedDocument.name} have been updated`,
+                    icon: 'success',
+                    timer: 2000,
+                    showConfirmButton: false
+                });
+            } else {
+                showError('Failed to update document settings: ' + data.message);
+            }
+        } catch (error) {
+            console.error('Error updating document settings:', error);
+            showError('An error occurred while updating document settings');
+        }
     }
 
     function replaceAdminDocument() {
         if (!selectedDocument) return;
         
-        // In a real app, this would open a file selector
-        Swal.fire({
-            title: 'Replace Document',
-            text: `Please select a new file to replace ${selectedDocument.name}`,
-            icon: 'info',
-            showCancelButton: true,
-            confirmButtonText: 'Select File',
-            cancelButtonText: 'Cancel'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                // This would trigger a file input in a real application
-                console.log(`Replacing document: ${selectedDocument.name}`);
-            }
-        });
-    }
-
-    function deleteAdminDocument(docId = selectedDocument?.id) {
-        if (!docId) return;
+        // Create a file input element
+        const fileInput = document.createElement('input');
+        fileInput.type = 'file';
+        fileInput.accept = getAcceptedFileTypes();
+        fileInput.style.display = 'none';
+        document.body.appendChild(fileInput);
         
-        const docToDelete = documents.find(d => d.id === docId);
-        if (!docToDelete) return;
+        // Trigger click on the file input
+        fileInput.click();
         
-        Swal.fire({
-            title: 'Delete Document',
-            text: `Are you sure you want to delete ${docToDelete.name}?`,
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonText: 'Delete',
-            cancelButtonText: 'Cancel',
-            confirmButtonColor: '#dc3545'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                // In a real app, this would be an API call
-                documents = documents.filter(doc => doc.id !== docId);
+        // Handle file selection
+        fileInput.addEventListener('change', async function() {
+            if (fileInput.files.length === 0) return;
+            
+            try {
+                // Show loading state
+                Swal.fire({
+                    title: 'Uploading...',
+                    html: 'Replacing document, please wait...',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
                 
-                // Close preview if open
-                if (selectedDocument && selectedDocument.id === docId) {
-                    closeAdminPreview();
+                // First delete the old document
+                const deleteResponse = await fetch('/Admin/DeleteDocument', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ id: selectedDocument.id })
+                });
+                
+                const deleteData = await deleteResponse.json();
+                
+                if (!deleteData.success) {
+                    Swal.close();
+                    showError('Failed to replace document: ' + deleteData.message);
+                    return;
                 }
                 
-                renderAdminDocuments();
+                // Then upload the new document
+                const formData = new FormData();
+                formData.append('file', fileInput.files[0]);
+                formData.append('visibility', selectedDocument.visibility);
+                formData.append('allowDownload', selectedDocument.allow_download);
+                formData.append('applyWatermark', selectedDocument.apply_watermark);
+                formData.append('category', selectedDocument.category || '');
+                formData.append('description', selectedDocument.description || '');
                 
-                Swal.fire({
-                    title: 'Deleted!',
-                    text: 'The document has been deleted.',
-                    icon: 'success',
-                    timer: 2000,
-                    showConfirmButton: false
+                const uploadResponse = await fetch('/Admin/UploadDocument', {
+                    method: 'POST',
+                    body: formData
                 });
+                
+                const uploadData = await uploadResponse.json();
+                
+                if (uploadData.success) {
+                    // Close preview
+                    closeAdminPreview();
+                    
+                    // Reload documents
+                    await loadAdminDocuments();
+                    
+                    // Show success message
+                    Swal.fire({
+                        title: 'Document Replaced',
+                        text: 'The document has been successfully replaced',
+                        icon: 'success',
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+                } else {
+                    Swal.close();
+                    showError('Failed to upload new document: ' + uploadData.message);
+                }
+            } catch (error) {
+                console.error('Error replacing document:', error);
+                Swal.close();
+                showError('An error occurred while replacing the document');
+            } finally {
+                // Remove the file input
+                document.body.removeChild(fileInput);
             }
         });
     }
 
-    function editAdminFolder(folder) {
-        // In a real app, this would open an edit modal
-        Swal.fire({
-            title: 'Edit Folder',
-            text: `Editing folder: ${folder.name}`,
-            icon: 'info',
-            showCancelButton: true,
-            confirmButtonText: 'Save Changes',
-            cancelButtonText: 'Cancel'
-        });
+    async function deleteAdminDocument(docId = selectedDocument?.id) {
+        if (!docId) return;
+        
+        try {
+            const docToDelete = documents.find(d => d.id === docId);
+            if (!docToDelete) return;
+            
+            // Ask for confirmation
+            const result = await Swal.fire({
+                title: 'Delete Document',
+                text: `Are you sure you want to delete ${docToDelete.name}?`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Delete',
+                cancelButtonText: 'Cancel',
+                confirmButtonColor: '#dc3545'
+            });
+            
+            if (result.isConfirmed) {
+                // Send delete request
+                const response = await fetch('/Admin/DeleteDocument', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ id: docId })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Remove from documents array
+                    documents = documents.filter(doc => doc.id !== docId);
+                    
+                    // Close preview if open
+                    if (selectedDocument && selectedDocument.id === docId) {
+                        closeAdminPreview();
+                    }
+                    
+                    // Update UI
+                    renderAdminDocuments();
+                    
+                    // Update document count
+                    if (totalDocumentsEl) {
+                        totalDocumentsEl.textContent = documents.length;
+                    }
+                    
+                    // Show success message
+                    Swal.fire({
+                        title: 'Deleted!',
+                        text: 'The document has been deleted.',
+                        icon: 'success',
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+                } else {
+                    showError('Failed to delete document: ' + data.message);
+                }
+            }
+        } catch (error) {
+            console.error('Error deleting document:', error);
+            showError('An error occurred while deleting the document');
+        }
     }
 
     function showVersionHistory(doc) {
@@ -459,21 +511,22 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Ensure the document is selected and preview is open
         if (!selectedDocument || selectedDocument.id !== doc.id) {
-            selectedDocument = doc;
-            previewAdminDocument(doc);
+            getDocumentDetails(doc.id);
         }
         
         // Scroll to version history section
         document.querySelector('.version-history').scrollIntoView({ behavior: 'smooth' });
     }
 
-    function handleAdminUpload() {
-        const files = document.getElementById('adminDocumentFiles').files;
+    async function handleAdminUpload() {
+        const fileInput = document.getElementById('adminDocumentFiles');
         const visibility = document.getElementById('adminDocumentVisibility').value;
         const watermark = document.getElementById('adminWatermarkOption').checked;
         const disableDownload = document.getElementById('adminDisableDownload').checked;
+        const category = document.getElementById('adminDocumentCategory')?.value || '';
+        const description = document.getElementById('adminDocumentDescription')?.value || '';
         
-        if (files.length === 0) {
+        if (fileInput.files.length === 0) {
             Swal.fire({
                 title: 'Error',
                 text: 'Please select at least one file to upload',
@@ -482,61 +535,99 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
         
+        // Close the upload modal first
+        adminUploadModal.style.display = 'none';
+        
         // Show loading indication
         Swal.fire({
             title: 'Uploading...',
-            html: `Uploading ${files.length} file(s)`,
+            html: `Uploading ${fileInput.files.length} file(s)`,
             allowOutsideClick: false,
             didOpen: () => {
                 Swal.showLoading();
             }
         });
         
-        // In a real app, this would upload files to the server
-        console.log('Admin uploading files:', {
-            count: files.length,
-            visibility,
-            watermark,
-            disableDownload
-        });
-        
-        // Simulate a server request with setTimeout
-        setTimeout(() => {
-            // Simulate adding new documents
-            Array.from(files).forEach(file => {
-                const fileExt = file.name.split('.').pop().toLowerCase();
-                const newDoc = {
-                    id: 'doc' + Math.random().toString(36).substr(2, 9),
-                    name: file.name,
-                    type: getDocumentTypeFromExt(fileExt),
-                    folder: 'root', // Default to root folder
-                    size: formatFileSize(file.size),
-                    uploaded: new Date().toISOString().split('T')[0],
-                    visibility,
-                    url: `/documents/root/${file.name}`,
-                    downloads: 0,
-                    versions: [],
-                    accessLog: []
-                };
+        try {
+            // Upload each file
+            const uploadPromises = Array.from(fileInput.files).map(file => {
+                const formData = new FormData();
+                formData.append('file', file);
+                formData.append('visibility', visibility);
+                formData.append('allowDownload', !disableDownload);
+                formData.append('applyWatermark', watermark);
+                formData.append('category', category);
+                formData.append('description', description);
                 
-                documents.push(newDoc);
+                return fetch('/Admin/UploadDocument', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (!data.success) {
+                        console.error('Upload failed:', data.message);
+                        return { success: false, message: data.message, fileName: file.name };
+                    }
+                    return { success: true, data, fileName: file.name };
+                })
+                .catch(error => {
+                    console.error('Error uploading file:', error);
+                    return { success: false, message: error.toString(), fileName: file.name };
+                });
             });
             
-            // Close modal and refresh
-            adminUploadModal.style.display = 'none';
-            renderAdminDocuments();
+            // Wait for all uploads to complete
+            const results = await Promise.all(uploadPromises);
             
-            // Show success message
+            // Check results
+            const successful = results.filter(r => r.success);
+            const failed = results.filter(r => !r.success);
+            
+            Swal.close();
+            
+            if (failed.length === 0) {
+                // All uploads succeeded
+                Swal.fire({
+                    title: 'Upload Complete',
+                    text: `Successfully uploaded ${successful.length} file(s)`,
+                    icon: 'success',
+                    confirmButtonText: 'OK'
+                });
+                
+                // Reset the form
+                document.getElementById('adminUploadForm').reset();
+                
+                // Refresh documents
+                await loadAdminDocuments();
+            } else {
+                // Some uploads failed
+                const failMessages = failed.map(f => `${f.fileName}: ${f.message}`).join('\n');
+                
+                Swal.fire({
+                    title: `Failed to upload ${failed.length} file(s)`,
+                    html: `<div style="text-align:left; max-height: 200px; overflow-y: auto;">
+                        <p>The following files failed to upload:</p>
+                        <pre style="white-space: pre-wrap;">${failMessages}</pre>
+                    </div>`,
+                    icon: 'error',
+                    confirmButtonText: 'OK'
+                });
+                
+                // If some uploads succeeded, refresh documents
+                if (successful.length > 0) {
+                    await loadAdminDocuments();
+                }
+            }
+        } catch (error) {
+            console.error('Error in upload process:', error);
             Swal.fire({
-                title: 'Upload Complete',
-                text: `Successfully uploaded ${files.length} file(s)`,
-                icon: 'success',
+                title: 'Upload Failed',
+                text: `An error occurred: ${error.message}`,
+                icon: 'error',
                 confirmButtonText: 'OK'
             });
-            
-            // Reset the form
-            document.getElementById('adminUploadForm').reset();
-        }, 1500); // Simulated delay
+        }
     }
 
     // Helper functions
@@ -581,9 +672,20 @@ document.addEventListener('DOMContentLoaded', function() {
             'financial': 'Financial Report',
             'policy': 'Policy',
             'minutes': 'Meeting Minutes',
+            'confidential': 'Confidential',
             'form': 'Form',
             'guideline': 'Guideline',
-            'notice': 'Notice'
+            'notice': 'Notice',
+            'pdf': 'PDF Document',
+            'doc': 'Word Document',
+            'docx': 'Word Document',
+            'xls': 'Excel Spreadsheet',
+            'xlsx': 'Excel Spreadsheet',
+            'ppt': 'PowerPoint',
+            'pptx': 'PowerPoint',
+            'jpg': 'Image',
+            'jpeg': 'Image',
+            'png': 'Image'
         };
         return types[type] || type.charAt(0).toUpperCase() + type.slice(1);
     }
@@ -594,10 +696,27 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function formatFileSize(bytes) {
+        if (typeof bytes === 'string') {
+            return bytes; // Already formatted
+        }
+        
         if (bytes === 0) return '0 Bytes';
         const k = 1024;
         const sizes = ['Bytes', 'KB', 'MB', 'GB'];
         const i = Math.floor(Math.log(bytes) / Math.log(k));
-        return parseFloat((bytes / Math.pow(k, i)).toFixed(1) + ' ' + sizes[i])
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+    }
+
+    function getAcceptedFileTypes() {
+        return '.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.jpg,.jpeg,.png,.gif';
+    }
+
+    function showError(message) {
+        Swal.fire({
+            title: 'Error',
+            text: message,
+            icon: 'error',
+            confirmButtonText: 'OK'
+        });
     }
 });

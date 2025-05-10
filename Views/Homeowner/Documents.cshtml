@@ -1,0 +1,426 @@
+@{
+    Layout = "~/Views/Shared/Dashboard_Layout.cshtml";
+    ViewData["Title"] = "Documents";
+}
+
+<link rel="stylesheet" href="~/css/homeowners/documents.css" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+<div class="documents-container">
+    <div class="documents-header">
+        <h2>Documents</h2>
+        <p>Access important documents shared by management</p>
+    </div>
+
+    <div class="documents-filters">
+        <div class="search-container">
+            <input type="text" id="documentSearch" placeholder="Search documents...">
+            <i class="fas fa-search"></i>
+        </div>
+        <div class="category-filter">
+            <select id="categoryFilter">
+                <option value="all">All Categories</option>
+                <option value="financial">Financial</option>
+                <option value="policy">Policy</option>
+                <option value="minutes">Meeting Minutes</option>
+                <option value="form">Forms</option>
+                <option value="guideline">Guidelines</option>
+                <option value="notice">Notices</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="documents-grid" id="documentsGrid">
+        <!-- Documents will be loaded here -->
+        <div class="loading-state">
+            <i class="fas fa-spinner fa-spin"></i>
+            <p>Loading documents...</p>
+        </div>
+    </div>
+</div>
+
+<!-- Document Preview Modal -->
+<div class="document-preview-modal" id="documentPreviewModal">
+    <div class="preview-content">
+        <div class="preview-header">
+            <h3 id="previewTitle">Document Title</h3>
+            <button class="close-preview" id="closePreviewBtn"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="preview-body">
+            <div class="document-details">
+                <div class="detail-row">
+                    <span class="detail-label">Type:</span>
+                    <span class="detail-value" id="previewType">PDF Document</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Size:</span>
+                    <span class="detail-value" id="previewSize">2.4 MB</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Uploaded:</span>
+                    <span class="detail-value" id="previewDate">January 15, 2023</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Category:</span>
+                    <span class="detail-value" id="previewCategory">Financial</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Description:</span>
+                    <p class="detail-description" id="previewDescription">This document contains important information about the community.</p>
+                </div>
+            </div>
+            <div class="preview-actions">
+                <button class="btn-primary" id="downloadBtn"><i class="fas fa-download"></i> Download</button>
+                <button class="btn-secondary" id="viewBtn"><i class="fas fa-eye"></i> View</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // DOM Elements
+    const documentsGrid = document.getElementById('documentsGrid');
+    const documentSearch = document.getElementById('documentSearch');
+    const categoryFilter = document.getElementById('categoryFilter');
+    const previewModal = document.getElementById('documentPreviewModal');
+    const closePreviewBtn = document.getElementById('closePreviewBtn');
+    const downloadBtn = document.getElementById('downloadBtn');
+    const viewBtn = document.getElementById('viewBtn');
+    
+    // State
+    let documents = [];
+    let selectedDocument = null;
+    
+    // Initialize
+    loadDocuments();
+    
+    // Event Listeners
+    documentSearch.addEventListener('input', filterDocuments);
+    categoryFilter.addEventListener('change', filterDocuments);
+    closePreviewBtn.addEventListener('click', closePreview);
+    downloadBtn.addEventListener('click', downloadDocument);
+    viewBtn.addEventListener('click', viewDocument);
+    
+    // Functions
+    async function loadDocuments() {
+        try {
+            const response = await fetch('/Homeowner/GetHomeownerDocuments');
+            const data = await response.json();
+            
+            if (data.success) {
+                documents = data.documents;
+                renderDocuments(documents);
+            } else {
+                showError('Failed to load documents: ' + data.message);
+            }
+        } catch (error) {
+            console.error('Error loading documents:', error);
+            showError('An error occurred while loading documents');
+        }
+    }
+    
+    function renderDocuments(docs) {
+        documentsGrid.innerHTML = '';
+        
+        if (docs.length === 0) {
+            documentsGrid.innerHTML = `
+                <div class="no-documents">
+                    <i class="fas fa-file-alt"></i>
+                    <p>No documents found</p>
+                </div>
+            `;
+            return;
+        }
+        
+        docs.forEach(doc => {
+            const docElement = document.createElement('div');
+            docElement.className = 'document-item';
+            docElement.dataset.id = doc.id;
+            
+            const fileExt = doc.name.split('.').pop().toLowerCase();
+            const icon = getFileIcon(fileExt);
+            
+            docElement.innerHTML = `
+                <div class="document-icon">
+                    <i class="fas ${icon}"></i>
+                </div>
+                <div class="document-info">
+                    <h4>${doc.name}</h4>
+                    <div class="document-meta">
+                        <span class="document-type">${formatDocumentType(doc.type)}</span>
+                        <span class="document-date">${formatDate(doc.uploaded)}</span>
+                        <span class="document-size">${formatFileSize(doc.size)}</span>
+                    </div>
+                    <div class="document-category" data-category="${doc.category || 'uncategorized'}">${doc.category || 'Uncategorized'}</div>
+                </div>
+                <div class="document-actions">
+                    ${doc.allow_download ? 
+                        `<button class="btn-action download" title="Download"><i class="fas fa-download"></i></button>` : 
+                        `<button class="btn-action view-only" title="View Only"><i class="fas fa-eye"></i></button>`
+                    }
+                </div>
+            `;
+            
+            docElement.addEventListener('click', () => openDocumentPreview(doc.id));
+            
+            const downloadBtn = docElement.querySelector('.download');
+            if (downloadBtn) {
+                downloadBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    downloadDocumentById(doc.id);
+                });
+            }
+            
+            documentsGrid.appendChild(docElement);
+        });
+    }
+    
+    function filterDocuments() {
+        const searchTerm = documentSearch.value.toLowerCase();
+        const category = categoryFilter.value;
+        
+        const filteredDocs = documents.filter(doc => {
+            const matchesSearch = 
+                doc.name.toLowerCase().includes(searchTerm) || 
+                (doc.description && doc.description.toLowerCase().includes(searchTerm));
+            
+            const matchesCategory = category === 'all' || 
+                (doc.category && doc.category.toLowerCase() === category.toLowerCase());
+            
+            return matchesSearch && matchesCategory;
+        });
+        
+        renderDocuments(filteredDocs);
+    }
+    
+    async function openDocumentPreview(id) {
+        try {
+            const response = await fetch(`/Homeowner/GetDocumentDetails?id=${id}`);
+            const data = await response.json();
+            
+            if (data.success) {
+                selectedDocument = data.document;
+                
+                // Update preview modal
+                document.getElementById('previewTitle').textContent = selectedDocument.name;
+                document.getElementById('previewType').textContent = formatDocumentType(selectedDocument.type);
+                document.getElementById('previewSize').textContent = formatFileSize(selectedDocument.size);
+                document.getElementById('previewDate').textContent = `${formatDate(selectedDocument.uploaded)} by ${selectedDocument.uploader}`;
+                document.getElementById('previewCategory').textContent = selectedDocument.category || 'Uncategorized';
+                document.getElementById('previewDescription').textContent = selectedDocument.description || 'No description available';
+                
+                // Show/hide download button based on permissions
+                downloadBtn.style.display = selectedDocument.allow_download ? 'block' : 'none';
+                
+                // Show modal
+                previewModal.classList.add('active');
+                
+                // Track document view
+                fetch('/Homeowner/TrackDocumentView', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ id: selectedDocument.id })
+                }).catch(error => console.error('Error tracking document view:', error));
+            } else {
+                showError('Failed to load document details: ' + data.message);
+            }
+        } catch (error) {
+            console.error('Error loading document details:', error);
+            showError('An error occurred while loading document details');
+        }
+    }
+    
+    function closePreview() {
+        previewModal.classList.remove('active');
+        selectedDocument = null;
+    }
+    
+    async function downloadDocument() {
+        if (selectedDocument) {
+            await downloadDocumentById(selectedDocument.id);
+        }
+    }
+    
+    async function downloadDocumentById(id) {
+        try {
+            // Show loading indicator
+            Swal.fire({
+                title: 'Processing',
+                text: 'Preparing document for download...',
+                icon: 'info',
+                allowOutsideClick: false,
+                showConfirmButton: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+            
+            const response = await fetch('/Homeowner/TrackDocumentDownload', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ id })
+            });
+            
+            const data = await response.json();
+            
+            if (data.success && data.url) {
+                // Close the loading indicator
+                Swal.close();
+                
+                // Open the document in a new tab
+                const downloadWindow = window.open(data.url, '_blank');
+                
+                // Check if popup was blocked
+                if (!downloadWindow || downloadWindow.closed || typeof downloadWindow.closed === 'undefined') {
+                    Swal.fire({
+                        title: 'Popup Blocked',
+                        text: 'Your browser blocked the download popup. Please allow popups for this site and try again.',
+                        icon: 'warning',
+                        confirmButtonText: 'OK'
+                    });
+                    return;
+                }
+                
+                // Show success notification
+                Swal.fire({
+                    title: 'Download Started',
+                    text: 'Your document is being downloaded',
+                    icon: 'success',
+                    timer: 2000,
+                    showConfirmButton: false
+                });
+            } else {
+                // Show specific error message
+                Swal.fire({
+                    title: 'Download Failed',
+                    text: data.message || 'Unable to download document',
+                    icon: 'error',
+                    confirmButtonText: 'OK'
+                });
+            }
+        } catch (error) {
+            console.error('Error downloading document:', error);
+            Swal.fire({
+                title: 'Error',
+                text: 'An error occurred while downloading the document. Please try again later.',
+                icon: 'error',
+                confirmButtonText: 'OK'
+            });
+        }
+    }
+    
+    function viewDocument() {
+        if (selectedDocument) {
+            if (!selectedDocument.url || selectedDocument.url.trim() === '') {
+                Swal.fire({
+                    title: 'Error',
+                    text: 'Document URL is missing. Please contact support.',
+                    icon: 'error',
+                    confirmButtonText: 'OK'
+                });
+                return;
+            }
+            
+            // Open the document in a new tab
+            const viewWindow = window.open(selectedDocument.url, '_blank');
+            
+            // Check if popup was blocked
+            if (!viewWindow || viewWindow.closed || typeof viewWindow.closed === 'undefined') {
+                Swal.fire({
+                    title: 'Popup Blocked',
+                    text: 'Your browser blocked the document viewer popup. Please allow popups for this site and try again.',
+                    icon: 'warning',
+                    confirmButtonText: 'OK'
+                });
+                return;
+            }
+            
+            // Track the view (this is already done in openDocumentPreview, but just in case)
+            fetch('/Homeowner/TrackDocumentView', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ id: selectedDocument.id })
+            }).catch(error => console.error('Error tracking document view:', error));
+        } else {
+            Swal.fire({
+                title: 'Error',
+                text: 'No document selected.',
+                icon: 'error',
+                confirmButtonText: 'OK'
+            });
+        }
+    }
+    
+    // Helper functions
+    function getFileIcon(ext) {
+        switch(ext) {
+            case 'pdf': return 'fa-file-pdf';
+            case 'doc':
+            case 'docx': return 'fa-file-word';
+            case 'xls':
+            case 'xlsx': return 'fa-file-excel';
+            case 'ppt':
+            case 'pptx': return 'fa-file-powerpoint';
+            case 'jpg':
+            case 'jpeg':
+            case 'png':
+            case 'gif': return 'fa-file-image';
+            case 'zip':
+            case 'rar': return 'fa-file-archive';
+            default: return 'fa-file';
+        }
+    }
+    
+    function formatDocumentType(type) {
+        const types = {
+            'pdf': 'PDF Document',
+            'doc': 'Word Document',
+            'docx': 'Word Document',
+            'xls': 'Excel Spreadsheet',
+            'xlsx': 'Excel Spreadsheet',
+            'ppt': 'PowerPoint',
+            'pptx': 'PowerPoint',
+            'jpg': 'Image',
+            'jpeg': 'Image',
+            'png': 'Image',
+            'financial': 'Financial Report',
+            'policy': 'Policy',
+            'minutes': 'Meeting Minutes',
+            'form': 'Form',
+            'guideline': 'Guideline',
+            'notice': 'Notice'
+        };
+        return types[type] || type.charAt(0).toUpperCase() + type.slice(1);
+    }
+    
+    function formatDate(dateString) {
+        const options = { year: 'numeric', month: 'short', day: 'numeric' };
+        return new Date(dateString).toLocaleDateString('en-US', options);
+    }
+    
+    function formatFileSize(bytes) {
+        if (bytes === 0) return '0 Bytes';
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+    }
+    
+    function showError(message) {
+        Swal.fire({
+            title: 'Error',
+            text: message,
+            icon: 'error',
+            confirmButtonText: 'OK'
+        });
+    }
+});
+</script>

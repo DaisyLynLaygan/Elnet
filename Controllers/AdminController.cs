@@ -1,8 +1,14 @@
-﻿using HomeOwner.Data;
-using HomeOwner.Models;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json;
+using HomeOwner.Data;
+using HomeOwner.Models;
 using Microsoft.EntityFrameworkCore;
+using System.IO;
+using Microsoft.AspNetCore.Http;
+using Newtonsoft.Json;
 
 namespace HomeOwner.Controllers
 {
@@ -296,6 +302,575 @@ namespace HomeOwner.Controllers
             ViewContents();
             ViewBag.ActiveMenu = "Documents";
             return View("AdminDocuments");
+        }
+
+        [HttpGet]
+        public JsonResult GetDocuments()
+        {
+            try
+            {
+                var documents = _context.Document
+                    .Include(d => d.Uploader)
+                    .OrderByDescending(d => d.upload_date)
+                    .Select(d => new
+                    {
+                        id = d.document_id,
+                        name = d.name ?? string.Empty,
+                        type = d.file_type ?? string.Empty,
+                        category = d.category ?? string.Empty,
+                        size = d.file_size,
+                        uploaded = d.upload_date.ToString("yyyy-MM-dd"),
+                        visibility = d.visibility ?? "admin",
+                        url = d.file_path ?? string.Empty,
+                        downloads = d.download_count,
+                        uploader = new
+                        {
+                            id = d.uploader_id,
+                            name = d.Uploader == null ? "Unknown User" : 
+                                $"{d.Uploader.firstname ?? string.Empty} {d.Uploader.lastname ?? string.Empty}".Trim()
+                        }
+                    })
+                    .ToList();
+
+                // Calculate statistics
+                var stats = new
+                {
+                    total = documents.Count,
+                    admin = documents.Count(d => d.visibility == "admin"),
+                    staff = documents.Count(d => d.visibility == "staff"),
+                    homeowner = documents.Count(d => d.visibility == "homeowner")
+                };
+
+                return Json(new { success = true, documents, stats });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+
+        [HttpPost]
+        public async Task<JsonResult> UploadDocument(IFormFile file, string visibility, bool allowDownload, bool applyWatermark, string category, string description)
+        {
+            try
+            {
+                if (file == null || file.Length == 0)
+                {
+                    return Json(new { success = false, message = "No file selected" });
+                }
+
+                // Create uploads directory if it doesn't exist
+                var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "documents");
+                if (!Directory.Exists(uploadsFolder))
+                {
+                    Directory.CreateDirectory(uploadsFolder);
+                }
+
+                // Generate unique filename
+                var uniqueFileName = $"{Guid.NewGuid()}_{Path.GetFileName(file.FileName)}";
+                var filePath = Path.Combine(uploadsFolder, uniqueFileName);
+
+                // Save file to disk
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    await file.CopyToAsync(stream);
+                }
+
+                // Create document record in database
+                var document = new Document
+                {
+                    name = file.FileName,
+                    file_path = $"/uploads/documents/{uniqueFileName}",
+                    file_type = Path.GetExtension(file.FileName).TrimStart('.'),
+                    file_size = file.Length,
+                    description = description,
+                    visibility = visibility ?? "admin",
+                    allow_download = allowDownload,
+                    apply_watermark = applyWatermark,
+                    upload_date = DateTime.Now,
+                    category = category,
+                    uploader_id = CurrentUser.user_id,
+                    download_count = 0,
+                    view_count = 0
+                };
+
+                // Manually execute SQL to bypass EF Core issues
+                var connection = _context.Database.GetDbConnection();
+                var wasOpen = connection.State == System.Data.ConnectionState.Open;
+                
+                if (!wasOpen)
+                    await connection.OpenAsync();
+                
+                try
+                {
+                    using (var command = connection.CreateCommand())
+                    {
+                        command.CommandText = @"
+                            INSERT INTO [Document] (
+                                [name], [file_path], [file_type], [file_size], 
+                                [description], [visibility], [allow_download], [apply_watermark], 
+                                [upload_date], [category], [uploader_id], [download_count], [view_count]
+                            ) VALUES (
+                                @name, @file_path, @file_type, @file_size,
+                                @description, @visibility, @allow_download, @apply_watermark,
+                                @upload_date, @category, @uploader_id, @download_count, @view_count
+                            );
+                            SELECT SCOPE_IDENTITY();";
+                        
+                        // Add parameters
+                        var p1 = command.CreateParameter();
+                        p1.ParameterName = "@name";
+                        p1.Value = document.name;
+                        command.Parameters.Add(p1);
+                        
+                        var p2 = command.CreateParameter();
+                        p2.ParameterName = "@file_path";
+                        p2.Value = document.file_path;
+                        command.Parameters.Add(p2);
+                        
+                        var p3 = command.CreateParameter();
+                        p3.ParameterName = "@file_type";
+                        p3.Value = document.file_type ?? (object)DBNull.Value;
+                        command.Parameters.Add(p3);
+                        
+                        var p4 = command.CreateParameter();
+                        p4.ParameterName = "@file_size";
+                        p4.Value = document.file_size;
+                        command.Parameters.Add(p4);
+                        
+                        var p5 = command.CreateParameter();
+                        p5.ParameterName = "@description";
+                        p5.Value = document.description ?? (object)DBNull.Value;
+                        command.Parameters.Add(p5);
+                        
+                        var p6 = command.CreateParameter();
+                        p6.ParameterName = "@visibility";
+                        p6.Value = document.visibility;
+                        command.Parameters.Add(p6);
+                        
+                        var p7 = command.CreateParameter();
+                        p7.ParameterName = "@allow_download";
+                        p7.Value = document.allow_download;
+                        command.Parameters.Add(p7);
+                        
+                        var p8 = command.CreateParameter();
+                        p8.ParameterName = "@apply_watermark";
+                        p8.Value = document.apply_watermark;
+                        command.Parameters.Add(p8);
+                        
+                        var p9 = command.CreateParameter();
+                        p9.ParameterName = "@upload_date";
+                        p9.Value = document.upload_date;
+                        command.Parameters.Add(p9);
+                        
+                        var p10 = command.CreateParameter();
+                        p10.ParameterName = "@category";
+                        p10.Value = document.category ?? (object)DBNull.Value;
+                        command.Parameters.Add(p10);
+                        
+                        var p11 = command.CreateParameter();
+                        p11.ParameterName = "@uploader_id";
+                        p11.Value = document.uploader_id;
+                        command.Parameters.Add(p11);
+                        
+                        var p12 = command.CreateParameter();
+                        p12.ParameterName = "@download_count";
+                        p12.Value = document.download_count;
+                        command.Parameters.Add(p12);
+                        
+                        var p13 = command.CreateParameter();
+                        p13.ParameterName = "@view_count";
+                        p13.Value = document.view_count;
+                        command.Parameters.Add(p13);
+                        
+                        // Execute and get ID
+                        var result = await command.ExecuteScalarAsync();
+                        document.document_id = Convert.ToInt32(result);
+                    }
+                }
+                finally
+                {
+                    if (!wasOpen)
+                        connection.Close();
+                }
+
+                return Json(new { 
+                    success = true, 
+                    message = "Document uploaded successfully", 
+                    document = new {
+                        id = document.document_id,
+                        name = document.name,
+                        type = document.file_type,
+                        size = document.file_size,
+                        url = document.file_path
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                // If there's an error, try to delete the uploaded file
+                if (file != null)
+                {
+                    var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "documents", Path.GetFileName(file.FileName));
+                    if (System.IO.File.Exists(filePath))
+                    {
+                        try
+                        {
+                            System.IO.File.Delete(filePath);
+                        }
+                        catch { /* Ignore cleanup errors */ }
+                    }
+                }
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+
+        [HttpGet]
+        public JsonResult GetDocumentDetails(int id)
+        {
+            try
+            {
+                // Use direct SQL to avoid EF Core issues
+                var connection = _context.Database.GetDbConnection();
+                var wasOpen = connection.State == System.Data.ConnectionState.Open;
+                
+                if (!wasOpen)
+                    connection.Open();
+                
+                try
+                {
+                    // Create a document object to hold our result
+                    Document document = null;
+                    string uploaderName = "Unknown User";
+                    
+                    using (var command = connection.CreateCommand())
+                    {
+                        command.CommandText = @"
+                            SELECT d.document_id, d.name, d.file_path, d.file_type, d.file_size, 
+                                   d.description, d.visibility, d.allow_download, d.apply_watermark, 
+                                   d.upload_date, d.expiration_date, d.category, d.uploader_id, 
+                                   d.download_count, d.view_count,
+                                   u.firstname, u.lastname
+                            FROM Document d
+                            LEFT JOIN [User] u ON d.uploader_id = u.user_id
+                            WHERE d.document_id = @id";
+                        
+                        var idParam = command.CreateParameter();
+                        idParam.ParameterName = "@id";
+                        idParam.Value = id;
+                        command.Parameters.Add(idParam);
+                        
+                        using (var reader = command.ExecuteReader())
+                        {
+                            if (reader.Read())
+                            {
+                                document = new Document
+                                {
+                                    document_id = reader.GetInt32(reader.GetOrdinal("document_id")),
+                                    name = reader.IsDBNull(reader.GetOrdinal("name")) ? string.Empty : reader.GetString(reader.GetOrdinal("name")),
+                                    file_path = reader.IsDBNull(reader.GetOrdinal("file_path")) ? string.Empty : reader.GetString(reader.GetOrdinal("file_path")),
+                                    file_type = reader.IsDBNull(reader.GetOrdinal("file_type")) ? null : reader.GetString(reader.GetOrdinal("file_type")),
+                                    file_size = reader.GetInt64(reader.GetOrdinal("file_size")),
+                                    description = reader.IsDBNull(reader.GetOrdinal("description")) ? null : reader.GetString(reader.GetOrdinal("description")),
+                                    visibility = reader.IsDBNull(reader.GetOrdinal("visibility")) ? "admin" : reader.GetString(reader.GetOrdinal("visibility")),
+                                    allow_download = reader.GetBoolean(reader.GetOrdinal("allow_download")),
+                                    apply_watermark = reader.GetBoolean(reader.GetOrdinal("apply_watermark")),
+                                    upload_date = reader.GetDateTime(reader.GetOrdinal("upload_date")),
+                                    expiration_date = reader.IsDBNull(reader.GetOrdinal("expiration_date")) ? null : (DateTime?)reader.GetDateTime(reader.GetOrdinal("expiration_date")),
+                                    category = reader.IsDBNull(reader.GetOrdinal("category")) ? null : reader.GetString(reader.GetOrdinal("category")),
+                                    uploader_id = reader.GetInt32(reader.GetOrdinal("uploader_id")),
+                                    download_count = reader.GetInt32(reader.GetOrdinal("download_count")),
+                                    view_count = reader.GetInt32(reader.GetOrdinal("view_count"))
+                                };
+                                
+                                // Get uploader name if available
+                                if (!reader.IsDBNull(reader.GetOrdinal("firstname")) && !reader.IsDBNull(reader.GetOrdinal("lastname")))
+                                {
+                                    string firstname = reader.GetString(reader.GetOrdinal("firstname"));
+                                    string lastname = reader.GetString(reader.GetOrdinal("lastname"));
+                                    uploaderName = $"{firstname} {lastname}".Trim();
+                                }
+                            }
+                        }
+                    }
+                    
+                    if (document == null)
+                    {
+                        return Json(new { success = false, message = "Document not found" });
+                    }
+
+                    var result = new
+                    {
+                        id = document.document_id,
+                        name = document.name ?? string.Empty,
+                        type = document.file_type ?? string.Empty,
+                        size = document.file_size,
+                        uploaded = document.upload_date.ToString("yyyy-MM-dd"),
+                        uploader = uploaderName,
+                        visibility = document.visibility ?? "admin",
+                        category = document.category ?? string.Empty,
+                        description = document.description ?? string.Empty,
+                        allow_download = document.allow_download,
+                        apply_watermark = document.apply_watermark,
+                        download_count = document.download_count,
+                        view_count = document.view_count,
+                        url = document.file_path ?? string.Empty
+                    };
+
+                    return Json(new { success = true, document = result });
+                }
+                finally
+                {
+                    if (!wasOpen)
+                        connection.Close();
+                }
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+
+        [HttpPost]
+        public async Task<JsonResult> UpdateDocumentSettings(int id, string visibility, bool allowDownload, bool applyWatermark, string category, string description)
+        {
+            try
+            {
+                var connection = _context.Database.GetDbConnection();
+                var wasOpen = connection.State == System.Data.ConnectionState.Open;
+                
+                if (!wasOpen)
+                    await connection.OpenAsync();
+                
+                try
+                {
+                    using (var command = connection.CreateCommand())
+                    {
+                        command.CommandText = @"
+                            UPDATE Document 
+                            SET visibility = @visibility,
+                                allow_download = @allowDownload,
+                                apply_watermark = @applyWatermark,
+                                category = @category,
+                                description = @description
+                            WHERE document_id = @id";
+                        
+                        var idParam = command.CreateParameter();
+                        idParam.ParameterName = "@id";
+                        idParam.Value = id;
+                        command.Parameters.Add(idParam);
+                        
+                        var visibilityParam = command.CreateParameter();
+                        visibilityParam.ParameterName = "@visibility";
+                        visibilityParam.Value = visibility ?? "admin";
+                        command.Parameters.Add(visibilityParam);
+                        
+                        var allowDownloadParam = command.CreateParameter();
+                        allowDownloadParam.ParameterName = "@allowDownload";
+                        allowDownloadParam.Value = allowDownload;
+                        command.Parameters.Add(allowDownloadParam);
+                        
+                        var applyWatermarkParam = command.CreateParameter();
+                        applyWatermarkParam.ParameterName = "@applyWatermark";
+                        applyWatermarkParam.Value = applyWatermark;
+                        command.Parameters.Add(applyWatermarkParam);
+                        
+                        var categoryParam = command.CreateParameter();
+                        categoryParam.ParameterName = "@category";
+                        categoryParam.Value = category != null ? (object)category : DBNull.Value;
+                        command.Parameters.Add(categoryParam);
+                        
+                        var descriptionParam = command.CreateParameter();
+                        descriptionParam.ParameterName = "@description";
+                        descriptionParam.Value = description != null ? (object)description : DBNull.Value;
+                        command.Parameters.Add(descriptionParam);
+                        
+                        int rowsAffected = await command.ExecuteNonQueryAsync();
+                        
+                        if (rowsAffected == 0)
+                        {
+                            return Json(new { success = false, message = "Document not found" });
+                        }
+                    }
+                    
+                    return Json(new { success = true });
+                }
+                finally
+                {
+                    if (!wasOpen)
+                        connection.Close();
+                }
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+
+        [HttpPost]
+        public async Task<JsonResult> DeleteDocument(int id)
+        {
+            try
+            {
+                // First get the file path so we can delete the file
+                string filePath = null;
+                
+                var connection = _context.Database.GetDbConnection();
+                var wasOpen = connection.State == System.Data.ConnectionState.Open;
+                
+                if (!wasOpen)
+                    await connection.OpenAsync();
+                
+                try
+                {
+                    // Get the file path
+                    using (var command = connection.CreateCommand())
+                    {
+                        command.CommandText = "SELECT file_path FROM Document WHERE document_id = @id";
+                        
+                        var idParam = command.CreateParameter();
+                        idParam.ParameterName = "@id";
+                        idParam.Value = id;
+                        command.Parameters.Add(idParam);
+                        
+                        using (var reader = await command.ExecuteReaderAsync())
+                        {
+                            if (await reader.ReadAsync())
+                            {
+                                filePath = !reader.IsDBNull(0) ? reader.GetString(0) : null;
+                            }
+                        }
+                    }
+                    
+                    if (filePath == null)
+                    {
+                        return Json(new { success = false, message = "Document not found" });
+                    }
+                    
+                    // Delete from database
+                    using (var command = connection.CreateCommand())
+                    {
+                        command.CommandText = "DELETE FROM Document WHERE document_id = @id";
+                        
+                        var idParam = command.CreateParameter();
+                        idParam.ParameterName = "@id";
+                        idParam.Value = id;
+                        command.Parameters.Add(idParam);
+                        
+                        int rowsAffected = await command.ExecuteNonQueryAsync();
+                        
+                        if (rowsAffected == 0)
+                        {
+                            return Json(new { success = false, message = "Document not found" });
+                        }
+                    }
+                }
+                finally
+                {
+                    if (!wasOpen)
+                        connection.Close();
+                }
+                
+                // Delete the physical file
+                if (!string.IsNullOrEmpty(filePath))
+                {
+                    var fullPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", filePath.TrimStart('/'));
+                    if (System.IO.File.Exists(fullPath))
+                    {
+                        System.IO.File.Delete(fullPath);
+                    }
+                }
+                
+                return Json(new { success = true });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+
+        [HttpPost]
+        public async Task<JsonResult> TrackDocumentDownload(int id)
+        {
+            try
+            {
+                var connection = _context.Database.GetDbConnection();
+                var wasOpen = connection.State == System.Data.ConnectionState.Open;
+                
+                if (!wasOpen)
+                    await connection.OpenAsync();
+                
+                try
+                {
+                    using (var command = connection.CreateCommand())
+                    {
+                        command.CommandText = @"
+                            UPDATE Document 
+                            SET download_count = download_count + 1
+                            WHERE document_id = @id";
+                        
+                        var idParam = command.CreateParameter();
+                        idParam.ParameterName = "@id";
+                        idParam.Value = id;
+                        command.Parameters.Add(idParam);
+                        
+                        await command.ExecuteNonQueryAsync();
+                    }
+                    
+                    return Json(new { success = true });
+                }
+                finally
+                {
+                    if (!wasOpen)
+                        connection.Close();
+                }
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+
+        [HttpPost]
+        public async Task<JsonResult> TrackDocumentView(int id)
+        {
+            try
+            {
+                var connection = _context.Database.GetDbConnection();
+                var wasOpen = connection.State == System.Data.ConnectionState.Open;
+                
+                if (!wasOpen)
+                    await connection.OpenAsync();
+                
+                try
+                {
+                    using (var command = connection.CreateCommand())
+                    {
+                        command.CommandText = @"
+                            UPDATE Document 
+                            SET view_count = view_count + 1
+                            WHERE document_id = @id";
+                        
+                        var idParam = command.CreateParameter();
+                        idParam.ParameterName = "@id";
+                        idParam.Value = id;
+                        command.Parameters.Add(idParam);
+                        
+                        await command.ExecuteNonQueryAsync();
+                    }
+                    
+                    return Json(new { success = true });
+                }
+                finally
+                {
+                    if (!wasOpen)
+                        connection.Close();
+                }
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
         }
 
         public IActionResult Reservations()

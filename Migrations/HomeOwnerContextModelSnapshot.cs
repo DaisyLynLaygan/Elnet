@@ -89,6 +89,74 @@ namespace HomeOwner.Migrations
                     b.ToTable("Comment");
                 });
 
+            modelBuilder.Entity("HomeOwner.Models.Document", b =>
+                {
+                    b.Property<int>("document_id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("document_id"));
+
+                    b.Property<bool>("allow_download")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("apply_watermark")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("category")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("description")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("download_count")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("expiration_date")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("file_path")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<long>("file_size")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("file_type")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("upload_date")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("uploader_id")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("user_id")
+                        .HasColumnType("int");
+
+                    b.Property<int>("view_count")
+                        .HasColumnType("int");
+
+                    b.Property<string>("visibility")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("document_id");
+
+                    b.HasIndex("uploader_id");
+
+                    b.HasIndex("user_id");
+
+                    b.ToTable("Document");
+                });
+
             modelBuilder.Entity("HomeOwner.Models.Facility", b =>
                 {
                     b.Property<int>("facility_id")
@@ -513,6 +581,21 @@ namespace HomeOwner.Migrations
                     b.Navigation("Post");
                 });
 
+            modelBuilder.Entity("HomeOwner.Models.Document", b =>
+                {
+                    b.HasOne("HomeOwner.Models.User", "Uploader")
+                        .WithMany()
+                        .HasForeignKey("uploader_id")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("HomeOwner.Models.User", null)
+                        .WithMany("UploadedDocuments")
+                        .HasForeignKey("user_id");
+
+                    b.Navigation("Uploader");
+                });
+
             modelBuilder.Entity("HomeOwner.Models.FacilityReservation", b =>
                 {
                     b.HasOne("HomeOwner.Models.Facility", "Facility")
@@ -622,6 +705,8 @@ namespace HomeOwner.Migrations
                     b.Navigation("Reports");
 
                     b.Navigation("ServiceRequests");
+
+                    b.Navigation("UploadedDocuments");
                 });
 #pragma warning restore 612, 618
         }
