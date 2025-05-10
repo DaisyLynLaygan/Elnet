@@ -807,6 +807,23 @@ namespace HomeOwner.Controllers
                         paymentDate = fr.date_created // Using date_created as a proxy for payment date
                     })
                     .ToListAsync();
+                    
+                // Get rent payments with payment data
+                var rentPayments = await _context.RentPayment
+                    .Where(rp => rp.user_id == userId && 
+                                rp.status == "Paid" && 
+                                rp.payment_date >= startDate)
+                    .Select(rp => new
+                    {
+                        id = rp.payment_id,
+                        type = "rent",
+                        description = "Monthly Rent",
+                        date = rp.payment_date.Value.ToString("yyyy-MM-dd"),
+                        amount = rp.amount,
+                        status = "completed",
+                        paymentDate = rp.payment_date
+                    })
+                    .ToListAsync();
                 
                 // Calculate summary statistics - all time totals
                 var allTimeServiceRequests = await _context.ServiceRequest
@@ -816,8 +833,14 @@ namespace HomeOwner.Controllers
                 var allTimeFacilityReservations = await _context.FacilityReservation
                     .Where(fr => fr.user_id == userId && fr.payment_status == "Paid")
                     .ToListAsync();
+                    
+                var allTimeRentPayments = await _context.RentPayment
+                    .Where(rp => rp.user_id == userId && rp.status == "Paid")
+                    .ToListAsync();
                 
-                var totalSpent = allTimeServiceRequests.Sum(sr => sr.price) + allTimeFacilityReservations.Sum(fr => fr.price);
+                var totalSpent = allTimeServiceRequests.Sum(sr => sr.price) + 
+                                allTimeFacilityReservations.Sum(fr => fr.price) + 
+                                allTimeRentPayments.Sum(rp => rp.amount);
                 
                 // Calculate this month's spending
                 var firstDayOfMonth = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1);
@@ -829,7 +852,13 @@ namespace HomeOwner.Controllers
                     .Where(fr => fr.date_created >= firstDayOfMonth)
                     .ToList();
                     
-                var thisMonthSpending = thisMonthServices.Sum(sr => sr.price) + thisMonthFacilities.Sum(fr => fr.price);
+                var thisMonthRent = allTimeRentPayments
+                    .Where(rp => rp.payment_date >= firstDayOfMonth)
+                    .ToList();
+                    
+                var thisMonthSpending = thisMonthServices.Sum(sr => sr.price) + 
+                                       thisMonthFacilities.Sum(fr => fr.price) + 
+                                       thisMonthRent.Sum(rp => rp.amount);
                 
                 // Get monthly spending for chart - only for the requested months
                 var monthlySpending = new List<MonthlySpending>();
@@ -848,6 +877,10 @@ namespace HomeOwner.Controllers
                     var facilitySpending = allTimeFacilityReservations
                         .Where(fr => fr.date_created >= firstDay && fr.date_created <= lastDay)
                         .Sum(fr => fr.price);
+                        
+                    var rentSpending = allTimeRentPayments
+                        .Where(rp => rp.payment_date >= firstDay && rp.payment_date <= lastDay)
+                        .Sum(rp => rp.amount);
                     
                     monthlySpending.Add(new MonthlySpending
                     {
@@ -855,7 +888,7 @@ namespace HomeOwner.Controllers
                         Year = date.Year,
                         ServiceSpending = serviceSpending,
                         FacilitySpending = facilitySpending,
-                        RentSpending = 0 // Rent not implemented yet
+                        RentSpending = rentSpending
                     });
                 }
                 
@@ -864,12 +897,14 @@ namespace HomeOwner.Controllers
                     success = true,
                     serviceRequests,
                     facilityReservations,
+                    rentPayments,
                     stats = new
                     {
                         totalSpent,
                         thisMonthSpending,
                         serviceCount = allTimeServiceRequests.Count,
-                        facilityCount = allTimeFacilityReservations.Count
+                        facilityCount = allTimeFacilityReservations.Count,
+                        rentCount = allTimeRentPayments.Count
                     },
                     monthlySpending
                 });
@@ -878,6 +913,231 @@ namespace HomeOwner.Controllers
             {
                 _logger.LogError(ex, "Error fetching payment history");
                 return Json(new { success = false, message = "Error retrieving payment history" });
+            }
+        }
+        
+        [HttpGet]
+        public async Task<JsonResult> GetCurrentRentPayment()
+        {
+            try
+            {
+                if (CurrentUser == null)
+                {
+                    return Json(new { success = false, message = "User not authenticated" });
+                }
+
+                int userId = CurrentUser.user_id;
+                
+                // First check if there's already a rent payment for the current month
+                var today = DateTime.Now;
+                var firstDayOfMonth = new DateTime(today.Year, today.Month, 1);
+                var lastDayOfMonth = firstDayOfMonth.AddMonths(1).AddDays(-1);
+                
+                var currentMonthRent = await _context.RentPayment
+                    .Where(rp => rp.user_id == userId && 
+                           rp.due_date >= firstDayOfMonth && 
+                           rp.due_date <= lastDayOfMonth)
+                    .FirstOrDefaultAsync();
+                
+                // If no rent payment exists for the current month, auto-generate one
+                if (currentMonthRent == null)
+                {
+                    currentMonthRent = await GenerateMonthlyRentPayment(userId);
+                }
+                
+                // Get property details (hardcoded for now, but in a real application this would come from the database)
+                var propertyDetails = new
+                {
+                    name = "Luxury Villa in Beverly Hills",
+                    bedrooms = 5,
+                    bathrooms = 4,
+                    squareFeet = 4200
+                };
+                
+                return Json(new
+                {
+                    success = true,
+                    rentPayment = new
+                    {
+                        id = currentMonthRent.payment_id,
+                        amount = currentMonthRent.amount,
+                        dueDate = currentMonthRent.due_date.ToString("MMMM d, yyyy"),
+                        status = currentMonthRent.status,
+                        isPaid = currentMonthRent.status == "Paid",
+                        paymentDate = currentMonthRent.payment_date?.ToString("MMMM d, yyyy"),
+                        paymentMethod = currentMonthRent.payment_method
+                    },
+                    property = propertyDetails
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error fetching current rent payment");
+                return Json(new { success = false, message = "Error retrieving rent payment information" });
+            }
+        }
+        
+        private async Task<RentPayment> GenerateMonthlyRentPayment(int userId)
+        {
+            // Get the current month and year
+            var today = DateTime.Now;
+            var dueDate = new DateTime(today.Year, today.Month, today.Day > 25 ? DateTime.DaysInMonth(today.Year, today.Month) : 30);
+            
+            // If today is already past the 30th, set due date to next month
+            if (today.Day > 25)
+            {
+                dueDate = dueDate.AddMonths(1);
+            }
+            
+            // Create a new rent payment
+            var newRentPayment = new RentPayment
+            {
+                user_id = userId,
+                amount = 8500.00m, // This should come from user's property information in a real app
+                due_date = dueDate,
+                status = "Unpaid",
+                date_created = DateTime.Now
+            };
+            
+            _context.RentPayment.Add(newRentPayment);
+            await _context.SaveChangesAsync();
+            
+            // Create a notification for the user about the new rent payment
+            var notification = new Notification
+            {
+                user_id = userId,
+                title = "New Rent Payment",
+                message = $"Your monthly rent of ${newRentPayment.amount:N2} is due on {dueDate:MMMM d, yyyy}.",
+                type = "rent_payment",
+                reference_id = newRentPayment.payment_id.ToString(),
+                is_read = false,
+                created_date = DateTime.Now
+            };
+            
+            _context.Notification.Add(notification);
+            await _context.SaveChangesAsync();
+            
+            return newRentPayment;
+        }
+        
+        [HttpPost]
+        public async Task<JsonResult> ProcessRentPayment([FromBody] RentPaymentRequest paymentRequest)
+        {
+            try
+            {
+                // Validate the request
+                if (paymentRequest == null || paymentRequest.PaymentId <= 0)
+                {
+                    return Json(new { success = false, message = "Invalid payment request data" });
+                }
+                
+                // Find the rent payment
+                var rentPayment = await _context.RentPayment.FindAsync(paymentRequest.PaymentId);
+                if (rentPayment == null)
+                {
+                    return Json(new { success = false, message = "Rent payment not found" });
+                }
+                
+                // For security, also check that the user making the payment owns the payment
+                int currentUserId = 0;
+                if (HttpContext.Session.GetString("user_id") != null)
+                {
+                    currentUserId = Convert.ToInt32(HttpContext.Session.GetString("user_id"));
+                }
+                
+                if (rentPayment.user_id != currentUserId && currentUserId != 0)
+                {
+                    return Json(new { success = false, message = "You are not authorized to pay for this rent" });
+                }
+                
+                // If payment is already made, return success but with a message
+                if (rentPayment.status == "Paid")
+                {
+                    return Json(new { success = true, message = "This rent payment has already been processed.", alreadyPaid = true });
+                }
+                
+                // Update the payment status
+                rentPayment.status = "Paid";
+                rentPayment.payment_date = DateTime.Now;
+                rentPayment.payment_method = paymentRequest.PaymentMethod;
+                rentPayment.transaction_id = "TX-" + Guid.NewGuid().ToString().Substring(0, 8).ToUpper();
+                
+                await _context.SaveChangesAsync();
+                
+                // Create a notification for successful payment
+                var notification = new Notification
+                {
+                    user_id = rentPayment.user_id,
+                    title = "Rent Payment Successful",
+                    message = $"Your rent payment of ${rentPayment.amount:N2} has been processed successfully.",
+                    type = "payment_confirmation",
+                    reference_id = rentPayment.payment_id.ToString(),
+                    is_read = false,
+                    created_date = DateTime.Now
+                };
+                
+                _context.Notification.Add(notification);
+                await _context.SaveChangesAsync();
+                
+                return Json(new { 
+                    success = true, 
+                    message = "Rent payment processed successfully!", 
+                    paymentId = rentPayment.payment_id,
+                    transaction = new
+                    {
+                        id = rentPayment.transaction_id,
+                        date = rentPayment.payment_date?.ToString("yyyy-MM-dd"),
+                        amount = rentPayment.amount
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error processing rent payment");
+                return Json(new { success = false, message = "Error processing payment", details = ex.Message });
+            }
+        }
+        
+        // Scheduled method to generate monthly rent payments for all users
+        // This would be called by a background service in a real application
+        [NonAction]
+        public async Task GenerateMonthlyRentPaymentsForAllUsers()
+        {
+            try
+            {
+                // Get all active homeowner users
+                var homeowners = await _context.User
+                    .Where(u => u.role == "homeowner" && u.status == "active")
+                    .ToListAsync();
+                
+                var today = DateTime.Now;
+                var currentMonth = today.Month;
+                var currentYear = today.Year;
+                
+                foreach (var user in homeowners)
+                {
+                    // Check if the user already has a rent payment for current month
+                    var firstDayOfMonth = new DateTime(currentYear, currentMonth, 1);
+                    var lastDayOfMonth = firstDayOfMonth.AddMonths(1).AddDays(-1);
+                    
+                    var existingPayment = await _context.RentPayment
+                        .Where(rp => rp.user_id == user.user_id && 
+                               rp.due_date >= firstDayOfMonth && 
+                               rp.due_date <= lastDayOfMonth)
+                        .FirstOrDefaultAsync();
+                    
+                    // If no payment exists for current month, create one
+                    if (existingPayment == null)
+                    {
+                        await GenerateMonthlyRentPayment(user.user_id);
+                    }
+                }
+                
+                _logger.LogInformation($"Successfully generated rent payments for {homeowners.Count} users");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error generating monthly rent payments");
             }
         }
         
@@ -894,6 +1154,12 @@ namespace HomeOwner.Controllers
     public class PaymentRequest
     {
         public int RequestId { get; set; }
+        public string PaymentMethod { get; set; }
+    }
+    
+    public class RentPaymentRequest
+    {
+        public int PaymentId { get; set; }
         public string PaymentMethod { get; set; }
     }
 } 

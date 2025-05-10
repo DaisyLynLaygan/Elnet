@@ -1,7 +1,7 @@
 // Real payment history data
 let paymentHistory = [];
 let currentPage = 1;
-let pageSize = 10;
+let pageSize = 5; // Changed to 5 items per page
 let totalPages = 1;
 
 // Initial empty chart data
@@ -165,32 +165,97 @@ function loadPaymentHistory(filteredData = null) {
                 </button>
             </div>
         `;
+        
+        // Update pagination
+        updatePagination(dataToShow.length);
         return;
     }
     
-    dataToShow.forEach(payment => {
+    // Calculate pagination
+    totalPages = Math.ceil(dataToShow.length / pageSize);
+    if (currentPage > totalPages) {
+        currentPage = totalPages;
+    }
+    
+    // Get current page items
+    const startIndex = (currentPage - 1) * pageSize;
+    const endIndex = Math.min(startIndex + pageSize, dataToShow.length);
+    const currentPageItems = dataToShow.slice(startIndex, endIndex);
+    
+    // Display current page items
+    currentPageItems.forEach(payment => {
         const paymentItem = document.createElement('div');
         paymentItem.className = 'list-item';
         
         const typeClass = `type-${payment.type}`;
         const statusClass = `status-${payment.status}`;
         
+        // Prepare payment description with proper type
+        let description = payment.description;
+        if (!description) {
+            if (payment.type === 'rent') {
+                description = `Monthly Rent: ${new Date(payment.date).toLocaleString('default', { month: 'long', year: 'numeric' })}`;
+            } else if (payment.type === 'maintenance') {
+                description = `Service: ${payment.service || 'Maintenance'}`;
+            } else if (payment.type === 'facilities') {
+                description = `Facility: ${payment.facility || 'Reservation'}`;
+            }
+        }
+        
+        let receiptButton = '';
+        if (payment.status === 'completed' || payment.status === 'approved') {
+            receiptButton = `
+                <a href="#" class="receipt-button" onclick="viewReceipt('${payment.id}')">
+                    <i class="fas fa-receipt"></i>
+                </a>
+            `;
+        }
+        
         paymentItem.innerHTML = `
             <div class="item-date">${formatDate(payment.date)}</div>
-            <div class="item-description">${payment.description}</div>
+            <div class="item-description">${description}</div>
             <div class="item-type ${typeClass}">
                 <i class="${getTypeIcon(payment.type)}"></i> ${formatType(payment.type)}
-                <span class="payment-method">${payment.method}</span>
+                <span class="payment-method">${payment.method || 'Credit Card'}</span>
             </div>
-            <div class="item-amount">$${payment.amount.toFixed(2)}</div>
+            <div class="item-amount">$${typeof payment.amount === 'number' ? payment.amount.toFixed(2) : payment.amount}</div>
             <div class="item-status ${statusClass}">
                 <i class="${getStatusIcon(payment.status)}"></i> ${formatStatus(payment.status)}
+                ${receiptButton}
             </div>
-          
         `;
         
         container.appendChild(paymentItem);
     });
+    
+    // Update pagination controls
+    updatePagination(dataToShow.length);
+}
+
+function updatePagination(totalItems) {
+    totalPages = Math.ceil(totalItems / pageSize);
+    
+    // Update pagination text
+    document.querySelector('.current-page').textContent = currentPage;
+    document.querySelector('.total-pages').textContent = totalPages;
+    
+    // Enable/disable pagination buttons
+    document.getElementById('prevPage').disabled = currentPage <= 1;
+    document.getElementById('nextPage').disabled = currentPage >= totalPages;
+}
+
+function goToPreviousPage() {
+    if (currentPage > 1) {
+        currentPage--;
+        loadPaymentHistory();
+    }
+}
+
+function goToNextPage() {
+    if (currentPage < totalPages) {
+        currentPage++;
+        loadPaymentHistory();
+    }
 }
 
 function filterHistory() {
@@ -233,6 +298,9 @@ function filterHistory() {
         filteredData = filteredData.filter(payment => payment.status === statusFilter);
     }
     
+    // Reset to page 1 when filtering
+    currentPage = 1;
+    
     // Display filtered data
     loadPaymentHistory(filteredData);
 }
@@ -242,18 +310,11 @@ function resetFilters() {
     document.getElementById('dateRange').value = 'all';
     document.getElementById('statusFilter').value = 'all';
     
+    // Reset to page 1
+    currentPage = 1;
+    
     // Reset to original data
     loadPaymentHistory();
-}
-
-function goToPreviousPage() {
-    // In a real app, this would load the previous page of results
-    console.log('Previous page clicked');
-}
-
-function goToNextPage() {
-    // In a real app, this would load the next page of results
-    console.log('Next page clicked');
 }
 
 function formatDate(dateString) {
@@ -262,21 +323,29 @@ function formatDate(dateString) {
 }
 
 function formatType(type) {
-    const typeNames = {
-        rent: 'Rent',
-        maintenance: 'Maintenance',
-        facilities: 'Facilities'
-    };
-    return typeNames[type] || type;
+    switch(type) {
+        case 'maintenance':
+            return 'Maintenance';
+        case 'facilities':
+            return 'Facility';
+        case 'rent':
+            return 'Rent';
+        default:
+            return 'Other';
+    }
 }
 
 function getTypeIcon(type) {
-    const typeIcons = {
-        rent: 'fas fa-home',
-        maintenance: 'fas fa-tools',
-        facilities: 'fas fa-umbrella-beach'
-    };
-    return typeIcons[type] || 'fas fa-receipt';
+    switch(type) {
+        case 'maintenance':
+            return 'fas fa-tools';
+        case 'facilities':
+            return 'fas fa-building';
+        case 'rent':
+            return 'fas fa-home';
+        default:
+            return 'fas fa-money-bill';
+    }
 }
 
 function formatStatus(status) {
@@ -334,6 +403,7 @@ async function fetchRealPaymentHistory() {
                     id: 'sr-' + request.id,
                     date: request.date,
                     description: `Service: ${request.service}`,
+                    service: request.service,
                     type: 'maintenance',
                     amount: parseFloat(request.amount),
                     status: request.status === "Completed" ? "completed" : 
@@ -353,6 +423,7 @@ async function fetchRealPaymentHistory() {
                     id: 'fr-' + reservation.id,
                     date: reservation.date,
                     description: `Facility: ${reservation.facility}`,
+                    facility: reservation.facility,
                     type: 'facilities',
                     amount: parseFloat(reservation.amount),
                     status: reservation.status === "Completed" ? "completed" : 
@@ -364,10 +435,30 @@ async function fetchRealPaymentHistory() {
             });
         }
         
+        // Process rent payments
+        const rentPayments = [];
+        if (data.rentPayments && data.rentPayments.length > 0) {
+            data.rentPayments.forEach(payment => {
+                rentPayments.push({
+                    id: 'rp-' + payment.id,
+                    date: payment.date,
+                    description: `Monthly Rent: ${new Date(payment.date).toLocaleString('default', { month: 'long', year: 'numeric' })}`,
+                    type: 'rent',
+                    amount: parseFloat(payment.amount),
+                    status: "completed",
+                    method: payment.paymentMethod || "Credit Card",
+                    receipt: `rent_receipt_${payment.id}.pdf`
+                });
+            });
+        }
+        
         // Combine and sort by date (newest first)
-        paymentHistory = [...servicePayments, ...facilityPayments].sort((a, b) => {
+        paymentHistory = [...servicePayments, ...facilityPayments, ...rentPayments].sort((a, b) => {
             return new Date(b.date) - new Date(a.date);
         });
+        
+        // Reset to page 1 when loading new data
+        currentPage = 1;
         
         // Update stats directly from the API response
         updatePaymentStatsFromData(data.stats);
@@ -396,51 +487,131 @@ function updatePaymentStatsFromData(stats) {
     // Update stats in the UI using the data from the API
     document.querySelector('.stat-card:nth-child(1) .stat-value').textContent = '$' + stats.totalSpent.toFixed(2);
     document.querySelector('.stat-card:nth-child(2) .stat-value').textContent = '$' + stats.thisMonthSpending.toFixed(2);
-    document.querySelector('.stat-card:nth-child(3) .stat-value').textContent = '0'; // Rent Payments (not implemented yet)
+    document.querySelector('.stat-card:nth-child(3) .stat-value').textContent = stats.rentCount.toString();
     document.querySelector('.stat-card:nth-child(4) .stat-value').textContent = stats.serviceCount.toString();
-    
-    // Add a new card for facility reservations if it doesn't exist
-    if (!document.querySelector('.stat-card:nth-child(5)')) {
-        const statsContainer = document.querySelector('.history-stats');
-        const facilityCard = document.createElement('div');
-        facilityCard.className = 'stat-card';
-        facilityCard.innerHTML = `
-            <div class="stat-icon">
-                <i class="fas fa-building"></i>
-            </div>
-            <div class="stat-info">
-                <span class="stat-label">Facilities</span>
-                <span class="stat-value">${stats.facilityCount}</span>
-            </div>
-        `;
-        statsContainer.appendChild(facilityCard);
-    } else {
-        document.querySelector('.stat-card:nth-child(5) .stat-value').textContent = stats.facilityCount.toString();
-    }
+    document.querySelector('.stat-card:nth-child(5) .stat-value').textContent = stats.facilityCount.toString();
 }
 
-// Update chart data from API data
-function updateChartDataFromAPI(monthlySpendingData) {
-    // Sort monthly spending data by year and month (oldest to newest)
-    const sortedData = monthlySpendingData.sort((a, b) => {
+// Update chart data from API response
+function updateChartDataFromAPI(monthlyData) {
+    if (!monthlyData || monthlyData.length === 0) {
+        return;
+    }
+    
+    // Process the data for the chart
+    const labels = [];
+    const rentData = [];
+    const maintenanceData = [];
+    const facilitiesData = [];
+    
+    // Sort by date (oldest first)
+    monthlyData.sort((a, b) => {
         if (a.year !== b.year) {
             return a.year - b.year;
         }
-        // Get month number from month name
-        const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+        // Convert month name to number for comparison
+        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
         return months.indexOf(a.month) - months.indexOf(b.month);
     });
     
-    // Extract labels and data for chart
-    const labels = sortedData.map(item => item.month);
-    const serviceData = sortedData.map(item => parseFloat(item.serviceSpending));
-    const facilityData = sortedData.map(item => parseFloat(item.facilitySpending));
-    const rentData = sortedData.map(item => parseFloat(item.rentSpending));
+    // Extract data for chart
+    monthlyData.forEach(item => {
+        labels.push(`${item.month} ${item.year}`);
+        rentData.push(item.rentSpending);
+        maintenanceData.push(item.serviceSpending);
+        facilitiesData.push(item.facilitySpending);
+    });
     
-    // Update chart data
-    window.spendingChart.data.labels = labels;
-    window.spendingChart.data.datasets[0].data = rentData;
-    window.spendingChart.data.datasets[1].data = serviceData;
-    window.spendingChart.data.datasets[2].data = facilityData;
-    window.spendingChart.update();
+    // Update the chart with new data
+    if (window.spendingChart) {
+        window.spendingChart.data.labels = labels;
+        window.spendingChart.data.datasets[0].data = rentData;
+        window.spendingChart.data.datasets[1].data = maintenanceData;
+        window.spendingChart.data.datasets[2].data = facilitiesData;
+        window.spendingChart.update();
+    } else {
+        initSpendingChart(labels, rentData, maintenanceData, facilitiesData);
+    }
+}
+
+// Initialize the spending chart
+function initSpendingChart(labels = [], rentData = [], maintenanceData = [], facilitiesData = []) {
+    const ctx = document.getElementById('spendingChart').getContext('2d');
+    
+    window.spendingChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [
+                {
+                    label: 'Rent',
+                    data: rentData,
+                    backgroundColor: 'rgba(54, 162, 235, 0.7)',
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    borderWidth: 1
+                },
+                {
+                    label: 'Maintenance',
+                    data: maintenanceData,
+                    backgroundColor: 'rgba(255, 159, 64, 0.7)',
+                    borderColor: 'rgba(255, 159, 64, 1)',
+                    borderWidth: 1
+                },
+                {
+                    label: 'Facilities',
+                    data: facilitiesData,
+                    backgroundColor: 'rgba(75, 192, 192, 0.7)',
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    borderWidth: 1
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                x: {
+                    stacked: false,
+                    grid: {
+                        display: false
+                    }
+                },
+                y: {
+                    stacked: false,
+                    beginAtZero: true,
+                    grid: {
+                        color: 'rgba(0, 0, 0, 0.05)'
+                    },
+                    ticks: {
+                        callback: function(value) {
+                            return '$' + value;
+                        }
+                    }
+                }
+            },
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return context.dataset.label + ': $' + context.parsed.y.toFixed(2);
+                        }
+                    }
+                },
+                legend: {
+                    position: 'bottom'
+                }
+            }
+        }
+    });
+}
+
+// View receipt function (placeholder for now)
+function viewReceipt(paymentId) {
+    console.log('Viewing receipt for payment ID:', paymentId);
+    Swal.fire({
+        title: 'Receipt',
+        text: `Viewing receipt for payment #${paymentId}`,
+        icon: 'info',
+        confirmButtonText: 'Close'
+    });
 }

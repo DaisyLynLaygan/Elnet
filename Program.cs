@@ -5,6 +5,8 @@ using System.Net.WebSockets;
 using System.Text;
 using Newtonsoft.Json;
 using HomeOwner.Models;
+using HomeOwner.Services;
+using HomeOwner.Controllers;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -38,6 +40,12 @@ builder.Services.AddSingleton<WebSocketManager>();
 builder.Services.AddSingleton<CommentWebSocketManager>();
 builder.Services.AddSingleton<LikeWebSocketManager>();
 builder.Services.AddSingleton<ServiceRequestWebSocketManager>();
+
+// Register the HomeownerController as a transient service so it can be injected into the RentPaymentService
+builder.Services.AddTransient<HomeownerController>();
+
+// Register the RentPaymentService as a hosted service
+builder.Services.AddHostedService<RentPaymentService>();
 
 var app = builder.Build();
 

@@ -1,5 +1,6 @@
 // Store for pending service requests and bookings
 let userServiceRequests = [];
+let currentRentPayment = null;
 
 document.addEventListener('DOMContentLoaded', function() {
     // Tab switching functionality
@@ -30,6 +31,9 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
     
+    // Load current rent payment
+    fetchCurrentRentPayment();
+    
     // Load real service requests when page loads
     fetchUserServiceRequests();
 
@@ -40,6 +44,24 @@ document.addEventListener('DOMContentLoaded', function() {
     const payButtons = document.querySelectorAll('.pay-now-button, .pay-booking-button');
     const paymentModal = document.getElementById('paymentModal');
     const closeModal = document.querySelector('.close-modal');
+    
+    // The main pay now button for rent
+    const rentPayButton = document.querySelector('.pay-now-button');
+    if (rentPayButton) {
+        rentPayButton.addEventListener('click', function() {
+            // Prepare the payment modal for rent payment
+            document.getElementById('payment-for').textContent = 'Monthly Rent - Luxury Villa';
+            document.getElementById('payment-amount-summary').textContent = `$${currentRentPayment.amount.toFixed(2)}`;
+            document.getElementById('payment-method-summary').textContent = document.querySelector('.method-card.active')?.textContent.trim() || 'Select a payment method';
+            
+            // Store payment type in the modal
+            paymentModal.setAttribute('data-payment-type', 'rent');
+            paymentModal.setAttribute('data-payment-id', currentRentPayment.id);
+            
+            // Show the modal
+            paymentModal.style.display = 'flex';
+        });
+    }
     
     // We'll add the event listeners dynamically after loading the bookings
     
@@ -332,14 +354,14 @@ function getRejectionReason(bookingCard) {
     return placeholderReasons[reasonIndex];
 }
 
+// This is the updated processPayment function to handle rent payments
 async function processPayment() {
     const paymentModal = document.getElementById('paymentModal');
-    const requestId = paymentModal.getAttribute('data-request-id');
-    const requestType = paymentModal.getAttribute('data-request-type') || 'service'; // Default to service if not specified
+    const paymentType = paymentModal.getAttribute('data-payment-type');
     const paymentMethod = document.querySelector('.method-card.active')?.textContent.trim() || 'Credit Card';
     
-    if (!requestId) {
-        showAlert('Error', 'No booking selected for payment', 'error');
+    if (!paymentType) {
+        showAlert('Error', 'No payment type selected', 'error');
         return;
     }
     
@@ -349,18 +371,40 @@ async function processPayment() {
         return;
     }
     
-    // Get the booking name for success message
-    const paymentFor = document.getElementById('payment-for').textContent;
-    
     try {
         // Show loading state
         const confirmButton = document.querySelector('.confirm-button');
         confirmButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
         confirmButton.disabled = true;
         
-        let endpoint = '/Homeowner/ProcessServicePayment';
-        if (requestType === 'facility') {
+        // Handle different payment types
+        let endpoint, requestData, paymentFor;
+        
+        if (paymentType === 'rent') {
+            const paymentId = paymentModal.getAttribute('data-payment-id');
+            endpoint = '/Homeowner/ProcessRentPayment';
+            requestData = {
+                PaymentId: parseInt(paymentId),
+                PaymentMethod: paymentMethod
+            };
+            paymentFor = 'Monthly Rent';
+        } else if (paymentType === 'facility') {
+            const requestId = paymentModal.getAttribute('data-request-id');
             endpoint = '/Homeowner/ProcessFacilityPayment';
+            requestData = {
+                RequestId: parseInt(requestId),
+                PaymentMethod: paymentMethod
+            };
+            paymentFor = document.getElementById('payment-for').textContent;
+        } else {
+            // Default to service payment
+            const requestId = paymentModal.getAttribute('data-request-id');
+            endpoint = '/Homeowner/ProcessServicePayment';
+            requestData = {
+                RequestId: parseInt(requestId),
+                PaymentMethod: paymentMethod
+            };
+            paymentFor = document.getElementById('payment-for').textContent;
         }
         
         const response = await fetch(endpoint, {
@@ -368,10 +412,7 @@ async function processPayment() {
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({
-                RequestId: parseInt(requestId),
-                PaymentMethod: paymentMethod
-            })
+            body: JSON.stringify(requestData)
         });
         
         const data = await response.json();
@@ -389,14 +430,33 @@ async function processPayment() {
                 confirmButtonColor: '#6D4C41'
             });
             
-            // Refresh the appropriate bookings list
-            if (requestType === 'facility') {
+            // Refresh the appropriate content based on payment type
+            if (paymentType === 'rent') {
+                fetchCurrentRentPayment();
+            } else if (paymentType === 'facility') {
                 displayFacilityBookings();
             } else {
                 fetchUserServiceRequests();
             }
         } else {
-            showAlert('Payment Failed', data.message || 'Payment could not be processed', 'error');
+            // If payment was already processed (for rent)
+            if (data.alreadyPaid) {
+                paymentModal.style.display = 'none';
+                Swal.fire({
+                    title: 'Already Paid',
+                    text: data.message,
+                    icon: 'info',
+                    confirmButtonText: 'OK',
+                    confirmButtonColor: '#6D4C41'
+                });
+                
+                // Refresh rent payment display
+                if (paymentType === 'rent') {
+                    fetchCurrentRentPayment();
+                }
+            } else {
+                showAlert('Payment Failed', data.message || 'Payment could not be processed', 'error');
+            }
         }
     } catch (error) {
         console.error('Payment processing error:', error);
@@ -405,6 +465,113 @@ async function processPayment() {
         // Reset button state
         document.querySelector('.confirm-button').innerHTML = '<i class="fas fa-lock"></i> Confirm Payment';
         document.querySelector('.confirm-button').disabled = false;
+    }
+}
+
+// Fetch current rent payment from the server
+async function fetchCurrentRentPayment() {
+    try {
+        const userId = getCurrentUserId();
+        if (!userId) {
+            console.error('User not authenticated');
+            return;
+        }
+        
+        // Show loading state in the rent tab
+        const rentTab = document.getElementById('rent-tab');
+        const propertyInfo = rentTab.querySelector('.property-info');
+        
+        if (propertyInfo) {
+            propertyInfo.innerHTML = `
+                <div class="loading-state" style="text-align: center; padding: 20px;">
+                    <i class="fas fa-spinner fa-spin"></i>
+                    <p>Loading your rent payment information...</p>
+                </div>
+            `;
+        }
+        
+        // Fetch current rent payment from the server
+        const response = await fetch('/Homeowner/GetCurrentRentPayment');
+        const data = await response.json();
+        
+        if (!data.success) {
+            throw new Error(data.message || 'Failed to load rent payment');
+        }
+        
+        // Store the rent payment data
+        currentRentPayment = data.rentPayment;
+        
+        // Update the UI with rent payment information
+        updateRentPaymentUI(data.rentPayment, data.property);
+        
+    } catch (error) {
+        console.error('Error fetching rent payment:', error);
+        const rentTab = document.getElementById('rent-tab');
+        const propertyInfo = rentTab.querySelector('.property-info');
+        
+        if (propertyInfo) {
+            propertyInfo.innerHTML = `
+                <div class="error-state" style="text-align: center; padding: 20px;">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <p>Error loading rent payment information</p>
+                    <button class="retry-button" onclick="fetchCurrentRentPayment()">Retry</button>
+                </div>
+            `;
+        }
+    }
+}
+
+// Update the UI with rent payment information
+function updateRentPaymentUI(rentPayment, property) {
+    const rentTab = document.getElementById('rent-tab');
+    const propertyInfo = rentTab.querySelector('.property-info');
+    const payNowButton = rentTab.querySelector('.pay-now-button');
+    
+    if (propertyInfo) {
+        propertyInfo.innerHTML = `
+            <h3>${property.name}</h3>
+            <div class="property-meta">
+                <div class="meta-item">
+                    <span class="meta-label">Monthly Rent</span>
+                    <span class="meta-value">$${rentPayment.amount.toFixed(2)}</span>
+                </div>
+                <div class="meta-item">
+                    <span class="meta-label">Due Date</span>
+                    <span class="meta-value">${rentPayment.dueDate}</span>
+                </div>
+                <div class="meta-item">
+                    <span class="meta-label">Payment Status</span>
+                    <span class="meta-value ${rentPayment.isPaid ? 'status-paid' : 'status-unpaid'}">
+                        ${rentPayment.isPaid ? 'Paid' : 'Unpaid'}
+                    </span>
+                </div>
+                ${rentPayment.isPaid ? `
+                <div class="meta-item">
+                    <span class="meta-label">Payment Date</span>
+                    <span class="meta-value">${rentPayment.paymentDate}</span>
+                </div>
+                ` : ''}
+            </div>
+        `;
+    }
+    
+    // Update the pay now button based on payment status
+    if (payNowButton) {
+        if (rentPayment.isPaid) {
+            payNowButton.textContent = '✓ Payment Complete';
+            payNowButton.classList.add('paid-button');
+            payNowButton.disabled = true;
+        } else {
+            payNowButton.innerHTML = '<i class="fas fa-lock"></i> Pay Now';
+            payNowButton.classList.remove('paid-button');
+            payNowButton.disabled = false;
+        }
+    }
+    
+    // Update the setup autopay button visibility
+    const autopayButton = rentTab.querySelector('.setup-autopay');
+    if (autopayButton) {
+        autopayButton.style.display = rentPayment.isPaid ? 'none' : 'inline-block';
     }
 }
 

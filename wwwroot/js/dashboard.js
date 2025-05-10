@@ -622,12 +622,12 @@ function resetMaintenanceForm() {
 document.addEventListener('DOMContentLoaded', function() {
     initializeFacilityStatuses();
     connectDashboardWebSocket();
+    connectServiceRequestWebSocket();
     
-    // Try to connect to service request WebSocket but don't block if it fails
-    try {
-        connectServiceRequestWebSocket();
-    } catch (error) {
-        console.log('WebSocket connection failed, proceeding without real-time updates');
+    // Load rent payment info
+    const propertyCard = document.querySelector('.property-card');
+    if (propertyCard) {
+        loadRentPaymentInfo();
     }
     
     // Initialize Swiper for facilities
@@ -1081,4 +1081,35 @@ function updateFacilitySummary() {
     }
     
     console.log("Facility summary updated successfully");
+}
+
+// Function to fetch current rent payment info and update the dashboard
+async function loadRentPaymentInfo() {
+    try {
+        const response = await fetch('/Homeowner/GetCurrentRentPayment');
+        const data = await response.json();
+        
+        if (data.success) {
+            // Update the dashboard with rent payment info
+            document.getElementById('monthlyPayment').textContent = `$${data.rentPayment.amount.toLocaleString()}`;
+            
+            // Update payment status
+            const paymentStatusElement = document.getElementById('paymentStatus');
+            paymentStatusElement.textContent = data.rentPayment.status;
+            
+            // Apply appropriate class based on payment status
+            if (data.rentPayment.status === 'Paid') {
+                paymentStatusElement.className = 'meta-value status-paid';
+            } else {
+                paymentStatusElement.className = 'meta-value status-unpaid';
+            }
+            
+            // Update next due date
+            document.getElementById('nextDueDate').textContent = data.rentPayment.dueDate;
+        } else {
+            console.error('Failed to load rent payment information:', data.message);
+        }
+    } catch (error) {
+        console.error('Error fetching rent payment information:', error);
+    }
 }

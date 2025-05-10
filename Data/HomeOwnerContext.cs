@@ -69,6 +69,13 @@ namespace HomeOwner.Data
                 .HasForeignKey(f => f.facility_id)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            // RentPayment-User relationship
+            modelBuilder.Entity<RentPayment>()
+                .HasOne(r => r.HomeOwner)
+                .WithMany(u => u.RentPayments)
+                .HasForeignKey(r => r.user_id)
+                .OnDelete(DeleteBehavior.Restrict);
+
             // Configure decimal precision for price
             modelBuilder.Entity<ServiceRequest>()
                 .Property(s => s.price)
@@ -77,6 +84,11 @@ namespace HomeOwner.Data
             // Configure decimal precision for FacilityReservation price
             modelBuilder.Entity<FacilityReservation>()
                 .Property(f => f.price)
+                .HasColumnType("decimal(10,2)");
+                
+            // Configure decimal precision for RentPayment amount
+            modelBuilder.Entity<RentPayment>()
+                .Property(r => r.amount)
                 .HasColumnType("decimal(10,2)");
         }
 
@@ -90,5 +102,6 @@ namespace HomeOwner.Data
         public DbSet<Facility> Facility { get; set; }
         public DbSet<Notification> Notification { get; set; }
         public DbSet<FacilityReservation> FacilityReservation { get; set; }
+        public DbSet<RentPayment> RentPayment { get; set; }
     }
 }

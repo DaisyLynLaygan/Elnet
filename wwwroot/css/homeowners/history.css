@@ -258,11 +258,13 @@
 }
 
 .list-item {
+    min-height: 60px;
     display: grid;
-    grid-template-columns: 1fr 2fr 1fr 1fr 1fr 1fr;
-    padding: calc(var(--spacing-unit) / 1.5) var(--spacing-unit);
-    border-bottom: 1px solid var(--border-color);
+    grid-template-columns: 1fr 2fr 1.5fr 1fr 1.5fr;
+    gap: 10px;
     align-items: center;
+    padding: 12px 15px;
+    border-bottom: 1px solid var(--border-color);
     transition: background-color 0.2s;
 }
 
@@ -362,40 +364,37 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    padding: var(--spacing-unit);
-    border-top: 1px solid var(--border-color);
-    gap: var(--spacing-unit);
-    background-color: var(--cream);
+    margin-top: 20px;
+    padding: 10px;
 }
 
 .pagination-button {
-    padding: 8px 16px;
-    background-color: var(--white);
-    border: 1px solid var(--border-color);
-    border-radius: 6px;
-    color: var(--dark-brown);
+    padding: 8px 15px;
+    background-color: var(--dark-brown);
+    color: white;
+    border: none;
+    border-radius: 4px;
     cursor: pointer;
+    font-size: 14px;
     display: flex;
     align-items: center;
-    gap: 6px;
-    font-weight: 500;
-    transition: all 0.2s;
-}
-
-.pagination-button:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
+    gap: 5px;
+    transition: background-color 0.3s;
 }
 
 .pagination-button:hover:not(:disabled) {
-    background-color: var(--light-gray);
-    border-color: var(--accent);
-    color: var(--brown);
+    background-color: var(--brown);
+}
+
+.pagination-button:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
 }
 
 .page-numbers {
-    color: var(--text-gray);
-    font-size: 0.95rem;
+    margin: 0 15px;
+    font-size: 14px;
+    color: var(--text-dark);
 }
 
 .current-page {
@@ -420,6 +419,25 @@
 .no-payments p {
     margin-bottom: var(--spacing-unit);
     font-size: 1.1rem;
+}
+
+/* Receipt button styling */
+.receipt-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    margin-left: 8px;
+    border-radius: 50%;
+    background-color: rgba(107, 68, 35, 0.1);
+    color: var(--dark-brown);
+    transition: all 0.3s;
+}
+
+.receipt-button:hover {
+    background-color: var(--dark-brown);
+    color: white;
 }
 
 /* Responsive styles */
