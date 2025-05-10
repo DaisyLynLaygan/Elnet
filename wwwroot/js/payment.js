@@ -1,5 +1,6 @@
 // Store for pending service requests and bookings
 let userServiceRequests = [];
+let currentRentPayment = null;
 
 document.addEventListener('DOMContentLoaded', function() {
     // Tab switching functionality
@@ -30,6 +31,9 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
     
+    // Load current rent payment
+    fetchCurrentRentPayment();
+    
     // Load real service requests when page loads
     fetchUserServiceRequests();
 
@@ -40,6 +44,24 @@ document.addEventListener('DOMContentLoaded', function() {
     const payButtons = document.querySelectorAll('.pay-now-button, .pay-booking-button');
     const paymentModal = document.getElementById('paymentModal');
     const closeModal = document.querySelector('.close-modal');
+    
+    // The main pay now button for rent
+    const rentPayButton = document.querySelector('.pay-now-button');
+    if (rentPayButton) {
+        rentPayButton.addEventListener('click', function() {
+            // Prepare the payment modal for rent payment
+            document.getElementById('payment-for').textContent = 'Monthly Rent - Luxury Villa';
+            document.getElementById('payment-amount-summary').textContent = `$${currentRentPayment.amount.toFixed(2)}`;
+            document.getElementById('payment-method-summary').textContent = document.querySelector('.method-card.active')?.textContent.trim() || 'Select a payment method';
+            
+            // Store payment type in the modal
+            paymentModal.setAttribute('data-payment-type', 'rent');
+            paymentModal.setAttribute('data-payment-id', currentRentPayment.id);
+            
+            // Show the modal
+            paymentModal.style.display = 'flex';
+        });
+    }
     
     // We'll add the event listeners dynamically after loading the bookings
     
@@ -143,9 +165,17 @@ function displayServiceRequests() {
     // Clear existing content
     maintenanceContainer.innerHTML = '';
     
+    // Filter service requests: 
+    // 1. Show Pending Approval and Approved but Unpaid
+    // 2. Hide Rejected, Completed, and Paid ones
+    const filteredRequests = userServiceRequests.filter(request => 
+        (request.status === "Pending Approval" || request.status === "Approved") && 
+        request.paymentStatus === "Unpaid"
+    );
+    
     // Add maintenance bookings if they exist
-    if (userServiceRequests && userServiceRequests.length > 0) {
-        userServiceRequests.forEach(request => {
+    if (filteredRequests && filteredRequests.length > 0) {
+        filteredRequests.forEach(request => {
             const bookingCard = createMaintenanceBookingCard(request);
             maintenanceContainer.appendChild(bookingCard);
         });
@@ -156,46 +186,78 @@ function displayServiceRequests() {
         maintenanceContainer.innerHTML = `
             <div class="no-bookings">
                 <i class="fas fa-calendar-times"></i>
-                <p>You have no active maintenance bookings</p>
+                <p>You have no pending payment service requests</p>
                 <a href="/Homeowner/Dashboard" class="book-now-button">Book a Service</a>
             </div>
         `;
     }
     
-    // For now, use sample data for facility bookings
+    // Load facility bookings
     displayFacilityBookings();
 }
 
-// Display sample facility bookings
-function displayFacilityBookings() {
+// Display facility bookings
+async function displayFacilityBookings() {
     const facilityContainer = document.getElementById('facility-bookings');
     facilityContainer.innerHTML = '';
     
-    // Sample data just for UI purposes
-    const facilityBookings = [
-        {
-            id: 1,
-            facility: "Function Hall",
-            date: "2023-08-05",
-            duration: "4 hours",
-            startTime: "2:00 PM",
-            guests: 50,
-            price: "$500.00",
-            status: "Pending Payment"
+    try {
+        const userId = getCurrentUserId();
+        if (!userId) {
+            throw new Error('User not authenticated');
         }
-    ];
-    
-    if (facilityBookings.length > 0) {
-        facilityBookings.forEach(booking => {
-            const bookingCard = createFacilityBookingCard(booking);
-            facilityContainer.appendChild(bookingCard);
-        });
-    } else {
+        
+        // Show loading state
         facilityContainer.innerHTML = `
-            <div class="no-bookings">
-                <i class="fas fa-calendar-times"></i>
-                <p>You have no facility reservations</p>
-                <a href="/Homeowner/Dashboard" class="book-now-button">Reserve a Facility</a>
+            <div class="loading-state">
+                <i class="fas fa-spinner fa-spin"></i>
+                <p>Loading your facility reservations...</p>
+            </div>
+        `;
+        
+        // Fetch facility reservations from the server
+        const response = await fetch(`/Homeowner/GetUserFacilityReservations?userId=${userId}`);
+        const data = await response.json();
+        
+        if (data.success && data.reservations && data.reservations.length > 0) {
+            // Only show reservations that need payment (Pending or Approved but Unpaid)
+            const filteredReservations = data.reservations.filter(reservation => 
+                (reservation.status === "Pending" || reservation.status === "Approved") && 
+                reservation.paymentStatus === "Unpaid"
+            );
+            
+            if (filteredReservations.length > 0) {
+                facilityContainer.innerHTML = '';
+                filteredReservations.forEach(reservation => {
+                    const bookingCard = createFacilityBookingCard(reservation);
+                    facilityContainer.appendChild(bookingCard);
+                });
+            } else {
+                // No reservations after filtering
+                facilityContainer.innerHTML = `
+                    <div class="no-bookings">
+                        <i class="fas fa-calendar-times"></i>
+                        <p>You have no pending payment facility reservations</p>
+                        <a href="/Homeowner/Dashboard" class="book-now-button">Reserve a Facility</a>
+                    </div>
+                `;
+            }
+        } else {
+            facilityContainer.innerHTML = `
+                <div class="no-bookings">
+                    <i class="fas fa-calendar-times"></i>
+                    <p>You have no facility reservations</p>
+                    <a href="/Homeowner/Dashboard" class="book-now-button">Reserve a Facility</a>
+                </div>
+            `;
+        }
+    } catch (error) {
+        console.error('Error fetching facility reservations:', error);
+        facilityContainer.innerHTML = `
+            <div class="error-state">
+                <i class="fas fa-exclamation-circle"></i>
+                <p>Error loading facility reservations</p>
+                <button class="retry-button" onclick="displayFacilityBookings()">Retry</button>
             </div>
         `;
     }
@@ -206,22 +268,25 @@ function displayFacilityBookings() {
 
 function setupPayButtons() {
     const payButtons = document.querySelectorAll('.pay-booking-button');
+    const viewDetailsButtons = document.querySelectorAll('.view-details-button');
     const paymentModal = document.getElementById('paymentModal');
     
+    // Set up pay now buttons
     payButtons.forEach(button => {
         button.addEventListener('click', (e) => {
             e.preventDefault();
             
             // Get the request ID from the button's data attribute
             const requestId = button.getAttribute('data-id');
+            const requestType = button.getAttribute('data-type') || 'service';
             
-            // Store the selected request ID in the modal for later use
+            // Store the selected request ID and type in the modal for later use
             paymentModal.setAttribute('data-request-id', requestId);
+            paymentModal.setAttribute('data-request-type', requestType);
             
             // Get booking details
             const bookingCard = button.closest('.booking-card');
-            const bookingType = button.closest('.bookings-container').id.includes('maintenance') ? 
-                'Maintenance Service' : 'Facility Booking';
+            const bookingType = requestType === 'facility' ? 'Facility Booking' : 'Maintenance Service';
             const bookingName = bookingCard.querySelector('h4').textContent;
             const bookingPrice = bookingCard.querySelector('.booking-price').textContent;
             
@@ -234,32 +299,120 @@ function setupPayButtons() {
             paymentModal.style.display = 'flex';
         });
     });
+    
+    // Set up view details buttons for rejected requests
+    viewDetailsButtons.forEach(button => {
+        button.addEventListener('click', (e) => {
+            e.preventDefault();
+            
+            // Get the booking card and extract information
+            const bookingCard = button.closest('.booking-card');
+            
+            // Find if this is a service request or facility booking
+            const isServiceRequest = bookingCard.querySelector('.booking-price') != null;
+            const title = bookingCard.querySelector('h4').textContent.replace('Rejected', '').trim();
+            
+            // Show details in alert
+            Swal.fire({
+                title: 'Request Rejected',
+                html: `
+                    <div class="rejection-details">
+                        <p><strong>${isServiceRequest ? 'Service' : 'Facility'} request:</strong> ${title}</p>
+                        <p><strong>Status:</strong> <span class="text-danger">Rejected</span></p>
+                        <p><strong>Reason:</strong> ${getRejectionReason(bookingCard)}</p>
+                        <p>If you have questions about this rejection, please contact our support team.</p>
+                    </div>
+                `,
+                icon: 'error',
+                confirmButtonText: 'Close'
+            });
+        });
+    });
 }
 
+// Helper function to get the rejection reason from the booking card
+function getRejectionReason(bookingCard) {
+    // First try to get the actual rejection reason stored as a data attribute
+    const storedReason = bookingCard.getAttribute('data-rejection-reason');
+    if (storedReason) {
+        return storedReason;
+    }
+    
+    // Fallback to placeholder reasons if no actual reason is available
+    const placeholderReasons = [
+        "The requested service is not available on the selected date.",
+        "The facility is undergoing maintenance on the selected date.",
+        "The request was denied by the administration.",
+        "The service capacity has been reached for the selected date.",
+        "Your request does not meet our service requirements.",
+        "The facility was reserved for another event."
+    ];
+    
+    // Get a consistent reason based on the booking title
+    const title = bookingCard.querySelector('h4').textContent;
+    const reasonIndex = title.length % placeholderReasons.length;
+    return placeholderReasons[reasonIndex];
+}
+
+// This is the updated processPayment function to handle rent payments
 async function processPayment() {
     const paymentModal = document.getElementById('paymentModal');
-    const requestId = paymentModal.getAttribute('data-request-id');
+    const paymentType = paymentModal.getAttribute('data-payment-type');
     const paymentMethod = document.querySelector('.method-card.active')?.textContent.trim() || 'Credit Card';
     
-    if (!requestId) {
-        showAlert('Error', 'No booking selected for payment', 'error');
+    if (!paymentType) {
+        showAlert('Error', 'No payment type selected', 'error');
+        return;
+    }
+    
+    // Check that a payment method is selected
+    if (!document.querySelector('.method-card.active')) {
+        showAlert('Error', 'Please select a payment method', 'error');
         return;
     }
     
     try {
         // Show loading state
-        document.querySelector('.confirm-button').innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
-        document.querySelector('.confirm-button').disabled = true;
+        const confirmButton = document.querySelector('.confirm-button');
+        confirmButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+        confirmButton.disabled = true;
         
-        const response = await fetch('/Homeowner/ProcessServicePayment', {
+        // Handle different payment types
+        let endpoint, requestData, paymentFor;
+        
+        if (paymentType === 'rent') {
+            const paymentId = paymentModal.getAttribute('data-payment-id');
+            endpoint = '/Homeowner/ProcessRentPayment';
+            requestData = {
+                PaymentId: parseInt(paymentId),
+                PaymentMethod: paymentMethod
+            };
+            paymentFor = 'Monthly Rent';
+        } else if (paymentType === 'facility') {
+            const requestId = paymentModal.getAttribute('data-request-id');
+            endpoint = '/Homeowner/ProcessFacilityPayment';
+            requestData = {
+                RequestId: parseInt(requestId),
+                PaymentMethod: paymentMethod
+            };
+            paymentFor = document.getElementById('payment-for').textContent;
+        } else {
+            // Default to service payment
+            const requestId = paymentModal.getAttribute('data-request-id');
+            endpoint = '/Homeowner/ProcessServicePayment';
+            requestData = {
+                RequestId: parseInt(requestId),
+                PaymentMethod: paymentMethod
+            };
+            paymentFor = document.getElementById('payment-for').textContent;
+        }
+        
+        const response = await fetch(endpoint, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({
-                requestId: parseInt(requestId),
-                paymentMethod: paymentMethod
-            })
+            body: JSON.stringify(requestData)
         });
         
         const data = await response.json();
@@ -269,20 +422,156 @@ async function processPayment() {
             paymentModal.style.display = 'none';
             
             // Show success message
-            showAlert('Success', 'Payment processed successfully!', 'success');
+            Swal.fire({
+                title: 'Payment Successful!',
+                text: `Your payment for ${paymentFor} has been processed successfully.`,
+                icon: 'success',
+                confirmButtonText: 'Great!',
+                confirmButtonColor: '#6D4C41'
+            });
             
-            // Refresh the service requests
-            fetchUserServiceRequests();
+            // Refresh the appropriate content based on payment type
+            if (paymentType === 'rent') {
+                fetchCurrentRentPayment();
+            } else if (paymentType === 'facility') {
+                displayFacilityBookings();
+            } else {
+                fetchUserServiceRequests();
+            }
         } else {
-            showAlert('Error', data.message || 'Payment failed', 'error');
+            // If payment was already processed (for rent)
+            if (data.alreadyPaid) {
+                paymentModal.style.display = 'none';
+                Swal.fire({
+                    title: 'Already Paid',
+                    text: data.message,
+                    icon: 'info',
+                    confirmButtonText: 'OK',
+                    confirmButtonColor: '#6D4C41'
+                });
+                
+                // Refresh rent payment display
+                if (paymentType === 'rent') {
+                    fetchCurrentRentPayment();
+                }
+            } else {
+                showAlert('Payment Failed', data.message || 'Payment could not be processed', 'error');
+            }
         }
     } catch (error) {
         console.error('Payment processing error:', error);
-        showAlert('Error', 'An error occurred while processing your payment', 'error');
+        showAlert('Error', 'An error occurred while processing your payment. Please try again later.', 'error');
     } finally {
         // Reset button state
         document.querySelector('.confirm-button').innerHTML = '<i class="fas fa-lock"></i> Confirm Payment';
         document.querySelector('.confirm-button').disabled = false;
+    }
+}
+
+// Fetch current rent payment from the server
+async function fetchCurrentRentPayment() {
+    try {
+        const userId = getCurrentUserId();
+        if (!userId) {
+            console.error('User not authenticated');
+            return;
+        }
+        
+        // Show loading state in the rent tab
+        const rentTab = document.getElementById('rent-tab');
+        const propertyInfo = rentTab.querySelector('.property-info');
+        
+        if (propertyInfo) {
+            propertyInfo.innerHTML = `
+                <div class="loading-state" style="text-align: center; padding: 20px;">
+                    <i class="fas fa-spinner fa-spin"></i>
+                    <p>Loading your rent payment information...</p>
+                </div>
+            `;
+        }
+        
+        // Fetch current rent payment from the server
+        const response = await fetch('/Homeowner/GetCurrentRentPayment');
+        const data = await response.json();
+        
+        if (!data.success) {
+            throw new Error(data.message || 'Failed to load rent payment');
+        }
+        
+        // Store the rent payment data
+        currentRentPayment = data.rentPayment;
+        
+        // Update the UI with rent payment information
+        updateRentPaymentUI(data.rentPayment, data.property);
+        
+    } catch (error) {
+        console.error('Error fetching rent payment:', error);
+        const rentTab = document.getElementById('rent-tab');
+        const propertyInfo = rentTab.querySelector('.property-info');
+        
+        if (propertyInfo) {
+            propertyInfo.innerHTML = `
+                <div class="error-state" style="text-align: center; padding: 20px;">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <p>Error loading rent payment information</p>
+                    <button class="retry-button" onclick="fetchCurrentRentPayment()">Retry</button>
+                </div>
+            `;
+        }
+    }
+}
+
+// Update the UI with rent payment information
+function updateRentPaymentUI(rentPayment, property) {
+    const rentTab = document.getElementById('rent-tab');
+    const propertyInfo = rentTab.querySelector('.property-info');
+    const payNowButton = rentTab.querySelector('.pay-now-button');
+    
+    if (propertyInfo) {
+        propertyInfo.innerHTML = `
+            <h3>${property.name}</h3>
+            <div class="property-meta">
+                <div class="meta-item">
+                    <span class="meta-label">Monthly Rent</span>
+                    <span class="meta-value">$${rentPayment.amount.toFixed(2)}</span>
+                </div>
+                <div class="meta-item">
+                    <span class="meta-label">Due Date</span>
+                    <span class="meta-value">${rentPayment.dueDate}</span>
+                </div>
+                <div class="meta-item">
+                    <span class="meta-label">Payment Status</span>
+                    <span class="meta-value ${rentPayment.isPaid ? 'status-paid' : 'status-unpaid'}">
+                        ${rentPayment.isPaid ? 'Paid' : 'Unpaid'}
+                    </span>
+                </div>
+                ${rentPayment.isPaid ? `
+                <div class="meta-item">
+                    <span class="meta-label">Payment Date</span>
+                    <span class="meta-value">${rentPayment.paymentDate}</span>
+                </div>
+                ` : ''}
+            </div>
+        `;
+    }
+    
+    // Update the pay now button based on payment status
+    if (payNowButton) {
+        if (rentPayment.isPaid) {
+            payNowButton.textContent = '✓ Payment Complete';
+            payNowButton.classList.add('paid-button');
+            payNowButton.disabled = true;
+        } else {
+            payNowButton.innerHTML = '<i class="fas fa-lock"></i> Pay Now';
+            payNowButton.classList.remove('paid-button');
+            payNowButton.disabled = false;
+        }
+    }
+    
+    // Update the setup autopay button visibility
+    const autopayButton = rentTab.querySelector('.setup-autopay');
+    if (autopayButton) {
+        autopayButton.style.display = rentPayment.isPaid ? 'none' : 'inline-block';
     }
 }
 
@@ -304,10 +593,18 @@ function createMaintenanceBookingCard(booking) {
     const card = document.createElement('div');
     card.className = 'booking-card';
     
-    // Add a badge if status is "Pending Approval"
-    const statusBadge = booking.status === "Pending Approval" 
-        ? '<span class="status-badge pending">Pending Approval</span>' 
-        : '';
+    // Store rejection reason as a data attribute if present
+    if (booking.rejectionReason) {
+        card.setAttribute('data-rejection-reason', booking.rejectionReason);
+    }
+    
+    // Add appropriate status badge
+    let statusBadge = '';
+    if (booking.status === "Pending Approval") {
+        statusBadge = '<span class="status-badge pending">Pending Approval</span>';
+    } else if (booking.status === "Rejected") {
+        statusBadge = '<span class="status-badge rejected">Rejected</span>';
+    }
     
     let detailsHtml = `
         <div class="booking-detail">
@@ -334,6 +631,41 @@ function createMaintenanceBookingCard(booking) {
         `;
     }
     
+    // Determine the appropriate action buttons based on status and payment status
+    let actionButtons = '';
+    
+    if (booking.status === "Rejected") {
+        // If rejected, show a disabled rejected button
+        actionButtons = `
+            <button class="rejected-status-button" disabled>
+                <i class="fas fa-ban"></i> Rejected
+            </button>
+            <button class="view-details-button">
+                <i class="fas fa-eye"></i> Details
+            </button>
+        `;
+    } else if (booking.paymentStatus === "Unpaid") {
+        // If not rejected and unpaid, show pay now button
+        actionButtons = `
+            <button class="pay-booking-button" data-id="${booking.id}">
+                <i class="fas fa-credit-card"></i> Pay Now
+            </button>
+            <button class="cancel-booking-button">
+                <i class="fas fa-times"></i> Cancel
+            </button>
+        `;
+    } else {
+        // If paid, show paid status button
+        actionButtons = `
+            <button class="paid-status-button" disabled>
+                <i class="fas fa-check-circle"></i> Paid
+            </button>
+            <button class="cancel-booking-button">
+                <i class="fas fa-times"></i> Cancel
+            </button>
+        `;
+    }
+    
     card.innerHTML = `
         <div class="booking-info">
             <h4>${booking.service} ${statusBadge}</h4>
@@ -350,18 +682,7 @@ function createMaintenanceBookingCard(booking) {
             </div>
         </div>
         <div class="booking-actions">
-            ${booking.paymentStatus === "Unpaid" ? `
-                <button class="pay-booking-button" data-id="${booking.id}">
-                    <i class="fas fa-credit-card"></i> Pay Now
-                </button>
-            ` : `
-                <button class="paid-status-button" disabled>
-                    <i class="fas fa-check-circle"></i> Paid
-                </button>
-            `}
-            <button class="cancel-booking-button">
-                <i class="fas fa-times"></i> Cancel
-            </button>
+            ${actionButtons}
         </div>
     `;
     
@@ -372,9 +693,57 @@ function createFacilityBookingCard(booking) {
     const card = document.createElement('div');
     card.className = 'booking-card';
     
+    // Store rejection reason as a data attribute if present
+    if (booking.rejectionReason) {
+        card.setAttribute('data-rejection-reason', booking.rejectionReason);
+    }
+    
+    // Add appropriate status badge
+    let statusBadge = '';
+    if (booking.status === "Pending") {
+        statusBadge = '<span class="status-badge pending">Pending Approval</span>';
+    } else if (booking.status === "Cancelled" || booking.status === "Rejected") {
+        statusBadge = '<span class="status-badge rejected">Rejected</span>';
+    }
+    
+    // Determine the appropriate action buttons based on status and payment status
+    let actionButtons = '';
+    
+    if (booking.status === "Cancelled" || booking.status === "Rejected") {
+        // If cancelled/rejected, show a disabled rejected button
+        actionButtons = `
+            <button class="rejected-status-button" disabled>
+                <i class="fas fa-ban"></i> Rejected
+            </button>
+            <button class="view-details-button">
+                <i class="fas fa-eye"></i> Details
+            </button>
+        `;
+    } else if (booking.paymentStatus === "Unpaid") {
+        // If not rejected and unpaid, show pay now button
+        actionButtons = `
+            <button class="pay-booking-button" data-id="${booking.id}" data-type="facility">
+                <i class="fas fa-credit-card"></i> Pay Now
+            </button>
+            <button class="cancel-booking-button">
+                <i class="fas fa-times"></i> Cancel
+            </button>
+        `;
+    } else {
+        // If paid, show paid status button
+        actionButtons = `
+            <button class="paid-status-button" disabled>
+                <i class="fas fa-check-circle"></i> Paid
+            </button>
+            <button class="cancel-booking-button">
+                <i class="fas fa-times"></i> Cancel
+            </button>
+        `;
+    }
+    
     card.innerHTML = `
         <div class="booking-info">
-            <h4>${booking.facility}</h4>
+            <h4>${booking.facility} ${statusBadge}</h4>
             <div class="booking-details">
                 <div class="booking-detail">
                     <i class="fas fa-calendar-day"></i>
@@ -382,7 +751,7 @@ function createFacilityBookingCard(booking) {
                 </div>
                 <div class="booking-detail">
                     <i class="fas fa-clock"></i>
-                    <span>${booking.startTime}</span>
+                    <span>${booking.time}</span>
                 </div>
                 <div class="booking-detail">
                     <i class="fas fa-hourglass-half"></i>
@@ -398,17 +767,12 @@ function createFacilityBookingCard(booking) {
                 </div>
                 <div class="booking-detail">
                     <i class="fas fa-info-circle"></i>
-                    <span>${booking.status}</span>
+                    <span>${booking.paymentStatus === "Unpaid" ? "Pending Payment" : booking.paymentStatus}</span>
                 </div>
             </div>
         </div>
         <div class="booking-actions">
-            <button class="pay-booking-button" data-id="${booking.id}">
-                <i class="fas fa-credit-card"></i> Pay Now
-            </button>
-            <button class="cancel-booking-button">
-                <i class="fas fa-times"></i> Cancel
-            </button>
+            ${actionButtons}
         </div>
     `;
     

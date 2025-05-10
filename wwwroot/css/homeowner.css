@@ -1,0 +1,10 @@
+/* Rent payment status styling */
+.status-paid {
+    color: #28a745;
+    font-weight: bold;
+}
+
+.status-unpaid {
+    color: #dc3545;
+    font-weight: bold;
+} 

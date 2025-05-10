@@ -277,7 +277,245 @@ namespace HomeOwner.Controllers
         public IActionResult StaffDashboard()
         {
             ViewContents();
+            
+            // Get the current user's ID
+            int staffId = CurrentUser.user_id;
+            
+            // Get service request statistics - SERVICES
+            var completedServices = _context.ServiceRequest
+                .Count(sr => sr.status == "Completed");
+                
+            var pendingServices = _context.ServiceRequest
+                .Count(sr => sr.status == "Approved" && sr.payment_status == "Paid");
+                
+            var inProgressServices = _context.ServiceRequest
+                .Count(sr => sr.status == "In Progress");
+            
+            // Get facility reservation statistics - FACILITIES
+            var completedFacilities = _context.FacilityReservation
+                .Count(fr => fr.status == "Completed");
+                
+            var pendingFacilities = _context.FacilityReservation
+                .Count(fr => fr.status == "Approved" && fr.payment_status == "Paid");
+                
+            var inProgressFacilities = _context.FacilityReservation
+                .Count(fr => fr.status == "In Progress");
+            
+            // Combined statistics
+            int totalCompleted = completedServices + completedFacilities;
+            int totalPending = pendingServices + pendingFacilities;
+            int totalInProgress = inProgressServices + inProgressFacilities;
+            
+            // Calculate completion rate
+            int totalTasks = totalCompleted + totalPending + totalInProgress;
+            double completionRate = totalTasks > 0 ? (double)totalCompleted / totalTasks * 100 : 0;
+            
+            // Get upcoming service requests within the next 7 days, ordered by scheduled date
+            var today = DateTime.Now.Date;
+            var nextWeek = today.AddDays(7);
+            
+            // Get upcoming service requests
+            var upcomingServices = _context.ServiceRequest
+                .Include(sr => sr.User)
+                .Where(sr => sr.scheduled_date >= today && 
+                            sr.scheduled_date <= nextWeek && 
+                            (sr.status == "Approved" || sr.status == "In Progress"))
+                .OrderBy(sr => sr.scheduled_date)
+                .ThenBy(sr => sr.scheduled_time)
+                .Select(sr => new {
+                    Id = sr.request_id,
+                    Type = sr.service_type,
+                    Facility = "", // Not related to facility
+                    Date = sr.scheduled_date,
+                    Time = sr.scheduled_time,
+                    Status = sr.status,
+                    HomeownerName = $"{sr.User.firstname} {sr.User.lastname}",
+                    IsServiceRequest = true
+                })
+                .ToList();
+            
+            // Get upcoming facility reservations
+            var upcomingFacilities = _context.FacilityReservation
+                .Include(fr => fr.User)
+                .Include(fr => fr.Facility)
+                .Where(fr => fr.reservation_date >= today && 
+                            fr.reservation_date <= nextWeek && 
+                            (fr.status == "Approved" || fr.status == "In Progress"))
+                .OrderBy(fr => fr.reservation_date)
+                .ThenBy(fr => fr.reservation_time)
+                .Select(fr => new {
+                    Id = fr.reservation_id,
+                    Type = "Facility Reservation",
+                    Facility = fr.Facility.name,
+                    Date = fr.reservation_date,
+                    Time = fr.reservation_time,
+                    Status = fr.status,
+                    HomeownerName = $"{fr.User.firstname} {fr.User.lastname}",
+                    IsServiceRequest = false
+                })
+                .ToList();
+            
+            // Combine and sort all upcoming tasks
+            var allUpcomingTasks = upcomingServices.Cast<object>()
+                .Concat(upcomingFacilities.Cast<object>())
+                .OrderBy(t => ((dynamic)t).Date)
+                .ThenBy(t => ((dynamic)t).Time)
+                .ToList();
+            
+            // Get service request count by month for the last 6 months
+            var sixMonthsAgo = today.AddMonths(-6);
+            
+            // Service requests by month
+            var serviceRequests = _context.ServiceRequest
+                .Where(sr => sr.date_created >= sixMonthsAgo)
+                .GroupBy(sr => new { Month = sr.date_created.Month, Year = sr.date_created.Year })
+                .Select(g => new {
+                    Month = g.Key.Month,
+                    Year = g.Key.Year,
+                    Count = g.Count(),
+                    Type = "Service"
+                });
+            
+            // Facility reservations by month
+            var facilityReservations = _context.FacilityReservation
+                .Where(fr => fr.date_created >= sixMonthsAgo)
+                .GroupBy(fr => new { Month = fr.date_created.Month, Year = fr.date_created.Year })
+                .Select(g => new {
+                    Month = g.Key.Month,
+                    Year = g.Key.Year,
+                    Count = g.Count(),
+                    Type = "Facility"
+                });
+            
+            // Combine both datasets
+            var combinedMonthlyData = serviceRequests.Concat(facilityReservations)
+                .GroupBy(x => new { x.Month, x.Year, x.Type })
+                .Select(g => new {
+                    Month = g.Key.Month,
+                    Year = g.Key.Year,
+                    Type = g.Key.Type,
+                    Count = g.Sum(x => x.Count)
+                })
+                .OrderBy(x => x.Year)
+                .ThenBy(x => x.Month)
+                .ToList();
+            
+            // Create a data structure to represent last 6 months
+            var serviceData = new List<int>();
+            var facilityData = new List<int>();
+            var monthLabels = new List<string>();
+            
+            for (int i = 5; i >= 0; i--)
+            {
+                var date = DateTime.Now.AddMonths(-i);
+                var monthName = date.ToString("MMM");
+                var monthNumber = date.Month;
+                var year = date.Year;
+                
+                monthLabels.Add(monthName);
+                
+                var serviceCount = combinedMonthlyData
+                    .FirstOrDefault(x => x.Month == monthNumber && x.Year == year && x.Type == "Service")?.Count ?? 0;
+                
+                var facilityCount = combinedMonthlyData
+                    .FirstOrDefault(x => x.Month == monthNumber && x.Year == year && x.Type == "Facility")?.Count ?? 0;
+                
+                serviceData.Add(serviceCount);
+                facilityData.Add(facilityCount);
+            }
+            
+            // Add all data to ViewBag
+            ViewBag.CompletedServices = totalCompleted;
+            ViewBag.PendingTasks = totalPending;
+            ViewBag.InProgress = totalInProgress;
+            ViewBag.CompletionRate = Math.Round(completionRate, 1);
+            ViewBag.UpcomingTasks = allUpcomingTasks;
+            ViewBag.MonthLabels = monthLabels;
+            ViewBag.ServiceData = serviceData;
+            ViewBag.FacilityData = facilityData;
+            
+            // Get recent completed activities
+            var recentServiceActivities = _context.ServiceRequest
+                .Include(sr => sr.User)
+                .Where(sr => sr.status == "Completed")
+                .OrderByDescending(sr => sr.date_created)
+                .Take(3)
+                .Select(sr => new {
+                    StaffName = "Staff", 
+                    ActivityType = sr.service_type,
+                    Location = "",
+                    TimeAgo = sr.date_created // Store the actual datetime instead of calling the method
+                })
+                .ToList()
+                .Select(sr => new {
+                    sr.StaffName,
+                    sr.ActivityType,
+                    sr.Location,
+                    TimeAgo = GetTimeAgo(sr.TimeAgo) // Now apply the method after data is materialized
+                });
+                
+            var recentFacilityActivities = _context.FacilityReservation
+                .Include(fr => fr.User)
+                .Include(fr => fr.Facility)
+                .Where(fr => fr.status == "Completed")
+                .OrderByDescending(fr => fr.date_created)
+                .Take(3)
+                .Select(fr => new {
+                    StaffName = "Staff",
+                    ActivityType = "Facility Reservation",
+                    Location = fr.Facility.name,
+                    TimeAgo = fr.date_created // Store the actual datetime
+                })
+                .ToList()
+                .Select(fr => new {
+                    fr.StaffName,
+                    fr.ActivityType,
+                    fr.Location,
+                    TimeAgo = GetTimeAgo(fr.TimeAgo) // Apply method after data is materialized
+                });
+                
+            // Combine and order the activities
+            var recentActivities = recentServiceActivities
+                .Concat(recentFacilityActivities)
+                .OrderByDescending(a => {
+                    // Try to parse the timespan from the text format
+                    if (a.TimeAgo.Contains("just now")) return 0;
+                    if (a.TimeAgo.Contains("minutes")) {
+                        int.TryParse(a.TimeAgo.Split(' ')[0], out int minutes);
+                        return minutes;
+                    }
+                    if (a.TimeAgo.Contains("hours")) {
+                        int.TryParse(a.TimeAgo.Split(' ')[0], out int hours);
+                        return hours * 60;
+                    }
+                    if (a.TimeAgo.Contains("days")) {
+                        int.TryParse(a.TimeAgo.Split(' ')[0], out int days);
+                        return days * 24 * 60;
+                    }
+                    return int.MaxValue; // For older dates
+                })
+                .Take(6)
+                .ToList();
+                
+            ViewBag.RecentActivities = recentActivities;
+            
             return View();
+        }
+        
+        private static string GetTimeAgo(DateTime dateTime)
+        {
+            var timeSpan = DateTime.Now - dateTime;
+            
+            if (timeSpan.TotalMinutes < 1)
+                return "just now";
+            if (timeSpan.TotalMinutes < 60)
+                return $"{(int)timeSpan.TotalMinutes} minutes ago";
+            if (timeSpan.TotalHours < 24)
+                return $"{(int)timeSpan.TotalHours} hours ago";
+            if (timeSpan.TotalDays < 7)
+                return $"{(int)timeSpan.TotalDays} days ago";
+            
+            return dateTime.ToString("MMM dd, yyyy");
         }
 
         public IActionResult StaffCommunity()
@@ -378,6 +616,14 @@ namespace HomeOwner.Controllers
                 // Update the service request status
                 serviceRequest.status = model.status;
                 
+                // If status is being updated to In Progress, save the staff ID
+                if (model.status == "In Progress")
+                {
+                    // Don't try to set staff_id since the field doesn't exist
+                    // Just log the staff info separately instead
+                    Console.WriteLine($"Staff {CurrentUser.user_id} ({CurrentUser.firstname} {CurrentUser.lastname}) is handling request {serviceRequest.request_id}");
+                }
+                
                 // Save the staff notes if provided
                 if (!string.IsNullOrEmpty(model.staffNotes))
                 {
@@ -390,10 +636,12 @@ namespace HomeOwner.Controllers
                 {
                     try
                     {
+                        // Include staff name in the notification title
+                        var staffName = $"{CurrentUser.firstname} {CurrentUser.lastname}";
                         var notification = new Notification
                         {
                             user_id = serviceRequest.user_id,
-                            title = $"Service Request Update: {serviceRequest.service_type}",
+                            title = $"Service Request Update: {serviceRequest.service_type} with {staffName}",
                             message = model.notificationMessage,
                             created_date = DateTime.Now,
                             is_read = false,
@@ -422,7 +670,8 @@ namespace HomeOwner.Controllers
                     success = true, 
                     message = "Service request status updated successfully",
                     requestId = serviceRequest.request_id,
-                    staffName = $"{CurrentUser.firstname} {CurrentUser.lastname}"
+                    staffName = $"{CurrentUser.firstname} {CurrentUser.lastname}",
+                    newStatus = serviceRequest.status
                 });
             }
             catch (Exception ex)
@@ -442,6 +691,406 @@ namespace HomeOwner.Controllers
         {
             ViewContents();
             return View();
+        }
+
+        [HttpGet]
+        [Route("Staff/GetCurrentTasks")]
+        public async Task<JsonResult> GetCurrentTasks()
+        {
+            try
+            {
+                // Check authentication first
+                if (CurrentUser == null || CurrentUser.role != "staff")
+                {
+                    Console.WriteLine("Authentication failed in GetCurrentTasks");
+                    return Json(new { success = false, message = "Not authenticated or unauthorized access." });
+                }
+                
+                Console.WriteLine("Staff authenticated, fetching current tasks...");
+                
+                // Get facility reservations assigned to this staff
+                var facilityReservations = await _context.FacilityReservation
+                    .Include(fr => fr.User)
+                    .Include(fr => fr.Facility)
+                    .Where(fr => fr.status == "In Progress" || fr.status == "Completed")
+                    .OrderByDescending(fr => fr.status == "In Progress" ? 1 : 0) // Show in progress first
+                    .ThenByDescending(fr => fr.reservation_date)
+                    .Select(fr => new
+                    {
+                        id = fr.reservation_id.ToString(),
+                        facility = fr.Facility.name,
+                        resident = $"{fr.User.firstname} {fr.User.lastname}",
+                        dateTime = $"{fr.reservation_date.ToString("dd MMM yyyy")}, {fr.reservation_time}",
+                        date = fr.reservation_date.ToString("dd MMM yyyy"),
+                        time = fr.reservation_time,
+                        duration = fr.duration_hours,
+                        guests = $"{fr.guest_count} guests",
+                        purpose = fr.purpose,
+                        amount = $"${fr.price.ToString("0.00")}",
+                        status = fr.status,
+                        payment_status = fr.payment_status,
+                        notes = fr.staff_notes ?? "",
+                        user_id = fr.user_id,
+                        user_email = fr.User.email,
+                        user_contact = fr.User.contact_no
+                    })
+                    .ToListAsync();
+                
+                // Get service requests assigned to this staff
+                var serviceRequests = await _context.ServiceRequest
+                    .Include(sr => sr.User)
+                    .Where(sr => sr.status == "In Progress" || sr.status == "Completed") 
+                    .OrderByDescending(sr => sr.status == "In Progress" ? 1 : 0) // Show in progress first
+                    .ThenByDescending(sr => sr.scheduled_date)
+                    .Select(sr => new
+                    {
+                        id = sr.request_id.ToString(),
+                        service = sr.service_type,
+                        service_icon = sr.service_icon,
+                        homeowner = $"{sr.User.firstname} {sr.User.lastname}",
+                        date = sr.scheduled_date.ToString("dd MMM yyyy"),
+                        time = sr.scheduled_time,
+                        price = $"${sr.price.ToString("0.00")}",
+                        status = sr.status,
+                        payment_status = sr.payment_status,
+                        notes = sr.notes,
+                        staffNotes = sr.staffNotes,
+                        user_id = sr.user_id,
+                        user_email = sr.User.email,
+                        user_contact = sr.User.contact_no
+                    })
+                    .ToListAsync();
+                
+                Console.WriteLine($"Found {facilityReservations.Count} facility tasks and {serviceRequests.Count} service tasks");
+
+                return Json(new { 
+                    success = true, 
+                    facilityTasks = facilityReservations, 
+                    serviceTasks = serviceRequests 
+                });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error fetching current tasks: {ex.Message}");
+                Console.WriteLine($"Stack trace: {ex.StackTrace}");
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+
+        [HttpGet]
+        public async Task<JsonResult> GetApprovedFacilityReservations()
+        {
+            try
+            {
+                // Check authentication first
+                if (CurrentUser == null || CurrentUser.role != "staff")
+                {
+                    Console.WriteLine("Authentication failed in GetApprovedFacilityReservations");
+                    return Json(new { success = false, message = "Not authenticated or unauthorized access." });
+                }
+                
+                Console.WriteLine("Staff authenticated, fetching approved facility reservations...");
+                
+                var reservations = await _context.FacilityReservation
+                    .Include(fr => fr.User)
+                    .Include(fr => fr.Facility)
+                    .Where(fr => fr.status == "Approved" && fr.payment_status == "Paid")
+                    .OrderByDescending(fr => fr.reservation_date)
+                    .Select(fr => new
+                    {
+                        id = fr.reservation_id.ToString(),
+                        facility = fr.Facility.name,
+                        resident = $"{fr.User.firstname} {fr.User.lastname}",
+                        dateTime = $"{fr.reservation_date.ToString("dd MMM yyyy")}, {fr.reservation_time}",
+                        date = fr.reservation_date.ToString("dd MMM yyyy"),
+                        time = fr.reservation_time,
+                        duration = fr.duration_hours,
+                        guests = $"{fr.guest_count} guests",
+                        purpose = fr.purpose,
+                        amount = $"${fr.price.ToString("0.00")}",
+                        status = fr.status,
+                        payment_status = fr.payment_status,
+                        notes = fr.staff_notes ?? "",
+                        staffId = CurrentUser.user_id,
+                        user_id = fr.user_id,
+                        user_email = fr.User.email,
+                        user_contact = fr.User.contact_no
+                    })
+                    .ToListAsync();
+                
+                Console.WriteLine($"Approved facility reservations found: {reservations.Count}");
+
+                return Json(new { success = true, reservations = reservations });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error fetching approved facility reservations: {ex.Message}");
+                Console.WriteLine($"Stack trace: {ex.StackTrace}");
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+
+        [HttpPost]
+        public async Task<JsonResult> BookFacilityReservation([FromBody] FacilityBookingModel model)
+        {
+            try
+            {
+                // Validate the model
+                if (model.reservationId <= 0)
+                {
+                    return Json(new { success = false, message = "Invalid reservation ID" });
+                }
+
+                // Find the facility reservation
+                var reservation = await _context.FacilityReservation
+                    .Include(r => r.Facility)
+                    .Include(r => r.User)
+                    .FirstOrDefaultAsync(r => r.reservation_id == model.reservationId);
+                
+                if (reservation == null)
+                {
+                    return Json(new { success = false, message = "Facility reservation not found" });
+                }
+
+                // Check that the reservation is in the correct state
+                if (reservation.status != "Approved" || reservation.payment_status != "Paid")
+                {
+                    return Json(new { success = false, message = "This reservation cannot be booked (invalid status)" });
+                }
+
+                // Update the reservation status to "In Progress"
+                reservation.status = "In Progress";
+                
+                // Update staff notes if provided
+                if (!string.IsNullOrEmpty(model.staffNotes))
+                {
+                    reservation.staff_notes = model.staffNotes;
+                }
+
+                // Create a notification for the homeowner
+                if (!string.IsNullOrEmpty(model.notificationMessage))
+                {
+                    try
+                    {
+                        // Include staff name in the notification title
+                        var staffName = $"{CurrentUser.firstname} {CurrentUser.lastname}";
+                        var notification = new Notification
+                        {
+                            user_id = reservation.user_id,
+                            title = $"Facility Booking Confirmation: {reservation.Facility.name} with {staffName}",
+                            message = model.notificationMessage,
+                            created_date = DateTime.Now,
+                            is_read = false,
+                            type = "facility_booking",
+                            reference_id = reservation.reservation_id.ToString()
+                        };
+
+                        _context.Notification.Add(notification);
+                        Console.WriteLine($"Created notification for user {reservation.user_id} regarding facility reservation {reservation.reservation_id}");
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Error creating notification: {ex.Message}");
+                        // Continue even if notification creation fails
+                    }
+                }
+
+                // Save changes to the database
+                await _context.SaveChangesAsync();
+
+                // Return success response
+                return Json(new { 
+                    success = true, 
+                    message = $"Facility booking confirmed successfully for {reservation.Facility.name}",
+                    reservationId = reservation.reservation_id,
+                    staffName = $"{CurrentUser.firstname} {CurrentUser.lastname}",
+                    newStatus = reservation.status
+                });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error booking facility: {ex.Message}");
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+
+        [HttpPost]
+        [Route("Staff/CompleteFacilityReservation")]
+        public async Task<JsonResult> CompleteFacilityReservation([FromBody] CompletionModel model)
+        {
+            try
+            {
+                // Validate the model
+                if (model.reservationId <= 0)
+                {
+                    return Json(new { success = false, message = "Invalid reservation ID" });
+                }
+
+                // Find the facility reservation
+                var reservation = await _context.FacilityReservation
+                    .Include(r => r.Facility)
+                    .Include(r => r.User)
+                    .FirstOrDefaultAsync(r => r.reservation_id == model.reservationId);
+                
+                if (reservation == null)
+                {
+                    return Json(new { success = false, message = "Facility reservation not found" });
+                }
+
+                // Check that the reservation is in the correct state
+                if (reservation.status != "In Progress")
+                {
+                    return Json(new { success = false, message = "This reservation cannot be completed (invalid status)" });
+                }
+
+                // Update the reservation status to "Completed"
+                reservation.status = "Completed";
+                
+                // Update completion notes if provided
+                if (!string.IsNullOrEmpty(model.completionNotes))
+                {
+                    string dateStr = DateTime.Now.ToString("yyyy-MM-dd");
+                    reservation.staff_notes += $"\n\nCompletion Notes ({dateStr}): {model.completionNotes}";
+                }
+
+                // Create a notification for the homeowner
+                if (!string.IsNullOrEmpty(model.notificationMessage))
+                {
+                    try
+                    {
+                        // Include staff name in the notification title
+                        var staffName = $"{CurrentUser.firstname} {CurrentUser.lastname}";
+                        var notification = new Notification
+                        {
+                            user_id = reservation.user_id,
+                            title = $"Facility Booking Completed: {reservation.Facility.name}",
+                            message = model.notificationMessage,
+                            created_date = DateTime.Now,
+                            is_read = false,
+                            type = "facility_booking",
+                            reference_id = reservation.reservation_id.ToString()
+                        };
+
+                        _context.Notification.Add(notification);
+                        Console.WriteLine($"Created completion notification for user {reservation.user_id} regarding facility reservation {reservation.reservation_id}");
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Error creating notification: {ex.Message}");
+                        // Continue even if notification creation fails
+                    }
+                }
+
+                // Save changes to the database
+                await _context.SaveChangesAsync();
+
+                // Return success response
+                return Json(new { 
+                    success = true, 
+                    message = $"Facility booking marked as completed for {reservation.Facility.name}",
+                    reservationId = reservation.reservation_id,
+                    staffName = $"{CurrentUser.firstname} {CurrentUser.lastname}",
+                    newStatus = reservation.status
+                });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error completing facility reservation: {ex.Message}");
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+
+        [HttpPost]
+        [Route("Staff/CompleteServiceRequest")]
+        public async Task<JsonResult> CompleteServiceRequest([FromBody] CompletionModel model)
+        {
+            try
+            {
+                // Validate the model
+                if (model.requestId <= 0)
+                {
+                    return Json(new { success = false, message = "Invalid request ID" });
+                }
+
+                // Find the service request
+                var serviceRequest = await _context.ServiceRequest
+                    .Include(sr => sr.User)
+                    .FirstOrDefaultAsync(sr => sr.request_id == model.requestId);
+                
+                if (serviceRequest == null)
+                {
+                    return Json(new { success = false, message = "Service request not found" });
+                }
+
+                // Check that the service request is in the correct state
+                if (serviceRequest.status != "In Progress")
+                {
+                    return Json(new { success = false, message = "This service request cannot be completed (invalid status)" });
+                }
+
+                // Update the service request status to "Completed"
+                serviceRequest.status = "Completed";
+                
+                // Update completion notes if provided
+                if (!string.IsNullOrEmpty(model.completionNotes))
+                {
+                    string dateStr = DateTime.Now.ToString("yyyy-MM-dd");
+                    serviceRequest.staffNotes += $"\n\nCompletion Notes ({dateStr}): {model.completionNotes}";
+                }
+
+                // Create a notification for the user
+                if (!string.IsNullOrEmpty(model.notificationMessage))
+                {
+                    try
+                    {
+                        // Include staff name in the notification title
+                        var staffName = $"{CurrentUser.firstname} {CurrentUser.lastname}";
+                        var notification = new Notification
+                        {
+                            user_id = serviceRequest.user_id,
+                            title = $"Service Request Completed: {serviceRequest.service_type}",
+                            message = model.notificationMessage,
+                            created_date = DateTime.Now,
+                            is_read = false,
+                            type = "service_request",
+                            reference_id = serviceRequest.request_id.ToString()
+                        };
+
+                        _context.Notification.Add(notification);
+                        Console.WriteLine($"Created completion notification for user {serviceRequest.user_id} regarding service request {serviceRequest.request_id}");
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Error creating notification: {ex.Message}");
+                        // Continue even if notification creation fails
+                    }
+                }
+
+                // Save changes to the database
+                await _context.SaveChangesAsync();
+
+                // Broadcast the update via WebSocket if available
+                try {
+                    var serviceRequestWebSocketManager = HttpContext.RequestServices.GetRequiredService<ServiceRequestWebSocketManager>();
+                    await serviceRequestWebSocketManager.BroadcastServiceRequestUpdate(serviceRequest);
+                } catch (Exception ex) {
+                    Console.WriteLine($"Error broadcasting service request update: {ex.Message}");
+                    // Continue even if WebSocket broadcast fails
+                }
+
+                return Json(new { 
+                    success = true, 
+                    message = $"Service request marked as completed: {serviceRequest.service_type}",
+                    requestId = serviceRequest.request_id,
+                    staffName = $"{CurrentUser.firstname} {CurrentUser.lastname}",
+                    newStatus = serviceRequest.status
+                });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error completing service request: {ex.Message}");
+                return Json(new { success = false, message = ex.Message });
+            }
         }
 
         public class CommentModel
@@ -472,6 +1121,21 @@ namespace HomeOwner.Controllers
             public int requestId { get; set; }
             public string status { get; set; }
             public string staffNotes { get; set; }
+            public string notificationMessage { get; set; }
+        }
+
+        public class FacilityBookingModel
+        {
+            public int reservationId { get; set; }
+            public string staffNotes { get; set; }
+            public string notificationMessage { get; set; }
+        }
+
+        public class CompletionModel
+        {
+            public int reservationId { get; set; }
+            public int requestId { get; set; }
+            public string completionNotes { get; set; }
             public string notificationMessage { get; set; }
         }
     }

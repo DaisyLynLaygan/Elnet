@@ -4,16 +4,19 @@ using HomeOwner.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
 
-namespace HomeOwner.Migrations
+namespace HomeOwner.Data.Migrations
 {
     [DbContext(typeof(HomeOwnerContext))]
-    partial class HomeOwnerContextModelSnapshot : ModelSnapshot
+    [Migration("20250509141900_AddFacilityReservations")]
+    partial class AddFacilityReservations
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -158,7 +161,7 @@ namespace HomeOwner.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<decimal>("price")
-                        .HasColumnType("decimal(10,2)");
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("purpose")
                         .IsRequired()
@@ -172,6 +175,7 @@ namespace HomeOwner.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("staff_notes")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("status")
@@ -315,46 +319,6 @@ namespace HomeOwner.Migrations
                     b.HasIndex("user_id");
 
                     b.ToTable("Post");
-                });
-
-            modelBuilder.Entity("HomeOwner.Models.RentPayment", b =>
-                {
-                    b.Property<int>("payment_id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("payment_id"));
-
-                    b.Property<decimal>("amount")
-                        .HasColumnType("decimal(10,2)");
-
-                    b.Property<DateTime>("date_created")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime>("due_date")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("payment_date")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("payment_method")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("status")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("transaction_id")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("user_id")
-                        .HasColumnType("int");
-
-                    b.HasKey("payment_id");
-
-                    b.HasIndex("user_id");
-
-                    b.ToTable("RentPayment");
                 });
 
             modelBuilder.Entity("HomeOwner.Models.Report", b =>
@@ -572,17 +536,6 @@ namespace HomeOwner.Migrations
                     b.Navigation("Author");
                 });
 
-            modelBuilder.Entity("HomeOwner.Models.RentPayment", b =>
-                {
-                    b.HasOne("HomeOwner.Models.User", "HomeOwner")
-                        .WithMany("RentPayments")
-                        .HasForeignKey("user_id")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("HomeOwner");
-                });
-
             modelBuilder.Entity("HomeOwner.Models.Report", b =>
                 {
                     b.HasOne("HomeOwner.Models.User", "Author")
@@ -616,8 +569,6 @@ namespace HomeOwner.Migrations
                     b.Navigation("Notifications");
 
                     b.Navigation("Posts");
-
-                    b.Navigation("RentPayments");
 
                     b.Navigation("Reports");
 

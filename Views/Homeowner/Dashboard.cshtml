@@ -36,15 +36,15 @@
             <div class="property-meta">
                 <div class="meta-item">
                     <span class="meta-label">Monthly Payment</span>
-                    <span class="meta-value">$8,500</span>
+                    <span class="meta-value" id="monthlyPayment"></span>
                 </div>
                 <div class="meta-item">
                     <span class="meta-label">Payment Status</span>
-                    <span class="meta-value status-paid">Paid</span>
+                    <span class="meta-value status-paid" id="paymentStatus"></span>
                 </div>
                 <div class="meta-item">
                     <span class="meta-label">Next Due</span>
-                    <span class="meta-value">July 1, 2023</span>
+                    <span class="meta-value" id="nextDueDate"></span>
                 </div>
             </div>
             
@@ -362,7 +362,7 @@
         </div>
         
         <!-- Step 1: Facility Details -->
-        <div class="booking-form-step active" data-step="1">
+        <div class="booking-form-step active" data-step="1" id="facility-step-1">
             <div class="booking-form-group">
                 <label>Selected Facility</label>
                 <div class="service-option active" id="selected-facility-display">
@@ -390,7 +390,7 @@
         </div>
         
         <!-- Step 2: Schedule -->
-        <div class="booking-form-step" data-step="2">
+        <div class="booking-form-step" data-step="2" id="facility-step-2">
             <div class="booking-form-row">
                 <div class="booking-form-group">
                     <label for="facility-date">Date</label>
@@ -420,7 +420,7 @@
         </div>
         
         <!-- Step 3: Confirmation -->
-        <div class="booking-form-step" data-step="3">
+        <div class="booking-form-step" data-step="3" id="facility-step-3">
             <div class="booking-summary">
                 <h4>Booking Summary</h4>
                 <div class="booking-summary-item">

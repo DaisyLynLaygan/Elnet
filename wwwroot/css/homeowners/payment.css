@@ -174,6 +174,21 @@
     color: #F2C94C;
 }
 
+.status-rejected {
+    color: #dc3545;
+}
+
+.status-badge.rejected {
+    background-color: #dc3545;
+    color: white;
+    padding: 3px 8px;
+    border-radius: 12px;
+    font-size: 0.7rem;
+    font-weight: bold;
+    margin-left: 8px;
+    display: inline-block;
+}
+
 .payment-options {
     flex: 1;
 }
@@ -680,6 +695,45 @@
     align-items: center;
     justify-content: center;
     gap: 0.5rem;
+}
+
+/* Rejected Status Button */
+.rejected-status-button {
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 8px 16px;
+    font-weight: bold;
+    cursor: not-allowed;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    opacity: 0.8;
+}
+
+.rejected-status-button i {
+    font-size: 14px;
+}
+
+/* View Details Button */
+.view-details-button {
+    background-color: #6c757d;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 8px 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.view-details-button:hover {
+    background-color: #5a6268;
 }
 
 /* Responsive Styles */

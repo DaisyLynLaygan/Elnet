@@ -11,47 +11,23 @@ document.addEventListener('DOMContentLoaded', function() {
         if (select.value) select.style.color = '#333';
     });
     
-    // Service Requests Chart Data
-    const weeklyData = {
-        labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-        datasets: [{
-            label: 'Service Requests',
-            data: [12, 19, 15, 20, 14, 8, 10],
-            backgroundColor: 'rgba(109, 76, 65, 0.7)',
-            borderColor: 'rgba(109, 76, 65, 1)',
-            borderWidth: 1,
-            borderRadius: 6
-        }]
-    };
+    // Initialize charts with placeholders first
+    let serviceRequestsChart, facilityRatingsChart;
     
-    const monthlyData = {
-        labels: Array.from({length: 30}, (_, i) => `Day ${i+1}`),
-        datasets: [{
-            label: 'Service Requests',
-            data: Array.from({length: 30}, () => Math.floor(Math.random() * 20) + 5),
-            backgroundColor: 'rgba(109, 76, 65, 0.7)',
-            borderColor: 'rgba(109, 76, 65, 1)',
-            borderWidth: 1,
-            borderRadius: 6
-        }]
-    };
-    
-    const yearlyData = {
-        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
-        datasets: [{
-            label: 'Service Requests',
-            data: [45, 60, 55, 70, 65, 80, 90, 85, 75, 95, 100, 110],
-            backgroundColor: 'rgba(109, 76, 65, 0.7)',
-            borderColor: 'rgba(109, 76, 65, 1)',
-            borderWidth: 1,
-            borderRadius: 6
-        }]
-    };
-    
-    // Service Requests Chart Config
+    // Initialize Service Requests Chart with empty data
     const serviceRequestsConfig = {
         type: 'bar',
-        data: weeklyData, // Set to weekly data by default
+        data: {
+            labels: [],
+            datasets: [{
+                label: 'Service Requests',
+                data: [],
+                backgroundColor: 'rgba(109, 76, 65, 0.7)',
+                borderColor: 'rgba(109, 76, 65, 1)',
+                borderWidth: 1,
+                borderRadius: 6
+            }]
+        },
         options: {
             responsive: true,
             maintainAspectRatio: false,
@@ -74,7 +50,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         color: 'rgba(0, 0, 0, 0.05)'
                     },
                     ticks: {
-                        stepSize: 20
+                        stepSize: 5
                     }
                 },
                 x: {
@@ -88,21 +64,21 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Initialize Service Requests Chart
     const serviceRequestsCtx = document.getElementById('serviceRequestsChart').getContext('2d');
-    const serviceRequestsChart = new Chart(serviceRequestsCtx, serviceRequestsConfig);
+    serviceRequestsChart = new Chart(serviceRequestsCtx, serviceRequestsConfig);
     
-    // Facility Ratings Pie Chart
-    const facilityRatingsCtx = document.getElementById('facilityRatingsChart').getContext('2d');
-    const facilityRatingsChart = new Chart(facilityRatingsCtx, {
+    // Initialize Facility Ratings Pie Chart with empty data
+    const facilityRatingsConfig = {
         type: 'pie',
         data: {
-            labels: ['Function Hall', 'Sports Court', 'Swimming Pool', 'Fitness Gym'],
+            labels: [],
             datasets: [{
-                data: [4.7, 4.2, 4.5, 4.8],
+                data: [],
                 backgroundColor: [
                     'rgba(109, 76, 65, 0.8)',
                     'rgba(130, 61, 40, 0.8)',
                     'rgba(166, 97, 76, 0.8)',
-                    'rgba(201, 133, 112, 0.8)'
+                    'rgba(201, 133, 112, 0.8)',
+                    'rgba(108, 52, 131, 0.8)'
                 ],
                 borderColor: 'rgba(255, 255, 255, 0.8)',
                 borderWidth: 2
@@ -124,21 +100,81 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
         }
-    });
+    };
+    
+    const facilityRatingsCtx = document.getElementById('facilityRatingsChart').getContext('2d');
+    facilityRatingsChart = new Chart(facilityRatingsCtx, facilityRatingsConfig);
+    
+    // Function to fetch service request data
+    function fetchServiceRequestData(period = 'week') {
+        fetch(`/Admin/GetServiceRequestsData?period=${period}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Update chart data
+                    serviceRequestsChart.data.labels = data.labels;
+                    serviceRequestsChart.data.datasets[0].data = data.values;
+                    serviceRequestsChart.update();
+                } else {
+                    console.error('Error fetching service request data:', data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching service request data:', error);
+            });
+    }
+    
+    // Function to fetch facility ratings data
+    function fetchFacilityRatingsData(view = 'current') {
+        fetch(`/Admin/GetFacilityRatingsData?view=${view}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Update chart data
+                    facilityRatingsChart.data.labels = data.labels;
+                    facilityRatingsChart.data.datasets[0].data = data.values;
+                    
+                    // Update tooltip to show count if requested
+                    if (view === 'count') {
+                        facilityRatingsChart.options.plugins.tooltip.callbacks.label = function(context) {
+                            return `${context.label}: ${context.raw} bookings`;
+                        };
+                    } else {
+                        facilityRatingsChart.options.plugins.tooltip.callbacks.label = function(context) {
+                            return `${context.label}: ${context.raw}/5 rating`;
+                        };
+                    }
+                    
+                    facilityRatingsChart.update();
+                } else {
+                    console.error('Error fetching facility ratings data:', data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching facility ratings data:', error);
+            });
+    }
+    
+    // Initial data fetch
+    fetchServiceRequestData('week');
+    fetchFacilityRatingsData('current');
     
     // Handle period change for service requests chart
     document.getElementById('serviceRequestPeriod').addEventListener('change', function() {
-        switch(this.value) {
-            case 'week':
-                serviceRequestsChart.data = weeklyData;
-                break;
-            case 'month':
-                serviceRequestsChart.data = monthlyData;
-                break;
-            case 'year':
-                serviceRequestsChart.data = yearlyData;
-                break;
-        }
-        serviceRequestsChart.update();
+        fetchServiceRequestData(this.value);
     });
+    
+    // Handle view change for facility ratings chart
+    document.querySelector('.chart-card:nth-child(2) .custom-select select').addEventListener('change', function() {
+        fetchFacilityRatingsData(this.value);
+    });
+    
+    // Set up auto-refresh for real-time updates (every 60 seconds)
+    setInterval(() => {
+        const serviceRequestPeriod = document.getElementById('serviceRequestPeriod').value;
+        const facilityRatingsView = document.querySelector('.chart-card:nth-child(2) .custom-select select').value;
+        
+        fetchServiceRequestData(serviceRequestPeriod);
+        fetchFacilityRatingsData(facilityRatingsView);
+    }, 60000); // Refresh every minute
 });

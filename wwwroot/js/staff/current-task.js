@@ -1,71 +1,4 @@
 document.addEventListener('DOMContentLoaded', function() {
-    // Sample data - in a real app, this would come from an API
-    const facilityTasks = [
-        {
-            id: "RES-2023-002",
-            facility: "Sports Court",
-            resident: "Maria Garcia (Unit 205)",
-            dateTime: "16 Oct 2023, 09:00-11:00",
-            status: "in-progress",
-            purpose: "Badminton Tournament",
-            assignedStaff: "Current Staff",
-            details: {
-                date: "16 Oct 2023",
-                time: "09:00 - 11:00 (2 hours)",
-                guests: "15 people",
-                notes: "Make sure to check the equipment before the event"
-            }
-        },
-        {
-            id: "RES-2023-006",
-            facility: "Sports Court",
-            resident: "Emily Wilson (Unit 315)",
-            dateTime: "20 Oct 2023, 15:00-17:00",
-            status: "in-progress",
-            purpose: "Basketball Game",
-            assignedStaff: "Current Staff",
-            details: {
-                date: "20 Oct 2023",
-                time: "15:00 - 17:00 (2 hours)",
-                guests: "12 people",
-                notes: "Need to set up scoreboard"
-            }
-        }
-    ];
-
-    const serviceTasks = [
-        {
-            id: "SR-2023-002",
-            service: "Garden Maintenance",
-            homeowner: "Priya Sharma (Unit 5C)",
-            date: "26 Oct 2023",
-            status: "in-progress",
-            assignedStaff: "Current Staff",
-            details: {
-                scheduledTime: "02:00 PM",
-                payment: "Paid",
-                instructions: "Please trim the hedges along the front walkway and remove weeds from the flower beds. The lawn needs mowing as well."
-            }
-        },
-        {
-            id: "SR-2023-011",
-            service: "HVAC Maintenance",
-            homeowner: "James White (Unit 207)",
-            date: "29 Oct 2023",
-            status: "in-progress",
-            assignedStaff: "Current Staff",
-            details: {
-                scheduledTime: "03:00 PM",
-                payment: "Paid",
-                instructions: "AC unit not cooling properly. Needs inspection and service."
-            }
-        }
-    ];
-
-    // Current selected task
-    let currentTask = null;
-    let isFacilityTask = false;
-
     // DOM Elements
     const facilityTasksTable = document.getElementById('facilityTasks');
     const serviceTasksTable = document.getElementById('serviceTasks');
@@ -75,60 +8,135 @@ document.addEventListener('DOMContentLoaded', function() {
     const taskModalBody = document.getElementById('taskModalBody');
     const markTaskDoneBtn = document.getElementById('markTaskDoneBtn');
     const closeModalButtons = document.querySelectorAll('.close-modal, .close-modal-btn');
+    const loadingIndicator = document.getElementById('loadingIndicator');
+    const errorMessage = document.getElementById('errorMessage');
+    const completionNotesField = document.getElementById('completionNotes');
+
+    // State management
+    let facilityTasks = [];
+    let serviceTasks = [];
+    let completedFacilityTasks = [];
+    let completedServiceTasks = [];
+    let currentTask = null;
+    let currentFilter = 'in-progress';
+    let isFacilityTask = false;
 
     // Initialize the page
-    renderTasks();
+    initializePage();
+
+    // Function to initialize the page and load data
+    async function initializePage() {
+        await fetchTasks();
+        renderTasks(currentFilter);
+        setupEventListeners();
+    }
 
     // Event Listeners
-    filterTabs.forEach(tab => {
-        tab.addEventListener('click', function() {
-            filterTabs.forEach(t => t.classList.remove('active'));
-            this.classList.add('active');
-            renderTasks(this.dataset.filter);
+    function setupEventListeners() {
+        filterTabs.forEach(tab => {
+            tab.addEventListener('click', function() {
+                filterTabs.forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+                currentFilter = this.dataset.filter;
+                renderTasks(currentFilter);
+            });
         });
-    });
 
-    markTaskDoneBtn.addEventListener('click', markTaskAsDone);
+        markTaskDoneBtn.addEventListener('click', markTaskAsDone);
 
-    closeModalButtons.forEach(btn => {
-        btn.addEventListener('click', closeTaskModal);
-    });
+        closeModalButtons.forEach(btn => {
+            btn.addEventListener('click', closeTaskModal);
+        });
 
-    taskDetailsModal.addEventListener('click', function(e) {
-        if (e.target === this) {
-            closeTaskModal();
-        }
-    });
+        taskDetailsModal.addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeTaskModal();
+            }
+        });
+    }
 
     // Functions
+    async function fetchTasks() {
+        showLoading(true);
+        hideError();
+
+        try {
+            console.log("Fetching tasks from API...");
+            
+            // Fetch tasks from API
+            const response = await fetch('/Staff/GetCurrentTasks');
+            
+            // Check if response is ok
+            if (!response.ok) {
+                throw new Error(`HTTP error ${response.status}: ${response.statusText}`);
+            }
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                facilityTasks = data.facilityTasks || [];
+                serviceTasks = data.serviceTasks || [];
+                
+                console.log(`Loaded ${facilityTasks.length} facility tasks and ${serviceTasks.length} service tasks`);
+                
+                // Filter completed tasks into separate arrays
+                completedFacilityTasks = facilityTasks.filter(task => task.status.toLowerCase() === 'completed');
+                completedServiceTasks = serviceTasks.filter(task => task.status.toLowerCase() === 'completed');
+                
+                // Filter in-progress tasks
+                facilityTasks = facilityTasks.filter(task => task.status.toLowerCase() === 'in progress');
+                serviceTasks = serviceTasks.filter(task => task.status.toLowerCase() === 'in progress');
+            } else {
+                console.error('Failed to load tasks:', data.message);
+                showError(data.message || 'Failed to load tasks');
+            }
+        } catch (error) {
+            console.error('Error fetching tasks:', error);
+            showError('Error connecting to the server. Please check your connection and try again.');
+        } finally {
+            showLoading(false);
+        }
+    }
+
     function renderTasks(filter = 'in-progress') {
-        // Filter tasks based on status
-        const filteredFacilityTasks = facilityTasks.filter(task => 
-            filter === 'in-progress' ? task.status === 'in-progress' : task.status === 'completed'
-        );
-
-        const filteredServiceTasks = serviceTasks.filter(task => 
-            filter === 'in-progress' ? task.status === 'in-progress' : task.status === 'completed'
-        );
-
+        console.log(`Rendering tasks with filter: ${filter}`);
+        
+        // Determine which tasks to display based on the filter
+        const tasksToRender = {
+            facility: filter === 'in-progress' ? facilityTasks : completedFacilityTasks,
+            service: filter === 'in-progress' ? serviceTasks : completedServiceTasks
+        };
+        
         // Render facility tasks
         facilityTasksTable.innerHTML = '';
-        if (filteredFacilityTasks.length === 0) {
+        if (tasksToRender.facility.length === 0) {
             facilityTasksTable.innerHTML = `
                 <tr>
-                    <td colspan="6" class="no-tasks">No ${filter} facility tasks found</td>
+                    <td colspan="6" class="no-tasks">No ${filter.replace('-', ' ')} facility tasks found</td>
                 </tr>
             `;
         } else {
-            filteredFacilityTasks.forEach(task => {
+            tasksToRender.facility.forEach(task => {
                 const row = document.createElement('tr');
                 row.dataset.id = task.id;
+                row.dataset.type = 'facility';
+                
+                // Determine status display and color
+                const statusDisplay = formatStatus(task.status);
+                const statusClass = task.status.toLowerCase().replace(' ', '-');
+                const statusColor = task.status.toLowerCase() === 'in progress' ? '#ffc107' : '#28a745';
+                
                 row.innerHTML = `
-                    <td>${task.id}</td>
+                    <td>
+                        <div style="display: flex; align-items: center;">
+                            <div class="status-indicator ${statusClass}"></div>
+                            #${task.id}
+                        </div>
+                    </td>
                     <td>${task.facility}</td>
                     <td>${task.resident}</td>
                     <td>${task.dateTime}</td>
-                    <td><span class="status-badge status-${task.status}">${formatStatus(task.status)}</span></td>
+                    <td><span class="status-badge status-${statusClass}">${statusDisplay}</span></td>
                     <td>
                         <button class="btn-icon view-details" title="View Details">
                             <i class="fas fa-eye"></i>
@@ -141,22 +149,38 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Render service tasks
         serviceTasksTable.innerHTML = '';
-        if (filteredServiceTasks.length === 0) {
+        if (tasksToRender.service.length === 0) {
             serviceTasksTable.innerHTML = `
                 <tr>
-                    <td colspan="6" class="no-tasks">No ${filter} service tasks found</td>
+                    <td colspan="6" class="no-tasks">No ${filter.replace('-', ' ')} service tasks found</td>
                 </tr>
             `;
         } else {
-            filteredServiceTasks.forEach(task => {
+            tasksToRender.service.forEach(task => {
                 const row = document.createElement('tr');
                 row.dataset.id = task.id;
+                row.dataset.type = 'service';
+                
+                // Determine status display and color
+                const statusDisplay = formatStatus(task.status);
+                const statusClass = task.status.toLowerCase().replace(' ', '-');
+                const statusColor = task.status.toLowerCase() === 'in progress' ? '#ffc107' : '#28a745';
+                
                 row.innerHTML = `
-                    <td>${task.id}</td>
-                    <td>${task.service}</td>
+                    <td>
+                        <div style="display: flex; align-items: center;">
+                            <div class="status-indicator ${statusClass}"></div>
+                            #${task.id}
+                        </div>
+                    </td>
+                    <td>
+                        <div class="service-info">
+                            <span>${task.service}</span>
+                        </div>
+                    </td>
                     <td>${task.homeowner}</td>
-                    <td>${task.date}</td>
-                    <td><span class="status-badge status-${task.status}">${formatStatus(task.status)}</span></td>
+                    <td>${task.date} at ${task.time}</td>
+                    <td><span class="status-badge status-${statusClass}">${statusDisplay}</span></td>
                     <td>
                         <button class="btn-icon view-details" title="View Details">
                             <i class="fas fa-eye"></i>
@@ -171,43 +195,60 @@ document.addEventListener('DOMContentLoaded', function() {
         document.querySelectorAll('.view-details').forEach(btn => {
             btn.addEventListener('click', function(e) {
                 e.stopPropagation();
-                const taskId = this.closest('tr').dataset.id;
-                const isFacility = this.closest('#facilityTasks') !== null;
-                showTaskDetails(taskId, isFacility);
+                const taskRow = this.closest('tr');
+                const taskId = taskRow.dataset.id;
+                const taskType = taskRow.dataset.type;
+                showTaskDetails(taskId, taskType);
             });
         });
 
         // Add click event to rows
         document.querySelectorAll('#facilityTasks tr, #serviceTasks tr').forEach(row => {
-            row.addEventListener('click', function() {
-                const taskId = this.dataset.id;
-                const isFacility = this.closest('#facilityTasks') !== null;
-                showTaskDetails(taskId, isFacility);
-            });
+            if (!row.querySelector('.no-tasks')) {
+                row.addEventListener('click', function() {
+                    const taskId = this.dataset.id;
+                    const taskType = this.dataset.type;
+                    showTaskDetails(taskId, taskType);
+                });
+            }
         });
     }
 
-    function showTaskDetails(taskId, isFacility) {
+    function showTaskDetails(taskId, taskType) {
+        console.log(`Showing details for ${taskType} task ${taskId}`);
+        
         let task;
-        if (isFacility) {
-            task = facilityTasks.find(t => t.id === taskId);
+        if (taskType === 'facility') {
+            task = currentFilter === 'in-progress' ? 
+                facilityTasks.find(t => t.id === taskId) : 
+                completedFacilityTasks.find(t => t.id === taskId);
             isFacilityTask = true;
         } else {
-            task = serviceTasks.find(t => t.id === taskId);
+            task = currentFilter === 'in-progress' ? 
+                serviceTasks.find(t => t.id === taskId) : 
+                completedServiceTasks.find(t => t.id === taskId);
             isFacilityTask = false;
         }
 
-        if (!task) return;
+        if (!task) {
+            console.error(`Task not found: ${taskType} ${taskId}`);
+            return;
+        }
 
         currentTask = task;
 
         // Update modal title
-        taskModalTitle.textContent = isFacility ? 
+        taskModalTitle.textContent = isFacilityTask ? 
             `Facility Reservation: ${task.id}` : 
             `Service Request: ${task.id}`;
 
+        // Reset completion notes field
+        if (completionNotesField) {
+            completionNotesField.value = '';
+        }
+
         // Update modal body
-        if (isFacility) {
+        if (isFacilityTask) {
             taskModalBody.innerHTML = `
                 <div class="task-details">
                     <div class="detail-item">
@@ -220,15 +261,15 @@ document.addEventListener('DOMContentLoaded', function() {
                     </div>
                     <div class="detail-item">
                         <span class="detail-label">Date:</span>
-                        <span class="detail-value">${task.details.date}</span>
+                        <span class="detail-value">${task.date}</span>
                     </div>
                     <div class="detail-item">
                         <span class="detail-label">Time:</span>
-                        <span class="detail-value">${task.details.time}</span>
+                        <span class="detail-value">${task.time} (${task.duration} hours)</span>
                     </div>
                     <div class="detail-item">
                         <span class="detail-label">Guests:</span>
-                        <span class="detail-value">${task.details.guests}</span>
+                        <span class="detail-value">${task.guests}</span>
                     </div>
                     <div class="detail-item">
                         <span class="detail-label">Purpose:</span>
@@ -236,7 +277,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     </div>
                     <div class="detail-item">
                         <span class="detail-label">Staff Notes:</span>
-                        <span class="detail-value">${task.details.notes || 'None'}</span>
+                        <span class="detail-value">${task.notes || 'None'}</span>
                     </div>
                 </div>
             `;
@@ -257,45 +298,127 @@ document.addEventListener('DOMContentLoaded', function() {
                     </div>
                     <div class="detail-item">
                         <span class="detail-label">Scheduled Time:</span>
-                        <span class="detail-value">${task.details.scheduledTime}</span>
+                        <span class="detail-value">${task.time}</span>
                     </div>
                     <div class="detail-item">
                         <span class="detail-label">Payment Status:</span>
-                        <span class="detail-value">${task.details.payment}</span>
+                        <span class="detail-value">${task.payment_status}</span>
                     </div>
                     <div class="detail-item">
                         <span class="detail-label">Instructions:</span>
-                        <span class="detail-value">${task.details.instructions}</span>
+                        <span class="detail-value">${task.notes || 'None'}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Staff Notes:</span>
+                        <span class="detail-value">${task.staffNotes || 'None'}</span>
+                    </div>
+                </div>
+            `;
+        }
+        
+        // Add completion notes field if this is an in-progress task
+        if (currentFilter === 'in-progress') {
+            taskModalBody.innerHTML += `
+                <div class="completion-form">
+                    <h4>Completion Details</h4>
+                    <div class="form-group">
+                        <label for="completionNotes">Completion Notes:</label>
+                        <textarea id="completionNotes" placeholder="Enter notes about the completed task..."></textarea>
+                        <small class="help-text">These notes will be sent to the homeowner in a notification.</small>
                     </div>
                 </div>
             `;
         }
 
         // Show/hide mark as done button based on status
-        markTaskDoneBtn.style.display = task.status === 'in-progress' ? 'block' : 'none';
+        markTaskDoneBtn.style.display = currentFilter === 'in-progress' ? 'block' : 'none';
 
         // Open modal
         taskDetailsModal.classList.add('active');
     }
 
-    function markTaskAsDone() {
-        if (!currentTask) return;
+    async function markTaskAsDone() {
+        if (!currentTask) {
+            showToast('error', 'No task selected');
+            return;
+        }
+        
+        const completionNotes = document.getElementById('completionNotes')?.value || '';
 
-        // In a real app, you would make an API call here to update the task status
-        currentTask.status = 'completed';
-
-        // Show success message
-        Swal.fire({
-            title: 'Task Completed!',
-            text: `The ${isFacilityTask ? 'facility reservation' : 'service request'} has been marked as completed.`,
-            icon: 'success',
-            confirmButtonColor: '#4CAF50',
-        }).then(() => {
-            // Refresh the tasks list and close modal
-            const activeFilter = document.querySelector('.filter-tab.active').dataset.filter;
-            renderTasks(activeFilter);
-            closeTaskModal();
-        });
+        try {
+            // Show loading state on button
+            const originalBtnText = markTaskDoneBtn.innerHTML;
+            markTaskDoneBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+            markTaskDoneBtn.disabled = true;
+            
+            // Prepare the API endpoint and request body based on task type
+            let endpoint = '';
+            let requestBody = {};
+            
+            if (isFacilityTask) {
+                // For facility reservations
+                endpoint = '/Staff/CompleteFacilityReservation';
+                requestBody = {
+                    reservationId: parseInt(currentTask.id),
+                    completionNotes: completionNotes,
+                    notificationMessage: `Dear Resident,\n\nYour facility reservation for ${currentTask.facility} on ${currentTask.date} at ${currentTask.time} has been completed successfully.\n\n${completionNotes ? `Staff notes: ${completionNotes}\n\n` : ''}Thank you for using our services.`
+                };
+            } else {
+                // For service requests
+                endpoint = '/Staff/CompleteServiceRequest';
+                requestBody = {
+                    requestId: parseInt(currentTask.id),
+                    completionNotes: completionNotes,
+                    notificationMessage: `Dear Homeowner,\n\nYour ${currentTask.service} service scheduled for ${currentTask.date} at ${currentTask.time} has been completed successfully.\n\n${completionNotes ? `Staff notes: ${completionNotes}\n\n` : ''}Thank you for using our services.`
+                };
+            }
+            
+            // Make API call to mark task as completed
+            const response = await fetch(endpoint, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(requestBody)
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                // Show success message
+                showToast('success', data.message || 'Task marked as completed');
+                
+                // Move the task to the completed array
+                if (isFacilityTask) {
+                    const taskIndex = facilityTasks.findIndex(t => t.id === currentTask.id);
+                    if (taskIndex !== -1) {
+                        const completedTask = {...facilityTasks[taskIndex], status: 'Completed'};
+                        facilityTasks.splice(taskIndex, 1);
+                        completedFacilityTasks.unshift(completedTask); // Add to top of completed list
+                    }
+                } else {
+                    const taskIndex = serviceTasks.findIndex(t => t.id === currentTask.id);
+                    if (taskIndex !== -1) {
+                        const completedTask = {...serviceTasks[taskIndex], status: 'Completed'};
+                        serviceTasks.splice(taskIndex, 1);
+                        completedServiceTasks.unshift(completedTask); // Add to top of completed list
+                    }
+                }
+                
+                // Close modal and refresh the tasks list
+                closeTaskModal();
+                renderTasks(currentFilter);
+            } else {
+                showToast('error', data.message || 'Failed to mark task as completed');
+            }
+        } catch (error) {
+            console.error('Error marking task as done:', error);
+            showToast('error', 'An error occurred while updating the task');
+        } finally {
+            // Reset button state
+            markTaskDoneBtn.innerHTML = '<i class="fas fa-check-circle"></i> Mark as Completed';
+            markTaskDoneBtn.disabled = false;
+        }
     }
 
     function closeTaskModal() {
@@ -304,8 +427,49 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function formatStatus(status) {
-        return status.split('-').map(word => 
-            word.charAt(0).toUpperCase() + word.slice(1)
+        return status.split(' ').map(word => 
+            word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
         ).join(' ');
+    }
+    
+    function showLoading(show) {
+        if (loadingIndicator) {
+            loadingIndicator.style.display = show ? 'flex' : 'none';
+        }
+    }
+    
+    function hideError() {
+        if (errorMessage) {
+            errorMessage.style.display = 'none';
+        }
+    }
+    
+    function showError(message) {
+        if (errorMessage) {
+            errorMessage.textContent = message;
+            errorMessage.style.display = 'block';
+        }
+    }
+    
+    function showToast(type, message) {
+        console.log(`TOAST: ${type.toUpperCase()} - ${message}`);
+        
+        if (typeof Swal !== 'undefined') {
+            const icon = type === 'success' ? 'success' : 
+                         type === 'error' ? 'error' : 
+                         'info';
+            
+            Swal.fire({
+                icon: icon,
+                title: type.charAt(0).toUpperCase() + type.slice(1),
+                text: message,
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 3000
+            });
+        } else {
+            alert(`${type.toUpperCase()}: ${message}`);
+        }
     }
 });

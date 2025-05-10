@@ -4,16 +4,19 @@ using HomeOwner.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
 
-namespace HomeOwner.Migrations
+namespace HomeOwner.Data.Migrations
 {
     [DbContext(typeof(HomeOwnerContext))]
-    partial class HomeOwnerContextModelSnapshot : ModelSnapshot
+    [Migration("20250509141400_AddFacilityReservationsTable")]
+    partial class AddFacilityReservationsTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -141,7 +144,7 @@ namespace HomeOwner.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("reservation_id"));
 
-                    b.Property<DateTime>("date_created")
+                    b.Property<DateTime>("created_date")
                         .HasColumnType("datetime2");
 
                     b.Property<int>("duration_hours")
@@ -153,12 +156,12 @@ namespace HomeOwner.Migrations
                     b.Property<int>("guest_count")
                         .HasColumnType("int");
 
+                    b.Property<string>("notes")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("payment_status")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<decimal>("price")
-                        .HasColumnType("decimal(10,2)");
 
                     b.Property<string>("purpose")
                         .IsRequired()
@@ -177,6 +180,12 @@ namespace HomeOwner.Migrations
                     b.Property<string>("status")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<decimal>("total_amount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime?>("updated_date")
+                        .HasColumnType("datetime2");
 
                     b.Property<int>("user_id")
                         .HasColumnType("int");
@@ -315,46 +324,6 @@ namespace HomeOwner.Migrations
                     b.HasIndex("user_id");
 
                     b.ToTable("Post");
-                });
-
-            modelBuilder.Entity("HomeOwner.Models.RentPayment", b =>
-                {
-                    b.Property<int>("payment_id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("payment_id"));
-
-                    b.Property<decimal>("amount")
-                        .HasColumnType("decimal(10,2)");
-
-                    b.Property<DateTime>("date_created")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime>("due_date")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("payment_date")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("payment_method")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("status")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("transaction_id")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("user_id")
-                        .HasColumnType("int");
-
-                    b.HasKey("payment_id");
-
-                    b.HasIndex("user_id");
-
-                    b.ToTable("RentPayment");
                 });
 
             modelBuilder.Entity("HomeOwner.Models.Report", b =>
@@ -572,17 +541,6 @@ namespace HomeOwner.Migrations
                     b.Navigation("Author");
                 });
 
-            modelBuilder.Entity("HomeOwner.Models.RentPayment", b =>
-                {
-                    b.HasOne("HomeOwner.Models.User", "HomeOwner")
-                        .WithMany("RentPayments")
-                        .HasForeignKey("user_id")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("HomeOwner");
-                });
-
             modelBuilder.Entity("HomeOwner.Models.Report", b =>
                 {
                     b.HasOne("HomeOwner.Models.User", "Author")
@@ -616,8 +574,6 @@ namespace HomeOwner.Migrations
                     b.Navigation("Notifications");
 
                     b.Navigation("Posts");
-
-                    b.Navigation("RentPayments");
 
                     b.Navigation("Reports");
 

@@ -199,22 +199,8 @@
 </div>
 
 <script>
-// Sample reservation data
-const reservations = [
-    {
-        id: "RES-2023-001",
-        facility: "Function Hall",
-        resident: "John Smith (Unit 101)",
-        dateTime: "15 Oct 2023, 14:00-18:00",
-        date: "15 Oct 2023",
-        time: "14:00 - 18:00 (4 hours)",
-        status: "approved",
-        guests: "50 people",
-        purpose: "Wedding Anniversary",
-        amount: "$500.00",
-        notes: ""
-    },
-];
+// Fetch real reservation data
+let reservations = [];
 
 let adminSocket;
 let retryCount = 0;
@@ -339,65 +325,86 @@ document.addEventListener('DOMContentLoaded', function() {
         currentFilter = filter;
         currentPage = page;
         
-        const filteredReservations = reservations.filter(res => {
-            if (filter === 'all') return true;
-            return res.status === filter;
-        });
+        // Call the API to fetch real data
+        fetchReservations(filter, page);
+    }
+    
+    // Function to fetch reservations from the API
+    function fetchReservations(status = 'all', page = 1) {
+        // Show loading state
+        reservationsTableBody.innerHTML = '<tr><td colspan="6" class="text-center"><i class="fas fa-spinner fa-spin"></i> Loading reservations...</td></tr>';
         
-        const totalPages = Math.ceil(filteredReservations.length / reservationsPerPage);
-        const startIndex = (page - 1) * reservationsPerPage;
-        const endIndex = Math.min(startIndex + reservationsPerPage, filteredReservations.length);
-        const paginatedReservations = filteredReservations.slice(startIndex, endIndex);
-        
-        reservationsTableBody.innerHTML = '';
-        
-        paginatedReservations.forEach(reservation => {
-            const row = document.createElement('tr');
-            row.dataset.id = reservation.id;
-            
-            let actionButtons = '';
-            if (reservation.status === 'pending') {
-                actionButtons = `
-                    <button class="btn btn-sm btn-info" data-action="details">
-                        <i class="fas fa-eye"></i> <span class="action-text">Details</span>
-                    </button>
-                    <button class="btn btn-sm btn-success" data-action="approve">
-                        <i class="fas fa-check"></i> <span class="action-text">Approve</span>
-                    </button>
-                    <button class="btn btn-sm btn-danger" data-action="reject">
-                        <i class="fas fa-times"></i> <span class="action-text">Reject</span>
-                    </button>
-                `;
-            } else {
-                actionButtons = `
-                    <button class="btn btn-sm btn-info" data-action="details">
-                        <i class="fas fa-eye"></i> <span class="action-text">Details</span>
-                    </button>
-                `;
-            }
-            
-            const statusClass = `status-${reservation.status}`;
-            const statusText = reservation.status.charAt(0).toUpperCase() + reservation.status.slice(1);
-            
-            row.innerHTML = `
-                <td data-label="Reservation ID">${reservation.id}</td>
-                <td data-label="Facility">${reservation.facility}</td>
-                <td data-label="Resident">${reservation.resident}</td>
-                <td data-label="Date & Time">${reservation.dateTime}</td>
-                <td data-label="Status"><span class="status-badge ${statusClass}">${statusText}</span></td>
-                <td data-label="Actions">
-                    <div class="action-buttons">${actionButtons}</div>
-                </td>
-            `;
-            
-            row.querySelectorAll('[data-action]').forEach(btn => {
-                btn.addEventListener('click', () => handleReservationAction(reservation.id, btn.dataset.action));
+        fetch(`/Admin/GetFacilityReservations?status=${status}&page=${page}&pageSize=${reservationsPerPage}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Store the reservations
+                    reservations = data.reservations;
+                    
+                    // Clear the table
+                    reservationsTableBody.innerHTML = '';
+                    
+                    if (reservations.length === 0) {
+                        reservationsTableBody.innerHTML = '<tr><td colspan="6" class="text-center">No reservations found</td></tr>';
+                    } else {
+                        // Render each reservation
+                        reservations.forEach(reservation => {
+                            const row = document.createElement('tr');
+                            row.dataset.id = reservation.id;
+                            
+                            let actionButtons = '';
+                            if (reservation.status === 'pending') {
+                                actionButtons = `
+                                    <button class="btn btn-sm btn-info" data-action="details">
+                                        <i class="fas fa-eye"></i> <span class="action-text">Details</span>
+                                    </button>
+                                    <button class="btn btn-sm btn-success" data-action="approve">
+                                        <i class="fas fa-check"></i> <span class="action-text">Approve</span>
+                                    </button>
+                                    <button class="btn btn-sm btn-danger" data-action="reject">
+                                        <i class="fas fa-times"></i> <span class="action-text">Reject</span>
+                                    </button>
+                                `;
+                            } else {
+                                actionButtons = `
+                                    <button class="btn btn-sm btn-info" data-action="details">
+                                        <i class="fas fa-eye"></i> <span class="action-text">Details</span>
+                                    </button>
+                                `;
+                            }
+                            
+                            const statusClass = `status-${reservation.status}`;
+                            const statusText = reservation.status.charAt(0).toUpperCase() + reservation.status.slice(1);
+                            
+                            row.innerHTML = `
+                                <td data-label="Reservation ID">${reservation.id}</td>
+                                <td data-label="Facility">${reservation.facility}</td>
+                                <td data-label="Resident">${reservation.resident}</td>
+                                <td data-label="Date & Time">${reservation.dateTime}</td>
+                                <td data-label="Status"><span class="status-badge ${statusClass}">${statusText}</span></td>
+                                <td data-label="Actions">
+                                    <div class="action-buttons">${actionButtons}</div>
+                                </td>
+                            `;
+                            
+                            row.querySelectorAll('[data-action]').forEach(btn => {
+                                btn.addEventListener('click', () => handleReservationAction(reservation.id, btn.dataset.action));
+                            });
+                            
+                            reservationsTableBody.appendChild(row);
+                        });
+                    }
+                    
+                    // Update pagination
+                    updatePaginationControls(data.pagination.totalItems, data.pagination.currentPage, data.pagination.totalPages);
+                } else {
+                    reservationsTableBody.innerHTML = `<tr><td colspan="6" class="text-center">Error: ${data.message}</td></tr>`;
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching reservations:', error);
+                reservationsTableBody.innerHTML = '<tr><td colspan="6" class="text-center">Error loading reservations. Please try again.</td></tr>';
             });
-            
-            reservationsTableBody.appendChild(row);
-        });
-        
-        updatePaginationControls(filteredReservations.length, page, totalPages);
     }
     
     function updatePaginationControls(totalReservations, currentPage, totalPages) {
@@ -475,21 +482,131 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     function approveReservation(reservationId) {
-        const reservation = reservations.find(res => res.id === reservationId);
-        if (reservation) {
-            reservation.status = 'approved';
-            renderReservations(currentFilter, currentPage);
-            showAlert('Reservation approved successfully! It has been sent to staff for processing.');
-        }
+        Swal.fire({
+            title: 'Approve Reservation',
+            text: 'Are you sure you want to approve this reservation?',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: 'Yes, approve it',
+            cancelButtonText: 'No, cancel',
+            confirmButtonColor: '#4CAF50',
+            cancelButtonColor: '#d33'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Show loading
+                Swal.fire({
+                    title: 'Processing...',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+                
+                // Send API request to update status
+                fetch('/Admin/UpdateReservationStatus', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        reservationId: reservationId,
+                        status: 'Approved',
+                        staffNotes: ''
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        Swal.fire({
+                            title: 'Success!',
+                            text: data.message,
+                            icon: 'success'
+                        }).then(() => {
+                            // Refresh the reservations list
+                            renderReservations(currentFilter, currentPage);
+                        });
+                    } else {
+                        Swal.fire({
+                            title: 'Error',
+                            text: data.message,
+                            icon: 'error'
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('Error approving reservation:', error);
+                    Swal.fire({
+                        title: 'Error',
+                        text: 'An unexpected error occurred. Please try again.',
+                        icon: 'error'
+                    });
+                });
+            }
+        });
     }
     
     function rejectReservation(reservationId) {
-        const reservation = reservations.find(res => res.id === reservationId);
-        if (reservation) {
-            reservation.status = 'cancelled';
-            renderReservations(currentFilter, currentPage);
-            showAlert('Reservation rejected successfully!');
-        }
+        Swal.fire({
+            title: 'Reject Reservation',
+            text: 'Are you sure you want to reject this reservation?',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Yes, reject it',
+            cancelButtonText: 'No, cancel',
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Show loading
+                Swal.fire({
+                    title: 'Processing...',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+                
+                // Send API request to update status
+                fetch('/Admin/UpdateReservationStatus', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        reservationId: reservationId,
+                        status: 'Cancelled',
+                        staffNotes: 'Rejected by administrator'
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        Swal.fire({
+                            title: 'Success!',
+                            text: data.message,
+                            icon: 'success'
+                        }).then(() => {
+                            // Refresh the reservations list
+                            renderReservations(currentFilter, currentPage);
+                        });
+                    } else {
+                        Swal.fire({
+                            title: 'Error',
+                            text: data.message,
+                            icon: 'error'
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('Error rejecting reservation:', error);
+                    Swal.fire({
+                        title: 'Error',
+                        text: 'An unexpected error occurred. Please try again.',
+                        icon: 'error'
+                    });
+                });
+            }
+        });
     }
     
     function showAlert(message) {
@@ -521,15 +638,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     
     nextPageBtn.addEventListener('click', () => {
-        const filteredReservations = reservations.filter(res => {
-            if (currentFilter === 'all') return true;
-            return res.status === currentFilter;
-        });
-        const totalPages = Math.ceil(filteredReservations.length / reservationsPerPage);
-        
-        if (currentPage < totalPages) {
-            renderReservations(currentFilter, currentPage + 1);
-        }
+        renderReservations(currentFilter, currentPage + 1);
     });
     
     manageFacilitiesBtn.addEventListener('click', () => {
@@ -545,9 +654,65 @@ document.addEventListener('DOMContentLoaded', function() {
     
     saveNotesBtn.addEventListener('click', () => {
         if (currentReservation) {
-            currentReservation.notes = document.getElementById('staffNotes').value;
-            showAlert('Notes saved successfully!');
-            detailsModal.classList.remove('active');
+            const staffNotes = document.getElementById('staffNotes').value;
+            
+            // Show loading
+            Swal.fire({
+                title: 'Saving notes...',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+            
+            // Send API request to update notes
+            fetch('/Admin/UpdateReservationStatus', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    reservationId: currentReservation.id,
+                    status: currentReservation.status.charAt(0).toUpperCase() + currentReservation.status.slice(1), // Capitalize first letter
+                    staffNotes: staffNotes
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Update notes in local data
+                    const reservation = reservations.find(res => res.id === currentReservation.id);
+                    if (reservation) {
+                        reservation.notes = staffNotes;
+                    }
+                    
+                    Swal.fire({
+                        title: 'Success!',
+                        text: 'Notes saved successfully!',
+                        icon: 'success',
+                        timer: 2000,
+                        showConfirmButton: false
+                    }).then(() => {
+                        detailsModal.classList.remove('active');
+                        // Refresh the reservations list
+                        renderReservations(currentFilter, currentPage);
+                    });
+                } else {
+                    Swal.fire({
+                        title: 'Error',
+                        text: data.message,
+                        icon: 'error'
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Error saving notes:', error);
+                Swal.fire({
+                    title: 'Error',
+                    text: 'An unexpected error occurred. Please try again.',
+                    icon: 'error'
+                });
+            });
         }
     });
     
